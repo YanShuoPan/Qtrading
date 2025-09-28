@@ -1,0 +1,2 @@
+# Qtrading
+stock recommad
