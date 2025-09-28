@@ -57,9 +57,15 @@ graph TD
 ### 2. Google Drive 設定（推薦）
 1. 建立 GCP 專案，啟用 **Google Drive API**
 2. 建立 **Service Account** 並下載 JSON 金鑰
-3. 建立 Google Drive 資料夾 `stocks-autobot-data`
+3. 建立 Google Drive 資料夾（例如：`stocks-autobot-data`）
 4. 將資料夾分享給 Service Account email（編輯者權限）
-5. 程式會自動在 `stocks-autobot-data` 下建立 `data` 子資料夾存放 `taiex.sqlite`
+5. **取得資料夾 ID**：
+   - 開啟 Google Drive 資料夾
+   - 從網址列複製資料夾 ID（如：`1Oyn-Zuiswh-mUL7G4dKwjLoZfwUk9e_f`）
+   - 設定為 GitHub Secret: `GDRIVE_FOLDER_ID`
+6. 程式會自動在指定資料夾下建立 `data` 子資料夾存放 `taiex.sqlite`
+
+💡 **小提示**：如果不設定 `GDRIVE_FOLDER_ID`，程式會自動搜尋名為 `stocks-autobot-data` 的資料夾
 
 ### 3. GitHub Secrets 設定
 在 Repository → Settings → Secrets and variables → Actions 新增：
@@ -69,6 +75,7 @@ graph TD
 | `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token | ✅ |
 | `LINE_USER_ID` | 接收推播的使用者 ID | ✅ |
 | `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON 完整內容 | 🔶 推薦 |
+| `GDRIVE_FOLDER_ID` | Google Drive 資料夾 ID（可直接指定） | 🔷 可選 |
 
 ### 4. 環境變數自訂（可選）
 在 `.github/workflows/daily.yml` 中可設定：

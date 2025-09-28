@@ -25,8 +25,11 @@ LINE_USER_ID = os.environ["LINE_USER_ID"]
 
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 DB_PATH = os.path.join(DATA_DIR, "taiex.sqlite")
-GDRIVE_FOLDER_NAME = "stocks-autobot-data"
-GDRIVE_DATA_FOLDER = "data"  # 在stocks-autobot-data下的子資料夾
+
+# Google Drive 設定 - 支援直接指定資料夾 ID 或使用預設名稱搜尋
+GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID")  # 直接指定資料夾 ID（優先）
+GDRIVE_FOLDER_NAME = "stocks-autobot-data"  # 預設資料夾名稱（備用）
+GDRIVE_DATA_FOLDER = "data"  # 在主資料夾下的子資料夾
 
 # Google Drive Service Account setup
 SCOPES = ['https://www.googleapis.com/auth/drive']
@@ -231,19 +234,28 @@ def setup_google_drive_folders(service):
         return None
 
     try:
-        # 尋找或建立主資料夾 stocks-autobot-data
-        main_folder_id = find_folder(service, GDRIVE_FOLDER_NAME)
-        if not main_folder_id:
-            main_folder_id = create_folder(service, GDRIVE_FOLDER_NAME)
+        # 如果有直接指定資料夾 ID，優先使用
+        if GDRIVE_FOLDER_ID:
+            print(f"✅ 使用指定的 Google Drive 資料夾 ID: {GDRIVE_FOLDER_ID}")
+            main_folder_id = GDRIVE_FOLDER_ID
+        else:
+            # 尋找或建立主資料夾 stocks-autobot-data
+            print(f"🔍 搜尋資料夾: {GDRIVE_FOLDER_NAME}")
+            main_folder_id = find_folder(service, GDRIVE_FOLDER_NAME)
+            if not main_folder_id:
+                main_folder_id = create_folder(service, GDRIVE_FOLDER_NAME)
 
-        if not main_folder_id:
-            print("❌ 無法建立主資料夾")
-            return None
+            if not main_folder_id:
+                print("❌ 無法建立主資料夾")
+                return None
 
         # 尋找或建立 data 子資料夾
         data_folder_id = find_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
         if not data_folder_id:
             data_folder_id = create_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
+
+        if data_folder_id:
+            print(f"✅ Google Drive 資料夾已準備就緒: {GDRIVE_DATA_FOLDER}")
 
         return data_folder_id
 
