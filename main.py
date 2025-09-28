@@ -4,6 +4,8 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 import tempfile
 import base64
+import json
+import io
 
 import pandas as pd
 import numpy as np
@@ -13,6 +15,9 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from dotenv import load_dotenv
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 load_dotenv()
 LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
@@ -20,6 +25,11 @@ LINE_USER_ID = os.environ["LINE_USER_ID"]
 
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 DB_PATH = os.path.join(DATA_DIR, "taiex.sqlite")
+GDRIVE_FOLDER_NAME = "stocks-autobot-data"
+GDRIVE_DATA_FOLDER = "data"  # 在stocks-autobot-data下的子資料夾
+
+# Google Drive Service Account setup
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 # Use environment variable for stock codes, fallback to comprehensive list
 DEFAULT_CODES = [
@@ -82,6 +92,208 @@ def line_push_text(msg: str):
     body = {"to": LINE_USER_ID, "messages": [{"type": "text", "text": msg}]}
     r = requests.post(url, headers=headers, json=body, timeout=30)
     r.raise_for_status()
+
+
+def get_drive_service():
+    """建立 Google Drive API 服務（使用 Service Account）"""
+    try:
+        # 從環境變數讀取 Service Account JSON
+        sa_json_str = os.environ.get("GDRIVE_SERVICE_ACCOUNT")
+        if not sa_json_str:
+            print("❌ 未設定 GDRIVE_SERVICE_ACCOUNT 環境變數，跳過 Google Drive 功能")
+            return None
+
+        sa_json = json.loads(sa_json_str)
+        credentials = service_account.Credentials.from_service_account_info(sa_json, scopes=SCOPES)
+        service = build('drive', 'v3', credentials=credentials)
+        print("✅ Google Drive Service Account 認證成功")
+        return service
+    except Exception as e:
+        print(f"❌ Google Drive 認證失敗: {e}")
+        return None
+
+
+def find_folder(service, folder_name, parent_id=None):
+    """尋找指定名稱的資料夾"""
+    if not service:
+        return None
+
+    try:
+        query = f"name='{folder_name}' and mimeType='application/vnd.google-apps.folder' and trashed=false"
+        if parent_id:
+            query += f" and '{parent_id}' in parents"
+
+        results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
+        items = results.get('files', [])
+
+        if items:
+            return items[0]['id']
+        return None
+    except Exception as e:
+        print(f"❌ 尋找資料夾失敗: {e}")
+        return None
+
+
+def create_folder(service, folder_name, parent_id=None):
+    """建立資料夾"""
+    if not service:
+        return None
+
+    try:
+        file_metadata = {
+            'name': folder_name,
+            'mimeType': 'application/vnd.google-apps.folder'
+        }
+        if parent_id:
+            file_metadata['parents'] = [parent_id]
+
+        folder = service.files().create(body=file_metadata, fields='id').execute()
+        print(f"✅ 已建立資料夾: {folder_name}")
+        return folder.get('id')
+    except Exception as e:
+        print(f"❌ 建立資料夾失敗: {e}")
+        return None
+
+
+def download_file_from_drive(service, file_name, folder_id, local_path):
+    """從 Google Drive 下載檔案"""
+    if not service:
+        return False
+
+    try:
+        # 尋找檔案
+        query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
+        results = service.files().list(q=query, fields='files(id, name)').execute()
+        items = results.get('files', [])
+
+        if not items:
+            print(f"📁 Google Drive 中找不到檔案: {file_name}")
+            return False
+
+        file_id = items[0]['id']
+
+        # 下載檔案
+        request = service.files().get_media(fileId=file_id)
+        file_buffer = io.BytesIO()
+        downloader = MediaIoBaseDownload(file_buffer, request)
+
+        done = False
+        while done is False:
+            status, done = downloader.next_chunk()
+
+        # 寫入本地檔案
+        os.makedirs(os.path.dirname(local_path), exist_ok=True)
+        with open(local_path, 'wb') as f:
+            f.write(file_buffer.getvalue())
+
+        print(f"✅ 已從 Google Drive 下載: {file_name}")
+        return True
+
+    except Exception as e:
+        print(f"❌ 下載檔案失敗: {e}")
+        return False
+
+
+def upload_file_to_drive(service, local_path, file_name, folder_id):
+    """上傳檔案到 Google Drive"""
+    if not service:
+        return False
+
+    try:
+        # 檢查檔案是否已存在
+        query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
+        results = service.files().list(q=query, fields='files(id, name)').execute()
+        items = results.get('files', [])
+
+        file_metadata = {'name': file_name, 'parents': [folder_id]}
+        media = MediaFileUpload(local_path, resumable=True)
+
+        if items:
+            # 更新現有檔案
+            file_id = items[0]['id']
+            file = service.files().update(fileId=file_id, media_body=media).execute()
+            print(f"✅ 已更新 Google Drive 檔案: {file_name}")
+        else:
+            # 建立新檔案
+            file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
+            print(f"✅ 已上傳新檔案到 Google Drive: {file_name}")
+
+        return True
+
+    except Exception as e:
+        print(f"❌ 上傳檔案失敗: {e}")
+        return False
+
+
+def setup_google_drive_folders(service):
+    """設定 Google Drive 資料夾結構"""
+    if not service:
+        return None
+
+    try:
+        # 尋找或建立主資料夾 stocks-autobot-data
+        main_folder_id = find_folder(service, GDRIVE_FOLDER_NAME)
+        if not main_folder_id:
+            main_folder_id = create_folder(service, GDRIVE_FOLDER_NAME)
+
+        if not main_folder_id:
+            print("❌ 無法建立主資料夾")
+            return None
+
+        # 尋找或建立 data 子資料夾
+        data_folder_id = find_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
+        if not data_folder_id:
+            data_folder_id = create_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
+
+        return data_folder_id
+
+    except Exception as e:
+        print(f"❌ 設定 Google Drive 資料夾失敗: {e}")
+        return None
+
+
+def sync_database_from_drive(service):
+    """從 Google Drive 同步資料庫到本地"""
+    if not service:
+        print("⚠️  跳過 Google Drive 下載（Service 不可用）")
+        return False
+
+    try:
+        data_folder_id = setup_google_drive_folders(service)
+        if not data_folder_id:
+            return False
+
+        # 下載 taiex.sqlite
+        success = download_file_from_drive(service, "taiex.sqlite", data_folder_id, DB_PATH)
+        return success
+
+    except Exception as e:
+        print(f"❌ 從 Google Drive 同步資料庫失敗: {e}")
+        return False
+
+
+def sync_database_to_drive(service):
+    """上傳本地資料庫到 Google Drive"""
+    if not service:
+        print("⚠️  跳過 Google Drive 上傳（Service 不可用）")
+        return False
+
+    try:
+        if not os.path.exists(DB_PATH):
+            print(f"⚠️  本地資料庫不存在: {DB_PATH}")
+            return False
+
+        data_folder_id = setup_google_drive_folders(service)
+        if not data_folder_id:
+            return False
+
+        # 上傳 taiex.sqlite
+        success = upload_file_to_drive(service, DB_PATH, "taiex.sqlite", data_folder_id)
+        return success
+
+    except Exception as e:
+        print(f"❌ 上傳資料庫到 Google Drive 失敗: {e}")
+        return False
 
 
 def ensure_db():
@@ -438,21 +650,30 @@ def upload_image(image_path: str) -> str:
 def main():
     print("=== 台股推薦機器人自動執行 ===\n")
 
-    print("步驟 1: 建立資料庫")
+    print("步驟 1: 設定 Google Drive 連線")
+    drive_service = get_drive_service()
+
+    print("\n步驟 2: 從 Google Drive 同步資料庫")
+    sync_database_from_drive(drive_service)
+
+    print("\n步驟 3: 建立資料庫")
     ensure_db()
 
-    print("\n步驟 2: 檢查並下載需要的數據")
+    print("\n步驟 4: 檢查並下載需要的數據")
     df_new = fetch_prices_yf(CODES, lookback_days=120)
+    data_updated = False
     if not df_new.empty:
         upsert_prices(df_new)
+        data_updated = True
+        print("✅ 資料庫已更新")
     else:
         print("無需更新資料庫")
 
-    print("\n步驟 3: 載入數據並篩選股票")
+    print("\n步驟 5: 載入數據並篩選股票")
     hist = load_recent_prices(days=120)
     picks = pick_stocks(hist, top_k=PICKS_TOP_K)
 
-    print("\n步驟 4: 將股票分組")
+    print("\n步驟 6: 將股票分組")
     today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
 
     if picks.empty:
@@ -465,7 +686,7 @@ def main():
     print(f"好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
     print(f"有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
 
-    print("\n步驟 5: 發送 LINE 訊息")
+    print("\n步驟 7: 發送 LINE 訊息")
 
     if group1.empty and group2.empty:
         msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
@@ -551,6 +772,17 @@ def main():
                         print(f"❌ 圖床上傳失敗")
                 else:
                     print(f"❌ 圖表生成失敗")
+
+    # 步驟 8: 同步資料庫到 Google Drive（如果有更新資料）
+    if data_updated and drive_service:
+        print("\n步驟 8: 同步資料庫到 Google Drive")
+        sync_database_to_drive(drive_service)
+    elif drive_service:
+        print("\n步驟 8: 資料無更新，跳過 Google Drive 同步")
+    else:
+        print("\n步驟 8: Google Drive 服務不可用，跳過同步")
+
+    print("\n🎉 任務完成！")
 
 
 if __name__ == "__main__":

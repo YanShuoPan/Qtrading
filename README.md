@@ -35,13 +35,15 @@
 
 ```mermaid
 graph TD
-    A[GitHub Actions 觸發<br/>每日 08:00] --> B[從 Google Drive 同步數據]
-    B --> C[下載最新台股數據<br/>yfinance API]
-    C --> D[技術分析篩選<br/>MA20 斜率演算法]
-    D --> E[股票分組分類]
-    E --> F[生成 K線圖表]
-    F --> G[LINE 推播訊息+圖片]
-    G --> H[數據回傳 Google Drive]
+    A[GitHub Actions 觸發<br/>每日 08:00] --> B[Service Account 認證<br/>Google Drive API]
+    B --> C[從 Google Drive 下載<br/>stocks-autobot-data/data/taiex.sqlite]
+    C --> D[檢查本地資料庫]
+    D --> E[下載最新台股數據<br/>yfinance API]
+    E --> F[技術分析篩選<br/>MA20 斜率演算法]
+    F --> G[股票分組分類]
+    G --> H[生成 K線圖表]
+    H --> I[LINE 推播訊息+圖片]
+    I --> J[上傳更新後資料庫<br/>到 Google Drive]
 ```
 
 ## 🔧 設定指南
@@ -52,20 +54,21 @@ graph TD
 3. 取得 **Channel access token**（長效）
 4. 將機器人加為好友，取得 **User ID**
 
-### 2. Google Drive 設定（可選）
+### 2. Google Drive 設定（推薦）
 1. 建立 GCP 專案，啟用 **Google Drive API**
 2. 建立 **Service Account** 並下載 JSON 金鑰
 3. 建立 Google Drive 資料夾 `stocks-autobot-data`
 4. 將資料夾分享給 Service Account email（編輯者權限）
+5. 程式會自動在 `stocks-autobot-data` 下建立 `data` 子資料夾存放 `taiex.sqlite`
 
 ### 3. GitHub Secrets 設定
 在 Repository → Settings → Secrets and variables → Actions 新增：
 
-| Secret Name | 說明 |
-|-------------|------|
-| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token |
-| `LINE_USER_ID` | 接收推播的使用者 ID |
-| `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON 完整內容（可選） |
+| Secret Name | 說明 | 必需 |
+|-------------|------|------|
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token | ✅ |
+| `LINE_USER_ID` | 接收推播的使用者 ID | ✅ |
+| `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON 完整內容 | 🔶 推薦 |
 
 ### 4. 環境變數自訂（可選）
 在 `.github/workflows/daily.yml` 中可設定：
@@ -112,8 +115,9 @@ stocks-autobot/
 - **圖表生成**：matplotlib + 自製 K線圖函數
 - **圖床服務**：Telegraph、Catbox（無需API key）
 - **訊息推播**：LINE Messaging API
-- **雲端同步**：Google Drive + rclone
+- **雲端同步**：Google Drive API + Service Account
 - **自動化**：GitHub Actions
+- **認證方式**：Google Service Account（JSON Key）
 
 ## 📈 演算法說明
 
@@ -154,6 +158,13 @@ python main.py
 ```
 
 ## 📝 更新日誌
+
+### v2.1.0 (2024-12-29)
+- 🔐 整合 Google Drive Service Account API 直接存取
+- ⚡ 移除 rclone 依賴，改用原生 Google Drive API
+- 📁 自動建立 `stocks-autobot-data/data/` 資料夾結構
+- 🔄 智能資料同步：僅在資料更新時上傳到 Google Drive
+- 📋 簡化 GitHub Actions workflow 設定
 
 ### v2.0.0 (2024-12-29)
 - ✨ 新增雙組分類推薦系統
