@@ -1,0 +1,64 @@
+name: daily-picks
+
+on:
+  schedule:
+    - cron: "0 0 * * *"   # 每天 00:00 UTC = 台北 08:00
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python deps
+        run: |
+          python -m pip install -U pip
+          pip install -r requirements.txt
+
+      # Install rclone
+      - name: Install rclone
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+
+      # Configure rclone with Service Account JSON
+      - name: Configure rclone for Google Drive (service account)
+        env:
+          GDRIVE_SERVICE_ACCOUNT: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
+        run: |
+          mkdir -p ~/.config/rclone
+          cat > ~/.config/rclone/rclone.conf << 'EOF'
+          [gdrive]
+          type = drive
+          scope = drive
+          service_account_file = /home/runner/.config/rclone/sa.json
+          root_folder_id =
+          EOF
+          echo "$GDRIVE_SERVICE_ACCOUNT" > ~/.config/rclone/sa.json
+
+      # Sync down data
+      - name: Sync data from Google Drive -> ./data
+        run: |
+          mkdir -p data
+          rclone sync "gdrive:stocks-autobot-data" "./data" --create-empty-src-dirs || true
+
+      # Run script
+      - name: Run script
+        env:
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          # Optional overrides:
+          # TWSE_CODES: "2330,2317,2303,2454,2603,2615,2881,2882,2886,1101"
+          # TOP_K: "10"
+        run: python main.py
+
+      # Sync back data
+      - name: Sync data back to Google Drive
+        run: |
+          rclone sync "./data" "gdrive:stocks-autobot-data" --delete-excluded
