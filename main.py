@@ -664,7 +664,8 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
     if n_stocks == 0:
         return None
 
-    plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'SimHei', 'Arial']
+    # 設定字體優先級：Windows字體 -> Linux字體 -> 通用字體
+    plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'SimHei', 'WenQuanYi Zen Hei', 'WenQuanYi Micro Hei', 'DejaVu Sans', 'Arial']
     plt.rcParams['axes.unicode_minus'] = False
 
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
