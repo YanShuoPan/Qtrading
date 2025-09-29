@@ -164,48 +164,33 @@ def line_push_text(msg: str):
 
 
 def get_drive_service():
-    """建立 Google Drive API 服務（支援 OAuth 2.0 和 Service Account）"""
-    # 優先嘗試 OAuth 2.0 認證
-    if OAUTH_CREDENTIALS:
-        try:
-            print("🔐 嘗試 OAuth 2.0 認證...")
-            oauth_data = json.loads(OAUTH_CREDENTIALS)
+    """建立 Google Drive API 服務（使用 OAuth 2.0）"""
+    if not OAUTH_CREDENTIALS:
+        raise ValueError("未設定 OAUTH 環境變數，無法進行 Google Drive 認證")
 
-            creds = Credentials(
-                token=oauth_data.get('token'),
-                refresh_token=oauth_data.get('refresh_token'),
-                token_uri=oauth_data.get('token_uri'),
-                client_id=oauth_data.get('client_id'),
-                client_secret=oauth_data.get('client_secret'),
-                scopes=SCOPES
-            )
+    try:
+        print("🔐 Google Drive OAuth 2.0 認證...")
+        oauth_data = json.loads(OAUTH_CREDENTIALS)
 
-            if creds.expired and creds.refresh_token:
-                print("🔄 重新整理 OAuth 授權...")
-                creds.refresh(Request())
+        creds = Credentials(
+            token=oauth_data.get('token'),
+            refresh_token=oauth_data.get('refresh_token'),
+            token_uri=oauth_data.get('token_uri'),
+            client_id=oauth_data.get('client_id'),
+            client_secret=oauth_data.get('client_secret'),
+            scopes=SCOPES
+        )
 
-            service = build('drive', 'v3', credentials=creds)
-            print("✅ Google Drive OAuth 認證成功")
-            return service
-        except Exception as e:
-            print(f"⚠️ OAuth 認證失敗: {e}")
-            print("→ 嘗試 Service Account 認證...")
+        if creds.expired and creds.refresh_token:
+            print("🔄 重新整理 Google Drive 授權...")
+            creds.refresh(Request())
 
-    # 回退到 Service Account 認證
-    if GDRIVE_SERVICE_ACCOUNT:
-        try:
-            print("🔑 嘗試 Service Account 認證...")
-            sa_json = json.loads(GDRIVE_SERVICE_ACCOUNT)
-            credentials = service_account.Credentials.from_service_account_info(sa_json, scopes=SCOPES)
-            service = build('drive', 'v3', credentials=credentials)
-            print("✅ Google Drive Service Account 認證成功")
-            return service
-        except Exception as e:
-            print(f"❌ Service Account 認證失敗: {e}")
-
-    print("❌ 未設定任何 Google Drive 認證方式，跳過 Google Drive 功能")
-    print("   請設定 OAUTH 或 GDRIVE_SERVICE_ACCOUNT 環境變數")
-    return None
+        service = build('drive', 'v3', credentials=creds)
+        print("✅ Google Drive OAuth 認證成功")
+        return service
+    except Exception as e:
+        print(f"❌ OAuth 認證失敗: {e}")
+        raise
 
 
 def find_folder(service, folder_name, parent_id=None):
@@ -318,6 +303,50 @@ def upload_file_to_drive(service, local_path, file_name, folder_id):
     except Exception as e:
         print(f"❌ 上傳檔案失敗: {e}")
         return False
+
+
+def upload_to_google_drive(file_path: str, filename: str, folder_id: str, mimetype: str = 'image/png') -> str:
+    """上傳檔案到 Google Drive 並返回分享連結"""
+    try:
+        service = get_drive_service()
+
+        file_metadata = {
+            'name': filename,
+            'parents': [folder_id]
+        }
+
+        media = MediaFileUpload(file_path, mimetype=mimetype, resumable=True)
+        file = service.files().create(
+            body=file_metadata,
+            media_body=media,
+            fields='id, webViewLink'
+        ).execute()
+
+        service.permissions().create(
+            fileId=file.get('id'),
+            body={'type': 'anyone', 'role': 'reader'}
+        ).execute()
+
+        return file.get('webViewLink')
+    except Exception as e:
+        print(f"Google Drive 上傳失敗: {e}")
+        return None
+
+
+def upload_text_to_google_drive(text_content: str, filename: str, folder_id: str) -> str:
+    """將文字內容存為 txt 並上傳到 Google Drive"""
+    try:
+        temp_file = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.txt')
+        temp_file.write(text_content)
+        temp_file.close()
+
+        result = upload_to_google_drive(temp_file.name, filename, folder_id, mimetype='text/plain')
+
+        os.unlink(temp_file.name)
+        return result
+    except Exception as e:
+        print(f"上傳文字檔失敗: {e}")
+        return None
 
 
 def setup_google_drive_folders(service):
