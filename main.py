@@ -6,6 +6,7 @@ import tempfile
 import base64
 import json
 import io
+import logging
 
 import pandas as pd
 import numpy as np
@@ -23,6 +24,28 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaFileUpload, MediaIoBaseDownload
 
 load_dotenv()
+
+# Debug設定
+DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() == "true"
+
+# 設定日誌
+if DEBUG_MODE:
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format='%(asctime)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s',
+        handlers=[
+            logging.FileHandler('debug.log', encoding='utf-8'),
+            logging.StreamHandler()
+        ]
+    )
+    print(f"🐛 DEBUG模式已啟用，詳細日誌將保存到 debug.log")
+else:
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(message)s')
+
+logger = logging.getLogger(__name__)
+logger.info("=== 台股推薦機器人啟動 ===")
+logger.info(f"DEBUG_MODE: {DEBUG_MODE}")
+
 LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
 LINE_USER_ID = os.environ["LINE_USER_ID"]
 
@@ -659,14 +682,21 @@ def plot_candlestick(ax, stock_data):
 
 def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
     """繪製最多 6 支股票的 K 棒圖（2x3 子圖）"""
+    logger.debug(f'開始繪製圖表，股票代碼: {codes}')
     codes = codes[:6]
     n_stocks = len(codes)
     if n_stocks == 0:
+        logger.warning("沒有股票代碼需要繪製")
         return None
 
     # 設定字體優先級：Windows字體 -> Linux字體 -> 通用字體
-    plt.rcParams['font.sans-serif'] = ['Microsoft JhengHei', 'SimHei', 'WenQuanYi Zen Hei', 'WenQuanYi Micro Hei', 'DejaVu Sans', 'Arial']
+    fonts = ['Microsoft JhengHei', 'SimHei', 'WenQuanYi Zen Hei', 'WenQuanYi Micro Hei', 'DejaVu Sans', 'Arial']
+    plt.rcParams['font.sans-serif'] = fonts
     plt.rcParams['axes.unicode_minus'] = False
+
+    if DEBUG_MODE:
+        logger.debug(f"matplotlib 後端: {matplotlib.get_backend()}")
+        logger.debug(f"設定字體順序: {fonts}")
 
     fig, axes = plt.subplots(2, 3, figsize=(18, 12))
     axes = axes.flatten()
