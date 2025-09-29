@@ -54,8 +54,35 @@ DATA_DIR = os.environ.get("DATA_DIR", "data")
 DB_PATH = os.path.join(DATA_DIR, "taiex.sqlite")
 
 # Google Drive 設定 - 支援直接指定資料夾 ID 或使用預設名稱搜尋
-GDRIVE_FOLDER_ID = os.environ.get("GDRIVE_FOLDER_ID")
-GOOGLE_DRIVE_FOLDER_ID = os.environ.get("GOOGLE_DRIVE_FOLDER_ID", GDRIVE_FOLDER_ID)  # OAuth 版本相容
+def extract_folder_id_from_url(folder_input):
+    """從 Google Drive URL 或直接 ID 中提取 folder ID"""
+    if not folder_input:
+        return None
+
+    # 如果是完整的 Google Drive URL，提取 folder ID
+    if "drive.google.com" in folder_input:
+        import re
+        # 匹配各種 Google Drive URL 格式
+        patterns = [
+            r"/folders/([a-zA-Z0-9_-]+)",  # /folders/ID
+            r"[?&]id=([a-zA-Z0-9_-]+)",   # ?id=ID 或 &id=ID
+            r"[?&]folder_id=([a-zA-Z0-9_-]+)"  # folder_id=ID
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, folder_input)
+            if match:
+                extracted_id = match.group(1)
+                logger.info(f"🔗 從 URL 提取 folder ID: {extracted_id}")
+                return extracted_id
+        logger.warning(f"⚠️ 無法從 URL 提取 folder ID: {folder_input}")
+        return None
+
+    # 如果已經是純 ID 格式，直接回傳
+    logger.info(f"📁 使用提供的 folder ID: {folder_input}")
+    return folder_input
+
+GDRIVE_FOLDER_ID = extract_folder_id_from_url(os.environ.get("GDRIVE_FOLDER_ID"))
+GOOGLE_DRIVE_FOLDER_ID = extract_folder_id_from_url(os.environ.get("GOOGLE_DRIVE_FOLDER_ID")) or GDRIVE_FOLDER_ID  # OAuth 版本相容
 GDRIVE_FOLDER_NAME = "stocks-autobot-data"  # 預設資料夾名稱（備用）
 GDRIVE_DATA_FOLDER = "data"  # 在主資料夾下的子資料夾
 
@@ -628,25 +655,62 @@ def seed_subscribers_from_env():
     - EXTRA_USER_IDS=Uxxx1,Uxxx2,...（其他人）
     """
     ids = []
-    if os.environ.get("LINE_USER_ID"):
-        ids.append(os.environ["LINE_USER_ID"].strip())
+
+    # 檢查 LINE_USER_ID
+    line_user_id = os.environ.get("LINE_USER_ID", "").strip()
+    if line_user_id:
+        ids.append(line_user_id)
+        logger.debug(f"💡 從 LINE_USER_ID 讀取: {line_user_id}")
+    else:
+        logger.warning("⚠️ LINE_USER_ID 環境變數為空")
+
+    # 檢查 EXTRA_USER_IDS
     extra = os.environ.get("EXTRA_USER_IDS", "").strip()
     if extra:
-        ids.extend([x.strip() for x in extra.split(",") if x.strip()])
+        extra_ids = [x.strip() for x in extra.split(",") if x.strip()]
+        ids.extend(extra_ids)
+        logger.debug(f"💡 從 EXTRA_USER_IDS 讀取 {len(extra_ids)} 個用戶: {extra_ids}")
+    else:
+        logger.debug("💡 EXTRA_USER_IDS 環境變數為空或未設定")
+
     if not ids:
+        logger.warning("⚠️ 無任何用戶 ID 可從環境變數載入")
         return
+
+    logger.info(f"📥 準備從環境變數載入 {len(ids)} 個訂閱者")
+
     with sqlite3.connect(DB_PATH) as conn:
+        inserted_count = 0
         for uid in set(ids):
-            conn.execute("""
+            cursor = conn.execute("""
                 INSERT OR IGNORE INTO subscribers(user_id, display_name, followed_at, active)
                 VALUES(?, NULL, datetime('now'), 1)
             """, (uid,))
+            if cursor.rowcount > 0:
+                inserted_count += 1
+                logger.debug(f"✅ 新增訂閱者: {uid}")
+            else:
+                logger.debug(f"ℹ️  訂閱者已存在: {uid}")
         conn.commit()
+
+    logger.info(f"📊 環境變數訂閱者載入完成：新增 {inserted_count} 個，共處理 {len(set(ids))} 個")
 
 def list_active_subscribers():
     with sqlite3.connect(DB_PATH) as conn:
         rows = conn.execute("SELECT user_id FROM subscribers WHERE active = 1").fetchall()
-    return [r[0] for r in rows]
+        total_rows = conn.execute("SELECT COUNT(*) FROM subscribers").fetchone()[0]
+        inactive_rows = conn.execute("SELECT COUNT(*) FROM subscribers WHERE active = 0").fetchone()[0]
+
+    active_users = [r[0] for r in rows]
+
+    if DEBUG_MODE:
+        logger.debug(f"📊 訂閱者統計 - 總數: {total_rows}, 活躍: {len(active_users)}, 非活躍: {inactive_rows}")
+        if active_users:
+            logger.debug(f"📋 活躍訂閱者清單: {active_users}")
+        else:
+            logger.debug("⚠️ 無活躍訂閱者")
+
+    return active_users
 
 
 def get_existing_data_range() -> dict:
