@@ -261,21 +261,26 @@ def create_folder(service, folder_name, parent_id=None):
 def download_file_from_drive(service, file_name, folder_id, local_path):
     """從 Google Drive 下載檔案"""
     if not service:
+        logger.warning("Google Drive 服務不可用")
         return False
 
     try:
         # 尋找檔案
+        logger.debug(f"搜尋檔案: {file_name} 在資料夾: {folder_id}")
         query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
-        results = service.files().list(q=query, fields='files(id, name)').execute()
+        results = service.files().list(q=query, fields='files(id, name, size, modifiedTime)').execute()
         items = results.get('files', [])
 
         if not items:
-            print(f"📁 Google Drive 中找不到檔案: {file_name}")
+            logger.info(f"📁 Google Drive 中找不到檔案: {file_name}")
             return False
 
         file_id = items[0]['id']
+        file_size = int(items[0].get('size', 0)) / 1024 / 1024  # MB
+        logger.debug(f"找到檔案 - ID: {file_id}, 大小: {file_size:.2f} MB")
 
         # 下載檔案
+        logger.info(f"開始下載: {file_name}")
         request = service.files().get_media(fileId=file_id)
         file_buffer = io.BytesIO()
         downloader = MediaIoBaseDownload(file_buffer, request)
@@ -283,27 +288,38 @@ def download_file_from_drive(service, file_name, folder_id, local_path):
         done = False
         while done is False:
             status, done = downloader.next_chunk()
+            if DEBUG_MODE and status:
+                logger.debug(f"下載進度: {int(status.progress() * 100)}%")
 
         # 寫入本地檔案
         os.makedirs(os.path.dirname(local_path), exist_ok=True)
         with open(local_path, 'wb') as f:
             f.write(file_buffer.getvalue())
 
-        print(f"✅ 已從 Google Drive 下載: {file_name}")
+        logger.info(f"✅ 已從 Google Drive 下載: {file_name} -> {local_path}")
+        logger.info(f"📥 下載完成 - 檔案大小: {file_size:.2f} MB")
         return True
 
     except Exception as e:
-        print(f"❌ 下載檔案失敗: {e}")
+        logger.error(f"❌ 下載檔案失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return False
 
 
 def upload_file_to_drive(service, local_path, file_name, folder_id):
     """上傳檔案到 Google Drive"""
     if not service:
+        logger.warning("Google Drive 服務不可用")
         return False
 
     try:
+        # 取得本地檔案大小
+        file_size = os.path.getsize(local_path) / 1024 / 1024  # MB
+        logger.debug(f"準備上傳檔案: {file_name}, 大小: {file_size:.2f} MB")
+
         # 檢查檔案是否已存在
+        logger.debug(f"檢查檔案是否已存在: {file_name}")
         query = f"name='{file_name}' and '{folder_id}' in parents and trashed=false"
         results = service.files().list(q=query, fields='files(id, name)').execute()
         items = results.get('files', [])
@@ -314,24 +330,38 @@ def upload_file_to_drive(service, local_path, file_name, folder_id):
         if items:
             # 更新現有檔案
             file_id = items[0]['id']
+            logger.info(f"更新現有檔案: {file_name} (ID: {file_id})")
             file = service.files().update(fileId=file_id, media_body=media).execute()
-            print(f"✅ 已更新 Google Drive 檔案: {file_name}")
+            logger.info(f"✅ 已更新 Google Drive 檔案: {file_name}")
+            logger.info(f"📤 更新完成 - 檔案大小: {file_size:.2f} MB")
         else:
             # 建立新檔案
+            logger.info(f"建立新檔案: {file_name}")
             file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
-            print(f"✅ 已上傳新檔案到 Google Drive: {file_name}")
+            logger.info(f"✅ 已上傳新檔案到 Google Drive: {file_name}")
+            logger.info(f"📤 上傳完成 - 檔案ID: {file.get('id')}, 大小: {file_size:.2f} MB")
 
         return True
 
     except Exception as e:
-        print(f"❌ 上傳檔案失敗: {e}")
+        logger.error(f"❌ 上傳檔案失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"檔案路徑: {local_path}")
+            logger.debug(f"目標資料夾: {folder_id}")
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return False
 
 
 def upload_to_google_drive(file_path: str, filename: str, folder_id: str, mimetype: str = 'image/png') -> str:
     """上傳檔案到 Google Drive 並返回分享連結"""
+    logger.info(f"📤 上傳檔案到 Google Drive: {filename}")
+
     try:
         service = get_drive_service()
+
+        # 取得檔案大小
+        file_size = os.path.getsize(file_path) / 1024 / 1024  # MB
+        logger.debug(f"檔案大小: {file_size:.2f} MB, 類型: {mimetype}")
 
         file_metadata = {
             'name': filename,
@@ -345,30 +375,62 @@ def upload_to_google_drive(file_path: str, filename: str, folder_id: str, mimety
             fields='id, webViewLink'
         ).execute()
 
+        file_id = file.get('id')
+        logger.debug(f"檔案已建立, ID: {file_id}")
+
+        # 設定分享權限
+        logger.debug("設定檔案為公開分享")
         service.permissions().create(
-            fileId=file.get('id'),
+            fileId=file_id,
             body={'type': 'anyone', 'role': 'reader'}
         ).execute()
 
-        return file.get('webViewLink')
+        web_link = file.get('webViewLink')
+        logger.info(f"✅ 檔案上傳成功: {filename}")
+        logger.info(f"🔗 分享連結: {web_link}")
+
+        return web_link
     except Exception as e:
-        print(f"Google Drive 上傳失敗: {e}")
+        logger.error(f"❌ Google Drive 上傳失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"檔案路徑: {file_path}")
+            logger.debug(f"目標資料夾: {folder_id}")
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return None
 
 
 def upload_text_to_google_drive(text_content: str, filename: str, folder_id: str) -> str:
     """將文字內容存為 txt 並上傳到 Google Drive"""
+    logger.info(f"📄 準備上傳文字檔案: {filename}")
+
     try:
+        # 建立暫存檔案
         temp_file = tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', delete=False, suffix='.txt')
         temp_file.write(text_content)
         temp_file.close()
 
+        logger.debug(f"暫存檔案建立: {temp_file.name}")
+        logger.debug(f"文字內容大小: {len(text_content)} 字元")
+
+        # 上傳到 Google Drive
         result = upload_to_google_drive(temp_file.name, filename, folder_id, mimetype='text/plain')
 
+        # 刪除暫存檔案
         os.unlink(temp_file.name)
+        logger.debug("暫存檔案已刪除")
+
+        if result:
+            logger.info(f"✅ 文字檔案上傳成功: {filename}")
+        else:
+            logger.error(f"❌ 文字檔案上傳失敗: {filename}")
+
         return result
     except Exception as e:
-        print(f"上傳文字檔失敗: {e}")
+        logger.error(f"❌ 上傳文字檔失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"檔案名稱: {filename}")
+            logger.debug(f"文字長度: {len(text_content)}")
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return None
 
 
@@ -411,45 +473,84 @@ def setup_google_drive_folders(service):
 
 def sync_database_from_drive(service):
     """從 Google Drive 同步資料庫到本地"""
+    logger.info("📥 開始從 Google Drive 同步資料庫")
+
     if not service:
-        print("⚠️  跳過 Google Drive 下載（Service 不可用）")
+        logger.warning("⚠️  跳過 Google Drive 下載（Service 不可用）")
         return False
 
     try:
+        logger.debug("設定 Google Drive 資料夾結構")
         data_folder_id = setup_google_drive_folders(service)
         if not data_folder_id:
+            logger.error("無法取得 Google Drive data 資料夾 ID")
             return False
 
+        logger.debug(f"Data 資料夾 ID: {data_folder_id}")
+
         # 下載 taiex.sqlite
+        logger.info("下載 taiex.sqlite 檔案")
         success = download_file_from_drive(service, "taiex.sqlite", data_folder_id, DB_PATH)
+
+        if success:
+            logger.info("✅ 資料庫從 Google Drive 同步成功")
+            if DEBUG_MODE:
+                import os
+                file_size = os.path.getsize(DB_PATH) / 1024 / 1024  # MB
+                logger.debug(f"資料庫檔案大小: {file_size:.2f} MB")
+        else:
+            logger.warning("⚠️  資料庫同步失敗或檔案不存在")
+
         return success
 
     except Exception as e:
-        print(f"❌ 從 Google Drive 同步資料庫失敗: {e}")
+        logger.error(f"❌ 從 Google Drive 同步資料庫失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return False
 
 
 def sync_database_to_drive(service):
     """上傳本地資料庫到 Google Drive"""
+    logger.info("📤 開始上傳資料庫到 Google Drive")
+
     if not service:
-        print("⚠️  跳過 Google Drive 上傳（Service 不可用）")
+        logger.warning("⚠️  跳過 Google Drive 上傳（Service 不可用）")
         return False
 
     try:
         if not os.path.exists(DB_PATH):
-            print(f"⚠️  本地資料庫不存在: {DB_PATH}")
+            logger.warning(f"⚠️  本地資料庫不存在: {DB_PATH}")
             return False
 
+        # 取得檔案大小
+        file_size = os.path.getsize(DB_PATH) / 1024 / 1024  # MB
+        logger.info(f"資料庫檔案大小: {file_size:.2f} MB")
+
+        logger.debug("設定 Google Drive 資料夾結構")
         data_folder_id = setup_google_drive_folders(service)
         if not data_folder_id:
+            logger.error("無法取得 Google Drive data 資料夾 ID")
             return False
 
+        logger.debug(f"Data 資料夾 ID: {data_folder_id}")
+
         # 上傳 taiex.sqlite
+        logger.info("開始上傳 taiex.sqlite 到 Google Drive")
         success = upload_file_to_drive(service, DB_PATH, "taiex.sqlite", data_folder_id)
+
+        if success:
+            logger.info("✅ 資料庫成功上傳到 Google Drive")
+            logger.info(f"📊 上傳完成 - 檔案: taiex.sqlite, 大小: {file_size:.2f} MB")
+        else:
+            logger.error("❌ 資料庫上傳失敗")
+
         return success
 
     except Exception as e:
-        print(f"❌ 上傳資料庫到 Google Drive 失敗: {e}")
+        logger.error(f"❌ 上傳資料庫到 Google Drive 失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return False
 
 
@@ -813,141 +914,162 @@ def upload_image(image_path: str) -> str:
 
 
 def main():
-    print("=== 台股推薦機器人自動執行 ===\n")
+    logger.info("=" * 50)
+    logger.info("🚀 台股推薦機器人自動執行")
+    logger.info("=" * 50)
+    start_time = datetime.now()
 
-    print("步驟 1: 設定 Google Drive 連線")
-    drive_service = get_drive_service()
+    try:
+        logger.info("\n📌 步驟 1: 設定 Google Drive 連線")
+        drive_service = get_drive_service()
 
-    print("\n步驟 2: 從 Google Drive 同步資料庫")
-    sync_database_from_drive(drive_service)
+        logger.info("\n📌 步驟 2: 從 Google Drive 同步資料庫")
+        sync_database_from_drive(drive_service)
 
-    print("\n步驟 3: 建立資料庫")
-    ensure_db()
+        logger.info("\n📌 步驟 3: 建立資料庫")
+        ensure_db()
+        logger.debug(f"資料庫路徑: {DB_PATH}")
 
-    print("\n步驟 4: 檢查並下載需要的數據")
-    df_new = fetch_prices_yf(CODES, lookback_days=120)
-    data_updated = False
-    if not df_new.empty:
-        upsert_prices(df_new)
-        data_updated = True
-        print("✅ 資料庫已更新")
-    else:
-        print("無需更新資料庫")
+        logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
+        df_new = fetch_prices_yf(CODES, lookback_days=120)
+        data_updated = False
+        if not df_new.empty:
+            upsert_prices(df_new)
+            data_updated = True
+            logger.info("✅ 資料庫已更新")
+        else:
+            logger.info("ℹ️  無需更新資料庫")
 
-    print("\n步驟 5: 載入數據並篩選股票")
-    hist = load_recent_prices(days=120)
-    picks = pick_stocks(hist, top_k=PICKS_TOP_K)
+        logger.info("\n📌 步驟 5: 載入數據並篩選股票")
+        hist = load_recent_prices(days=120)
+        picks = pick_stocks(hist, top_k=PICKS_TOP_K)
+        logger.debug(f"載入 {len(hist)} 筆歷史資料")
+        logger.debug(f"篩選出 {len(picks)} 支符合條件的股票")
 
-    print("\n步驟 6: 將股票分組")
-    today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
+        logger.info("\n📌 步驟 6: 將股票分組")
+        today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
 
-    if picks.empty:
-        group1 = pd.DataFrame()
-        group2 = pd.DataFrame()
-    else:
-        group1 = picks[(picks["ma20_slope"] >= 0.5) & (picks["ma20_slope"] < 1)]
-        group2 = picks[picks["ma20_slope"] < 0.5]
+        if picks.empty:
+            group1 = pd.DataFrame()
+            group2 = pd.DataFrame()
+        else:
+            group1 = picks[(picks["ma20_slope"] >= 0.5) & (picks["ma20_slope"] < 1)]
+            group2 = picks[picks["ma20_slope"] < 0.5]
 
-    print(f"好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
-    print(f"有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
+        logger.info(f"📈 好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
+        logger.info(f"📊 有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
 
-    print("\n步驟 7: 發送 LINE 訊息")
+        logger.info("\n📌 步驟 7: 發送 LINE 訊息")
 
-    if group1.empty and group2.empty:
-        msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
-        print(f"\n將發送的訊息:\n{msg}\n")
-        try:
-            line_push_text(msg)
-            print("✅ LINE 訊息發送成功！")
-        except Exception as e:
-            print(f"❌ LINE 訊息發送失敗: {e}")
-    else:
-        if not group1.empty:
-            print("\n處理「好像蠻強的」組...")
-            lines = [f"💪 好像蠻強的 ({today_tpe})"]
-            lines.append("以下股票可以參考：\n")
-            for i, r in group1.iterrows():
-                stock_name = STOCK_NAMES.get(r.code, r.code)
-                lines.append(f"{r.code} {stock_name}")
-            msg1 = "\n".join(lines)
-            print(f"訊息:\n{msg1}\n")
-
+        if group1.empty and group2.empty:
+            msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
+            logger.info(f"將發送的訊息:\n{msg}")
             try:
-                line_push_text(msg1)
-                print("✅ 好像蠻強的組訊息發送成功")
+                line_push_text(msg)
+                logger.info("✅ LINE 訊息發送成功！")
             except Exception as e:
-                print(f"❌ 好像蠻強的組訊息發送失敗: {e}")
+                logger.error(f"❌ LINE 訊息發送失敗: {e}")
+        else:
+            if not group1.empty:
+                logger.info("\n處理「好像蠻強的」組...")
+                lines = [f"💪 好像蠻強的 ({today_tpe})"]
+                lines.append("以下股票可以參考：\n")
+                for i, r in group1.iterrows():
+                    stock_name = STOCK_NAMES.get(r.code, r.code)
+                    lines.append(f"{r.code} {stock_name}")
+                msg1 = "\n".join(lines)
+                logger.info(f"訊息:\n{msg1}")
 
-            print("\n生成並發送「好像蠻強的」組圖片")
-            group1_codes = group1["code"].tolist()
-            for batch_num in range(0, len(group1_codes), 6):
-                batch_codes = group1_codes[batch_num:batch_num + 6]
-                batch_display = ", ".join(batch_codes)
-                print(f"正在處理好像蠻強的第 {batch_num//6 + 1} 組: {batch_display}")
+                try:
+                    line_push_text(msg1)
+                    logger.info("✅ 好像蠻強的組訊息發送成功")
+                except Exception as e:
+                    logger.error(f"❌ 好像蠻強的組訊息發送失敗: {e}")
 
-                chart_path = plot_stock_charts(batch_codes, hist)
-                if chart_path:
-                    img_url = upload_image(chart_path)
-                    if img_url:
-                        try:
-                            push_image(img_url, img_url)
-                            print(f"✅ 圖表已發送到 LINE")
-                        except Exception as e:
-                            print(f"❌ LINE 發送失敗: {e}")
-                        os.unlink(chart_path)
+                logger.info("\n生成並發送「好像蠻強的」組圖片")
+                group1_codes = group1["code"].tolist()
+                for batch_num in range(0, len(group1_codes), 6):
+                    batch_codes = group1_codes[batch_num:batch_num + 6]
+                    batch_display = ", ".join(batch_codes)
+                    logger.info(f"正在處理好像蠻強的第 {batch_num//6 + 1} 組: {batch_display}")
+
+                    chart_path = plot_stock_charts(batch_codes, hist)
+                    if chart_path:
+                        img_url = upload_image(chart_path)
+                        if img_url:
+                            try:
+                                push_image(img_url, img_url)
+                                logger.info(f"✅ 圖表已發送到 LINE")
+                            except Exception as e:
+                                logger.error(f"❌ LINE 發送失敗: {e}")
+                            os.unlink(chart_path)
+                        else:
+                            logger.warning(f"❌ 圖床上傳失敗")
                     else:
-                        print(f"❌ 圖床上傳失敗")
-                else:
-                    print(f"❌ 圖表生成失敗")
+                        logger.warning(f"❌ 圖表生成失敗")
 
-        if not group2.empty:
-            print("\n處理「有機會噴 觀察一下」組...")
-            lines = [f"👀 有機會噴 觀察一下 ({today_tpe})"]
-            lines.append("以下股票可以參考：\n")
-            for i, r in group2.iterrows():
-                stock_name = STOCK_NAMES.get(r.code, r.code)
-                lines.append(f"{r.code} {stock_name}")
-            msg2 = "\n".join(lines)
-            print(f"訊息:\n{msg2}\n")
+            if not group2.empty:
+                logger.info("\n處理「有機會噴 觀察一下」組...")
+                lines = [f"👀 有機會噴 觀察一下 ({today_tpe})"]
+                lines.append("以下股票可以參考：\n")
+                for i, r in group2.iterrows():
+                    stock_name = STOCK_NAMES.get(r.code, r.code)
+                    lines.append(f"{r.code} {stock_name}")
+                msg2 = "\n".join(lines)
+                logger.info(f"訊息:\n{msg2}")
 
-            try:
-                line_push_text(msg2)
-                print("✅ 有機會噴 觀察一下組訊息發送成功")
-            except Exception as e:
-                print(f"❌ 有機會噴 觀察一下組訊息發送失敗: {e}")
+                try:
+                    line_push_text(msg2)
+                    logger.info("✅ 有機會噴 觀察一下組訊息發送成功")
+                except Exception as e:
+                    logger.error(f"❌ 有機會噴 觀察一下組訊息發送失敗: {e}")
 
-            print("\n生成並發送「有機會噴 觀察一下」組圖片")
-            group2_codes = group2["code"].tolist()
-            for batch_num in range(0, len(group2_codes), 6):
-                batch_codes = group2_codes[batch_num:batch_num + 6]
-                batch_display = ", ".join(batch_codes)
-                print(f"正在處理有機會噴 觀察一下第 {batch_num//6 + 1} 組: {batch_display}")
+                logger.info("\n生成並發送「有機會噴 觀察一下」組圖片")
+                group2_codes = group2["code"].tolist()
+                for batch_num in range(0, len(group2_codes), 6):
+                    batch_codes = group2_codes[batch_num:batch_num + 6]
+                    batch_display = ", ".join(batch_codes)
+                    logger.info(f"正在處理有機會噴 觀察一下第 {batch_num//6 + 1} 組: {batch_display}")
 
-                chart_path = plot_stock_charts(batch_codes, hist)
-                if chart_path:
-                    img_url = upload_image(chart_path)
-                    if img_url:
-                        try:
-                            push_image(img_url, img_url)
-                            print(f"✅ 圖表已發送到 LINE")
-                        except Exception as e:
-                            print(f"❌ LINE 發送失敗: {e}")
-                        os.unlink(chart_path)
+                    chart_path = plot_stock_charts(batch_codes, hist)
+                    if chart_path:
+                        img_url = upload_image(chart_path)
+                        if img_url:
+                            try:
+                                push_image(img_url, img_url)
+                                logger.info(f"✅ 圖表已發送到 LINE")
+                            except Exception as e:
+                                logger.error(f"❌ LINE 發送失敗: {e}")
+                            os.unlink(chart_path)
+                        else:
+                            logger.warning(f"❌ 圖床上傳失敗")
                     else:
-                        print(f"❌ 圖床上傳失敗")
-                else:
-                    print(f"❌ 圖表生成失敗")
+                        logger.warning(f"❌ 圖表生成失敗")
 
-    # 步驟 8: 同步資料庫到 Google Drive（如果有更新資料）
-    if data_updated and drive_service:
-        print("\n步驟 8: 同步資料庫到 Google Drive")
-        sync_database_to_drive(drive_service)
-    elif drive_service:
-        print("\n步驟 8: 資料無更新，跳過 Google Drive 同步")
-    else:
-        print("\n步驟 8: Google Drive 服務不可用，跳過同步")
+        # 步驟 8: 同步資料庫到 Google Drive（如果有更新資料）
+        if data_updated and drive_service:
+            logger.info("\n📌 步驟 8: 同步資料庫到 Google Drive")
+            sync_database_to_drive(drive_service)
+        elif drive_service:
+            logger.info("\n步驟 8: 資料無更新，跳過 Google Drive 同步")
+        else:
+            logger.info("\n步驟 8: Google Drive 服務不可用，跳過同步")
 
-    print("\n🎉 任務完成！")
+        # 任務完成
+        end_time = datetime.now()
+        execution_time = end_time - start_time
+        logger.info("\n" + "=" * 50)
+        logger.info(f"🎉 任務完成！執行時間: {execution_time}")
+        logger.info("=" * 50)
+
+    except Exception as e:
+        logger.error(f"❌ 程式執行發生錯誤: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
+        raise
+    finally:
+        if DEBUG_MODE:
+            logger.debug("程式執行結束")
 
 
 if __name__ == "__main__":
