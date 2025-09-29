@@ -6,6 +6,8 @@
 
 每天台北時間 **08:00** 自動執行，提供台股技術分析推薦，透過 LINE 推播文字訊息和 K 線圖表。
 
+⭐ **最新特色**：智能週末檢測，股市休市時自動跳過訊息推送，支援 OAuth 2.0 認證與詳細除錯日誌。
+
 ## 🎯 核心功能
 
 ### 📊 智能選股系統
@@ -23,27 +25,37 @@
 ### 📈 視覺化圖表
 - **K線圖生成**：2×3 網格佈局，每組最多6支股票
 - **技術指標疊加**：MA20移動平均線
-- **90日歷史數據**：提供充足的技術分析基礎
+- **90日歷史資料**：保留3個月完整技術分析基礎
+- **跨平台中文字體**：支援 Windows/Linux 環境中文顯示
 - **圖片自動上傳**：Telegraph/Catbox 多重備援，無需API key
 
 ### 📱 LINE 整合
 - **文字推薦訊息**：包含股票代碼和中文名稱
 - **圖表推送**：高清K線圖直接傳送到LINE
+- **智能週末檢測**：股市休市日（週六/日）自動跳過訊息
 - **無推薦時通知**：市場條件不符時的友善提醒
+
+### 🐛 除錯與監控
+- **DEBUG_MODE**：詳細執行日誌與錯誤追蹤
+- **Google Drive 狀態監控**：上傳下載進度詳細記錄
+- **GitHub Actions 文件保存**：自動收集除錯日誌與圖片
 
 ## 🚀 自動化流程
 
 ```mermaid
 graph TD
-    A[GitHub Actions 觸發<br/>每日 08:00] --> B[Service Account 認證<br/>Google Drive API]
+    A[GitHub Actions 觸發<br/>每日 08:00] --> B[OAuth 2.0 認證<br/>Google Drive API]
     B --> C[從 Google Drive 下載<br/>stocks-autobot-data/data/taiex.sqlite]
-    C --> D[檢查本地資料庫]
-    D --> E[下載最新台股數據<br/>yfinance API]
+    C --> D[檢查本地資料庫<br/>保留90天歷史資料]
+    D --> E[下載最新台股數據<br/>yfinance API - 300支股票]
     E --> F[技術分析篩選<br/>MA20 斜率演算法]
-    F --> G[股票分組分類]
-    G --> H[生成 K線圖表]
-    H --> I[LINE 推播訊息+圖片]
-    I --> J[上傳更新後資料庫<br/>到 Google Drive]
+    F --> G[週末檢測<br/>股市休市時跳過]
+    G --> H{是否為週末?}
+    H -->|週末| I[記錄休市日誌<br/>跳過 LINE 推播]
+    H -->|平日| J[股票分組分類]
+    J --> K[生成 K線圖表<br/>中文字體支援]
+    K --> L[LINE 推播訊息+圖片]
+    L --> M[上傳更新後資料庫<br/>到 Google Drive]
 ```
 
 ## 🔧 設定指南
@@ -54,43 +66,52 @@ graph TD
 3. 取得 **Channel access token**（長效）
 4. 將機器人加為好友，取得 **User ID**
 
-### 2. Google Drive 設定（推薦）
+### 2. Google Drive OAuth 2.0 設定（推薦）
 1. 建立 GCP 專案，啟用 **Google Drive API**
-2. 建立 **Service Account** 並下載 JSON 金鑰
+2. 建立 **OAuth 2.0 憑證** 並下載 JSON 檔案
 3. 建立 Google Drive 資料夾（例如：`stocks-autobot-data`）
-4. 將資料夾分享給 Service Account email（編輯者權限）
-5. **取得資料夾 ID**：
+4. **取得資料夾 ID**：
    - 開啟 Google Drive 資料夾
    - 從網址列複製資料夾 ID（如：`1Oyn-Zuiswh-mUL7G4dKwjLoZfwUk9e_f`）
-   - 設定為 GitHub Secret: `GDRIVE_FOLDER_ID`
-6. 程式會自動在指定資料夾下建立 `data` 子資料夾存放 `taiex.sqlite`
+   - 設定為 GitHub Secret: `GOOGLE_DRIVE_FOLDER_ID`
+5. 程式會自動在指定資料夾下建立 `data` 子資料夾存放 `taiex.sqlite`
 
-💡 **小提示**：如果不設定 `GDRIVE_FOLDER_ID`，程式會自動搜尋名為 `stocks-autobot-data` 的資料夾
+### 3. Service Account 備援設定（可選）
+如果 OAuth 2.0 失效，可設定 Service Account 作為備援：
+1. 建立 **Service Account** 並下載 JSON 金鑰
+2. 將資料夾分享給 Service Account email（編輯者權限）
+3. 設定為 GitHub Secret: `GDRIVE_SERVICE_ACCOUNT`
 
-### 3. GitHub Secrets 設定
+💡 **認證優先順序**：OAuth 2.0 → Service Account → 跳過雲端同步
+
+### 4. GitHub Secrets 設定
 在 Repository → Settings → Secrets and variables → Actions 新增：
 
-| Secret Name | 說明 | 必需 |
-|-------------|------|------|
-| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token | ✅ |
-| `LINE_USER_ID` | 接收推播的使用者 ID | ✅ |
-| `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON 完整內容 | 🔶 推薦 |
-| `GDRIVE_FOLDER_ID` | Google Drive 資料夾 ID（可直接指定） | 🔷 可選 |
+| Secret/Variable Name | 說明 | 類型 | 必需 |
+|---------------------|------|------|------|
+| `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token | Secret | ✅ |
+| `LINE_USER_ID` | 接收推播的使用者 ID | Secret | ✅ |
+| `OAUTH` | OAuth 2.0 認證 JSON 完整內容 | Secret | 🔶 推薦 |
+| `GOOGLE_DRIVE_FOLDER_ID` | Google Drive 資料夾 ID | Secret | 🔶 推薦 |
+| `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON（備援認證） | Secret | 🔷 可選 |
+| `GDRIVE_FOLDER_ID` | 舊版資料夾 ID（相容性） | Secret | 🔷 可選 |
+| `DEBUG_MODE` | 啟用詳細除錯日誌 (`true`/`false`) | Variable | 🔷 可選 |
 
-### 4. 環境變數自訂（可選）
+### 5. 環境變數自訂（可選）
 在 `.github/workflows/daily.yml` 中可設定：
-- `TWSE_CODES`：自訂股票代碼清單（預設100支台股）
-- `TOP_K`：選股數量上限（預設100）
+- `TWSE_CODES`：自訂股票代碼清單（預設300支台股）
+- `TOP_K`：選股數量上限（預設300）
+- `DEBUG_MODE`：除錯模式，收集詳細日誌和錯誤資訊
 
 ## 📊 支援股票清單
 
-目前支援 **100支台股** 包括：
+目前支援 **300支台股** 包括：
 - **電子股**：台積電(2330)、鴻海(2317)、聯發科(2454)、廣達(2382)...
 - **金融股**：富邦金(2881)、國泰金(2882)、兆豐金(2886)、中信金(2891)...
 - **傳產股**：台塑(1301)、中鋼(2002)、台化(1326)、統一(1216)...
 - **航運股**：長榮(2603)、陽明(2609)、萬海(2615)...
 
-完整清單請參考 `main.py` 中的 `STOCK_NAMES` 字典。
+完整清單請參考 `main.py` 中的 `STOCK_NAMES` 字典，涵蓋台股市值前300大公司。
 
 ## 🏃‍♂️ 快速開始
 
@@ -105,7 +126,7 @@ graph TD
 ```
 stocks-autobot/
 ├── main.py                    # 主要執行程式
-├── test_line.py               # 本地測試版本（含 Google Drive OAuth）
+├── test_local_oauth.py        # OAuth 2.0 本地測試版本
 ├── requirements.txt           # Python 套件依賴
 ├── data/                      # 資料庫檔案（與 Google Drive 同步）
 │   └── taiex.sqlite          # 股價歷史資料
@@ -124,7 +145,7 @@ stocks-autobot/
 - **訊息推播**：LINE Messaging API
 - **雲端同步**：Google Drive API + Service Account
 - **自動化**：GitHub Actions
-- **認證方式**：Google Service Account（JSON Key）
+- **認證方式**：OAuth 2.0 優先，Service Account 備援
 
 ## 📈 演算法說明
 
@@ -157,14 +178,23 @@ pip install -r requirements.txt
 cp .env.example .env
 # 編輯 .env 檔案填入必要資訊
 
-# 本地測試（含 Google Drive 功能）
-python test_line.py
+# 本地測試（含 OAuth 2.0 Google Drive 功能）
+python test_local_oauth.py
 
-# 雲端版本測試（僅 LINE 推播）
+# 雲端版本測試（完整功能）
 python main.py
 ```
 
 ## 📝 更新日誌
+
+### v3.0.0 (2024-12-30)
+- 🚀 **擴展至300支台股**：市值前300大公司完整覆蓋
+- 🔐 **OAuth 2.0 認證**：取代 Service Account 成為主要認證方式
+- 📴 **智能週末檢測**：股市休市日自動跳過 LINE 訊息推送
+- 🐛 **DEBUG_MODE**：詳細除錯日誌與 GitHub Actions 文件收集
+- 🔍 **Google Drive 監控**：上傳下載狀態詳細記錄
+- 🎨 **跨平台中文字體**：Windows/Linux 環境完美支援中文顯示
+- 📅 **90天資料保留**：確保3個月技術分析圖表完整性
 
 ### v2.1.0 (2024-12-29)
 - 🔐 整合 Google Drive Service Account API 直接存取
@@ -176,7 +206,7 @@ python main.py
 ### v2.0.0 (2024-12-29)
 - ✨ 新增雙組分類推薦系統
 - 📊 K線圖表自動生成和推送
-- 🎯 升級為100支台股支援
+- 🎯 升級為100支台股支援（現已擴展至300支）
 - 🔍 導入 MA20 斜率技術分析
 - 🖼️ 多重圖床備援機制
 
