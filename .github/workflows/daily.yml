@@ -42,7 +42,7 @@ jobs:
           GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
 
           # Debug settings
-          DEBUG_MODE: ${{ secrets.DEBUG_MODE || 'false' }}
+          DEBUG_MODE: ${{ vars.DEBUG_MODE || 'false' }}
           ACTIONS_STEP_DEBUG: true
           ACTIONS_RUNNER_DEBUG: true
 
@@ -73,7 +73,7 @@ jobs:
           retention-days: 7
 
       - name: Upload database info (debug only)
-        if: ${{ failure() && secrets.DEBUG_MODE == 'true' }}
+        if: ${{ failure() && vars.DEBUG_MODE == 'true' }}
         uses: actions/upload-artifact@v4
         with:
           name: database-debug-${{ github.run_number }}
