@@ -47,7 +47,8 @@ logger.info("=== 台股推薦機器人啟動 ===")
 logger.info(f"DEBUG_MODE: {DEBUG_MODE}")
 
 LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
-LINE_USER_ID = os.environ["LINE_USER_ID"]
+# 仍保留單一 ID，做為無訂閱者時的保底
+LINE_USER_ID = os.environ.get("LINE_USER_ID", "").strip()
 
 DATA_DIR = os.environ.get("DATA_DIR", "data")
 DB_PATH = os.path.join(DATA_DIR, "taiex.sqlite")
@@ -164,11 +165,22 @@ STOCK_NAMES = {
 }
 
 
-def push_image(original_url: str, preview_url: str):
+def line_push_text_to(user_id: str, msg: str):
+    if not LINE_TOKEN:
+        raise RuntimeError("LINE_CHANNEL_ACCESS_TOKEN is missing.")
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {"Authorization": f"Bearer {LINE_TOKEN}", "Content-Type": "application/json"}
+    body = {"to": user_id, "messages": [{"type": "text", "text": msg}]}
+    r = requests.post(url, headers=headers, json=body, timeout=30)
+    r.raise_for_status()
+
+def push_image_to(user_id: str, original_url: str, preview_url: str):
+    if not LINE_TOKEN:
+        raise RuntimeError("LINE_CHANNEL_ACCESS_TOKEN is missing.")
     url = "https://api.line.me/v2/bot/message/push"
     headers = {"Authorization": f"Bearer {LINE_TOKEN}", "Content-Type": "application/json"}
     body = {
-        "to": LINE_USER_ID,
+        "to": user_id,
         "messages": [{
             "type": "image",
             "originalContentUrl": original_url,
@@ -178,12 +190,34 @@ def push_image(original_url: str, preview_url: str):
     r = requests.post(url, headers=headers, json=body, timeout=30)
     r.raise_for_status()
 
+def broadcast_text(msg: str, user_ids: list[str]):
+    ok, fail = 0, 0
+    for uid in user_ids:
+        try:
+            line_push_text_to(uid, msg)
+            ok += 1
+        except Exception as e:
+            logger.error(f"❌ push 給 {uid} 失敗: {e}")
+            fail += 1
+    logger.info(f"📨 文字廣播完成：成功 {ok}、失敗 {fail}")
+
+def broadcast_image(url: str, user_ids: list[str]):
+    ok, fail = 0, 0
+    for uid in user_ids:
+        try:
+            push_image_to(uid, url, url)
+            ok += 1
+        except Exception as e:
+            logger.error(f"❌ 圖片推送給 {uid} 失敗: {e}")
+            fail += 1
+    logger.info(f"🖼️ 圖片廣播完成：成功 {ok}、失敗 {fail}")
+
+# 保持向後相容的舊函數
+def push_image(original_url: str, preview_url: str):
+    push_image_to(LINE_USER_ID, original_url, preview_url)
+
 def line_push_text(msg: str):
-    url = "https://api.line.me/v2/bot/message/push"
-    headers = {"Authorization": f"Bearer {LINE_TOKEN}", "Content-Type": "application/json"}
-    body = {"to": LINE_USER_ID, "messages": [{"type": "text", "text": msg}]}
-    r = requests.post(url, headers=headers, json=body, timeout=30)
-    r.raise_for_status()
+    line_push_text_to(LINE_USER_ID, msg)
 
 
 def get_drive_service():
@@ -571,6 +605,50 @@ def ensure_db():
         conn.commit()
 
 
+###############################
+# 訂閱者管理：多用戶廣播支持
+###############################
+def ensure_users_table():
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    with sqlite3.connect(DB_PATH) as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS subscribers (
+              user_id TEXT PRIMARY KEY,
+              display_name TEXT,
+              followed_at TEXT,
+              active INTEGER DEFAULT 1
+            )
+        """)
+        conn.commit()
+
+def seed_subscribers_from_env():
+    """
+    初次部署可用環境變數先匯入 userId：
+    - LINE_USER_ID（你自己）
+    - EXTRA_USER_IDS=Uxxx1,Uxxx2,...（其他人）
+    """
+    ids = []
+    if os.environ.get("LINE_USER_ID"):
+        ids.append(os.environ["LINE_USER_ID"].strip())
+    extra = os.environ.get("EXTRA_USER_IDS", "").strip()
+    if extra:
+        ids.extend([x.strip() for x in extra.split(",") if x.strip()])
+    if not ids:
+        return
+    with sqlite3.connect(DB_PATH) as conn:
+        for uid in set(ids):
+            conn.execute("""
+                INSERT OR IGNORE INTO subscribers(user_id, display_name, followed_at, active)
+                VALUES(?, NULL, datetime('now'), 1)
+            """, (uid,))
+        conn.commit()
+
+def list_active_subscribers():
+    with sqlite3.connect(DB_PATH) as conn:
+        rows = conn.execute("SELECT user_id FROM subscribers WHERE active = 1").fetchall()
+    return [r[0] for r in rows]
+
+
 def get_existing_data_range() -> dict:
     if not os.path.exists(DB_PATH):
         return {}
@@ -930,6 +1008,19 @@ def main():
         ensure_db()
         logger.debug(f"資料庫路徑: {DB_PATH}")
 
+        # 初始化訂閱者表與從環境變數匯入
+        ensure_users_table()
+        seed_subscribers_from_env()
+        subscribers = list_active_subscribers()
+        if not subscribers:
+            # 保底：若沒有任何訂閱者但設定了 LINE_USER_ID，就先推給你自己
+            if LINE_USER_ID:
+                subscribers = [LINE_USER_ID]
+                logger.warning("⚠️ subscribers 為空，使用 LINE_USER_ID 作為單一對象推送。")
+            else:
+                logger.warning("⚠️ 無任何可推送對象（subscribers 表與 LINE_USER_ID 皆為空）。")
+        logger.info(f"📱 活躍訂閱者數量: {len(subscribers)}")
+
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
         df_new = fetch_prices_yf(CODES, lookback_days=120)
         data_updated = False
@@ -973,7 +1064,7 @@ def main():
                 msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
                 logger.info(f"將發送的訊息:\n{msg}")
                 try:
-                    line_push_text(msg)
+                    broadcast_text(msg, subscribers)
                     logger.info("✅ LINE 訊息發送成功！")
                 except Exception as e:
                     logger.error(f"❌ LINE 訊息發送失敗: {e}")
@@ -989,7 +1080,7 @@ def main():
                     logger.info(f"訊息:\n{msg1}")
 
                     try:
-                        line_push_text(msg1)
+                        broadcast_text(msg1, subscribers)
                         logger.info("✅ 好像蠻強的組訊息發送成功")
                     except Exception as e:
                         logger.error(f"❌ 好像蠻強的組訊息發送失敗: {e}")
@@ -1006,7 +1097,7 @@ def main():
                         img_url = upload_image(chart_path)
                         if img_url:
                             try:
-                                push_image(img_url, img_url)
+                                broadcast_image(img_url, subscribers)
                                 logger.info(f"✅ 圖表已發送到 LINE")
                             except Exception as e:
                                 logger.error(f"❌ LINE 發送失敗: {e}")
@@ -1027,7 +1118,7 @@ def main():
                     logger.info(f"訊息:\n{msg2}")
 
                     try:
-                        line_push_text(msg2)
+                        broadcast_text(msg2, subscribers)
                         logger.info("✅ 有機會噴 觀察一下組訊息發送成功")
                     except Exception as e:
                         logger.error(f"❌ 有機會噴 觀察一下組訊息發送失敗: {e}")
@@ -1044,7 +1135,7 @@ def main():
                             img_url = upload_image(chart_path)
                             if img_url:
                                 try:
-                                    push_image(img_url, img_url)
+                                    broadcast_image(img_url, subscribers)
                                     logger.info(f"✅ 圖表已發送到 LINE")
                                 except Exception as e:
                                     logger.error(f"❌ LINE 發送失敗: {e}")
