@@ -239,12 +239,67 @@ def broadcast_image(url: str, user_ids: list[str]):
             fail += 1
     logger.info(f"🖼️ 圖片廣播完成：成功 {ok}、失敗 {fail}")
 
-# 保持向後相容的舊函數
-def push_image(original_url: str, preview_url: str):
-    push_image_to(LINE_USER_ID, original_url, preview_url)
+def get_active_subscribers():
+    """從資料庫取得所有活躍的訂閱者（包含詳細資訊）"""
+    subscribers = []
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.execute(
+                "SELECT user_id, display_name FROM subscribers WHERE active = 1"
+            )
+            for row in cursor:
+                subscribers.append({"user_id": row[0], "display_name": row[1]})
+    except Exception as e:
+        logger.error(f"讀取訂閱者失敗: {e}")
+        # Fallback to single user from env if database fails
+        if LINE_USER_ID:
+            subscribers = [{"user_id": LINE_USER_ID, "display_name": "Default"}]
+    return subscribers
 
-def line_push_text(msg: str):
-    line_push_text_to(LINE_USER_ID, msg)
+# 多用戶發送函數（向後兼容）
+def push_image(original_url: str, preview_url: str, user_id: str = None):
+    """發送圖片給指定用戶或所有訂閱者"""
+    if user_id:
+        # 發送給單一用戶
+        push_image_to(user_id, original_url, preview_url)
+    else:
+        # 發送給所有訂閱者
+        subscribers = get_active_subscribers()
+        if not subscribers:
+            # 如果沒有訂閱者，使用 LINE_USER_ID 作為備用
+            if LINE_USER_ID:
+                push_image_to(LINE_USER_ID, original_url, preview_url)
+                logger.warning("使用 LINE_USER_ID 作為備用發送目標")
+            return
+
+        for subscriber in subscribers:
+            try:
+                push_image_to(subscriber["user_id"], original_url, preview_url)
+                logger.info(f"[OK] 圖片已發送給 {subscriber['display_name'] or subscriber['user_id']}")
+            except Exception as e:
+                logger.error(f"[ERROR] 發送圖片給 {subscriber['display_name'] or subscriber['user_id']} 失敗: {e}")
+
+def line_push_text(msg: str, user_id: str = None):
+    """發送文字訊息給指定用戶或所有訂閱者"""
+    if user_id:
+        # 發送給單一用戶
+        line_push_text_to(user_id, msg)
+    else:
+        # 發送給所有訂閱者
+        subscribers = get_active_subscribers()
+        if not subscribers:
+            # 如果沒有訂閱者，使用 LINE_USER_ID 作為備用
+            if LINE_USER_ID:
+                line_push_text_to(LINE_USER_ID, msg)
+                logger.warning("使用 LINE_USER_ID 作為備用發送目標")
+            return
+
+        for subscriber in subscribers:
+            try:
+                line_push_text_to(subscriber["user_id"], msg)
+                logger.info(f"[OK] 訊息已發送給 {subscriber['display_name'] or subscriber['user_id']}")
+            except Exception as e:
+                logger.error(f"[ERROR] 發送訊息給 {subscriber['display_name'] or subscriber['user_id']} 失敗: {e}")
 
 
 def get_drive_service():
@@ -711,7 +766,6 @@ def list_active_subscribers():
             logger.debug("⚠️ 無活躍訂閱者")
 
     return active_users
-
 
 def get_existing_data_range() -> dict:
     if not os.path.exists(DB_PATH):
