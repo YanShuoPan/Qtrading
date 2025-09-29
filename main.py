@@ -948,6 +948,7 @@ def main():
 
         logger.info("\n📌 步驟 6: 將股票分組")
         today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
+        today_weekday = today_tpe.weekday()  # 0=週一, 6=週日
 
         if picks.empty:
             group1 = pd.DataFrame()
@@ -961,30 +962,37 @@ def main():
 
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")
 
-        if group1.empty and group2.empty:
-            msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
-            logger.info(f"將發送的訊息:\n{msg}")
-            try:
-                line_push_text(msg)
-                logger.info("✅ LINE 訊息發送成功！")
-            except Exception as e:
-                logger.error(f"❌ LINE 訊息發送失敗: {e}")
+        # 檢查是否為週末（週六=5, 週日=6）
+        if today_weekday >= 5:
+            weekday_names = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"]
+            logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過發送訊息")
+            logger.info("📴 週末不發送股票推薦訊息")
         else:
-            if not group1.empty:
-                logger.info("\n處理「好像蠻強的」組...")
-                lines = [f"💪 好像蠻強的 ({today_tpe})"]
-                lines.append("以下股票可以參考：\n")
-                for i, r in group1.iterrows():
-                    stock_name = STOCK_NAMES.get(r.code, r.code)
-                    lines.append(f"{r.code} {stock_name}")
-                msg1 = "\n".join(lines)
-                logger.info(f"訊息:\n{msg1}")
-
+            # 平日發送訊息
+            if group1.empty and group2.empty:
+                msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
+                logger.info(f"將發送的訊息:\n{msg}")
                 try:
-                    line_push_text(msg1)
-                    logger.info("✅ 好像蠻強的組訊息發送成功")
+                    line_push_text(msg)
+                    logger.info("✅ LINE 訊息發送成功！")
                 except Exception as e:
-                    logger.error(f"❌ 好像蠻強的組訊息發送失敗: {e}")
+                    logger.error(f"❌ LINE 訊息發送失敗: {e}")
+            else:
+                if not group1.empty:
+                    logger.info("\n處理「好像蠻強的」組...")
+                    lines = [f"💪 好像蠻強的 ({today_tpe})"]
+                    lines.append("以下股票可以參考：\n")
+                    for i, r in group1.iterrows():
+                        stock_name = STOCK_NAMES.get(r.code, r.code)
+                        lines.append(f"{r.code} {stock_name}")
+                    msg1 = "\n".join(lines)
+                    logger.info(f"訊息:\n{msg1}")
+
+                    try:
+                        line_push_text(msg1)
+                        logger.info("✅ 好像蠻強的組訊息發送成功")
+                    except Exception as e:
+                        logger.error(f"❌ 好像蠻強的組訊息發送失敗: {e}")
 
                 logger.info("\n生成並發送「好像蠻強的」組圖片")
                 group1_codes = group1["code"].tolist()
@@ -1008,43 +1016,43 @@ def main():
                     else:
                         logger.warning(f"❌ 圖表生成失敗")
 
-            if not group2.empty:
-                logger.info("\n處理「有機會噴 觀察一下」組...")
-                lines = [f"👀 有機會噴 觀察一下 ({today_tpe})"]
-                lines.append("以下股票可以參考：\n")
-                for i, r in group2.iterrows():
-                    stock_name = STOCK_NAMES.get(r.code, r.code)
-                    lines.append(f"{r.code} {stock_name}")
-                msg2 = "\n".join(lines)
-                logger.info(f"訊息:\n{msg2}")
+                if not group2.empty:
+                    logger.info("\n處理「有機會噴 觀察一下」組...")
+                    lines = [f"👀 有機會噴 觀察一下 ({today_tpe})"]
+                    lines.append("以下股票可以參考：\n")
+                    for i, r in group2.iterrows():
+                        stock_name = STOCK_NAMES.get(r.code, r.code)
+                        lines.append(f"{r.code} {stock_name}")
+                    msg2 = "\n".join(lines)
+                    logger.info(f"訊息:\n{msg2}")
 
-                try:
-                    line_push_text(msg2)
-                    logger.info("✅ 有機會噴 觀察一下組訊息發送成功")
-                except Exception as e:
-                    logger.error(f"❌ 有機會噴 觀察一下組訊息發送失敗: {e}")
+                    try:
+                        line_push_text(msg2)
+                        logger.info("✅ 有機會噴 觀察一下組訊息發送成功")
+                    except Exception as e:
+                        logger.error(f"❌ 有機會噴 觀察一下組訊息發送失敗: {e}")
 
-                logger.info("\n生成並發送「有機會噴 觀察一下」組圖片")
-                group2_codes = group2["code"].tolist()
-                for batch_num in range(0, len(group2_codes), 6):
-                    batch_codes = group2_codes[batch_num:batch_num + 6]
-                    batch_display = ", ".join(batch_codes)
-                    logger.info(f"正在處理有機會噴 觀察一下第 {batch_num//6 + 1} 組: {batch_display}")
+                    logger.info("\n生成並發送「有機會噴 觀察一下」組圖片")
+                    group2_codes = group2["code"].tolist()
+                    for batch_num in range(0, len(group2_codes), 6):
+                        batch_codes = group2_codes[batch_num:batch_num + 6]
+                        batch_display = ", ".join(batch_codes)
+                        logger.info(f"正在處理有機會噴 觀察一下第 {batch_num//6 + 1} 組: {batch_display}")
 
-                    chart_path = plot_stock_charts(batch_codes, hist)
-                    if chart_path:
-                        img_url = upload_image(chart_path)
-                        if img_url:
-                            try:
-                                push_image(img_url, img_url)
-                                logger.info(f"✅ 圖表已發送到 LINE")
-                            except Exception as e:
-                                logger.error(f"❌ LINE 發送失敗: {e}")
-                            os.unlink(chart_path)
+                        chart_path = plot_stock_charts(batch_codes, hist)
+                        if chart_path:
+                            img_url = upload_image(chart_path)
+                            if img_url:
+                                try:
+                                    push_image(img_url, img_url)
+                                    logger.info(f"✅ 圖表已發送到 LINE")
+                                except Exception as e:
+                                    logger.error(f"❌ LINE 發送失敗: {e}")
+                                os.unlink(chart_path)
+                            else:
+                                logger.warning(f"❌ 圖床上傳失敗")
                         else:
-                            logger.warning(f"❌ 圖床上傳失敗")
-                    else:
-                        logger.warning(f"❌ 圖表生成失敗")
+                            logger.warning(f"❌ 圖表生成失敗")
 
         # 步驟 8: 同步資料庫到 Google Drive（如果有更新資料）
         if data_updated and drive_service:
