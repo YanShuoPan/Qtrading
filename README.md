@@ -30,6 +30,10 @@
 - **圖片自動上傳**：Telegraph/Catbox 多重備援，無需API key
 
 ### 📱 LINE 整合
+- **多用戶訂閱系統**：支援多位用戶同時接收推播
+  - 資料庫管理訂閱者清單
+  - 支援啟用/停用訂閱狀態
+  - 批量推送訊息與圖表
 - **文字推薦訊息**：包含股票代碼和中文名稱
 - **圖表推送**：高清K線圖直接傳送到LINE
 - **智能週末檢測**：股市休市日（週六/日）自動跳過訊息
@@ -90,12 +94,19 @@ graph TD
 | Secret/Variable Name | 說明 | 類型 | 必需 |
 |---------------------|------|------|------|
 | `LINE_CHANNEL_ACCESS_TOKEN` | LINE Messaging API 的 Channel access token | Secret | ✅ |
-| `LINE_USER_ID` | 接收推播的使用者 ID | Secret | ✅ |
-| `OAUTH` | OAuth 2.0 認證 JSON 完整內容 | Secret | 🔶 推薦 |
-| `GOOGLE_DRIVE_FOLDER_ID` | Google Drive 資料夾 ID | Secret | 🔶 推薦 |
-| `GDRIVE_SERVICE_ACCOUNT` | Service Account JSON（備援認證） | Secret | 🔷 可選 |
-| `GDRIVE_FOLDER_ID` | 舊版資料夾 ID（相容性） | Secret | 🔷 可選 |
+| `LINE_USER_ID` | 接收推播的使用者 ID（單一用戶） | Secret | ✅ |
+| `GDRIVE_CLIENT_ID` | Google OAuth 2.0 Client ID | Secret | ✅ |
+| `GDRIVE_CLIENT_SECRET` | Google OAuth 2.0 Client Secret | Secret | ✅ |
+| `GDRIVE_TOKEN_JSON` | Google OAuth 2.0 Token JSON（含 refresh_token） | Secret | ✅ |
+| `GDRIVE_ROOT_FOLDER_ID` | Google Drive 同步目標資料夾 ID | Secret | 🔶 推薦 |
+| `EXTRA_USER_IDS` | 額外的訂閱者 LINE User IDs（逗號分隔） | Secret | 🔷 可選 |
 | `DEBUG_MODE` | 啟用詳細除錯日誌 (`true`/`false`) | Variable | 🔷 可選 |
+
+#### 如何取得 rclone OAuth Token：
+1. 在本地執行 `rclone config` 設定 Google Drive
+2. 完成 OAuth 授權流程
+3. 從 `~/.config/rclone/rclone.conf` 複製 token JSON
+4. 將整段 JSON（包含 `access_token` 和 `refresh_token`）設為 `GDRIVE_TOKEN_JSON`
 
 ### 5. 環境變數自訂（可選）
 在 `.github/workflows/daily.yml` 中可設定：
@@ -126,7 +137,19 @@ graph TD
 ```
 stocks-autobot/
 ├── main.py                    # 主要執行程式
-├── test_local_oauth.py        # OAuth 2.0 本地測試版本
+├── modules/                   # 模組化架構
+│   ├── __init__.py           # 套件初始化
+│   ├── config.py             # 配置管理
+│   ├── logger.py             # 日誌系統
+│   ├── database.py           # 資料庫操作
+│   ├── google_drive.py       # Google Drive 整合
+│   ├── line_messaging.py     # LINE 訊息推送
+│   ├── stock_codes.py        # 股票代碼管理
+│   ├── stock_data.py         # 股價資料處理與選股策略
+│   ├── visualization.py      # K線圖表生成
+│   └── image_upload.py       # 圖床上傳服務
+├── test_line_oauth.py         # LINE 推播測試版本
+├── test_local_oauth.py        # 本地顯示測試版本
 ├── requirements.txt           # Python 套件依賴
 ├── data/                      # 資料庫檔案（與 Google Drive 同步）
 │   └── taiex.sqlite          # 股價歷史資料
@@ -138,14 +161,28 @@ stocks-autobot/
 
 ## 🔬 技術架構
 
+### 核心技術棧
+- **程式語言**：Python 3.11+
 - **資料來源**：Yahoo Finance API (yfinance)
 - **資料庫**：SQLite（本地快取，避免重複下載）
 - **圖表生成**：matplotlib + 自製 K線圖函數
 - **圖床服務**：Telegraph、Catbox（無需API key）
 - **訊息推播**：LINE Messaging API
-- **雲端同步**：Google Drive API + Service Account
+- **雲端同步**：Google Drive API (rclone)
 - **自動化**：GitHub Actions
-- **認證方式**：OAuth 2.0 優先，Service Account 備援
+- **認證方式**：OAuth 2.0 with refresh token
+
+### 模組化架構
+專案採用模組化設計，將功能分離成獨立模組：
+- **config.py**：集中管理所有環境變數與配置
+- **logger.py**：統一的日誌記錄系統
+- **database.py**：資料庫操作（含多用戶訂閱管理）
+- **google_drive.py**：Google Drive 檔案同步
+- **line_messaging.py**：LINE 訊息廣播與多用戶推送
+- **stock_codes.py**：300支股票代碼與名稱管理
+- **stock_data.py**：股價下載與動能選股策略
+- **visualization.py**：K線圖表繪製
+- **image_upload.py**：多重圖床上傳備援
 
 ## 📈 演算法說明
 
@@ -186,6 +223,25 @@ python main.py
 ```
 
 ## 📝 更新日誌
+
+### v3.1.0 (2025-01-02)
+- 🏗️ **模組化重構**：將 1320 行主程式拆分為 10 個獨立模組
+  - 主程式從 1320 行精簡至 213 行（減少 84%）
+  - 提升程式碼可維護性與可讀性
+  - 每個模組職責單一，便於測試與擴展
+- 👥 **多用戶訂閱系統**：支援多位 LINE 用戶同時接收推播
+  - 資料庫新增 `subscribers` 表管理訂閱者
+  - 支援從環境變數批量匯入訂閱者
+  - 向下相容單一用戶 `LINE_USER_ID` 設定
+- ⏱️ **GitHub Actions 超時保護**：防止 workflow 卡住
+  - 加入 `timeout-minutes` 步驟級別超時（5分鐘）
+  - rclone 操作超時設定（--timeout 30s, --contimeout 60s）
+  - 自動重試機制（--retries 3, --low-level-retries 3）
+  - 新增 rclone 連接測試步驟
+- 🔄 **rclone 整合優化**：改用 rclone 取代原生 Google Drive API
+  - 更穩定的檔案同步機制
+  - 支援 OAuth 2.0 with refresh token
+  - 詳細的同步日誌記錄
 
 ### v3.0.0 (2024-12-30)
 - 🚀 **擴展至300支台股**：市值前300大公司完整覆蓋
