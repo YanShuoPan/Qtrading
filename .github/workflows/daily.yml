@@ -45,15 +45,27 @@ jobs:
           set -e
           mkdir -p ~/.config/rclone
 
-          # 建立 rclone 配置檔
-          cat > ~/.config/rclone/rclone.conf <<EOF
-          [gdrive]
-          type = drive
-          scope = drive
-          client_id = ${GDRIVE_CLIENT_ID}
-          client_secret = ${GDRIVE_CLIENT_SECRET}
-          token = ${GDRIVE_TOKEN_JSON}
-          EOF
+          # 檢查必要的環境變數
+          if [ -z "${GDRIVE_CLIENT_ID}" ] || [ -z "${GDRIVE_CLIENT_SECRET}" ] || [ -z "${GDRIVE_TOKEN_JSON}" ]; then
+            echo "::error::缺少必要的 Google Drive 認證資訊"
+            echo "請確認以下 Secrets 已設定："
+            echo "- GDRIVE_CLIENT_ID"
+            echo "- GDRIVE_CLIENT_SECRET"
+            echo "- GDRIVE_TOKEN_JSON"
+            exit 1
+          fi
+
+          # 建立 rclone 配置檔（不要縮排）
+          cat > ~/.config/rclone/rclone.conf <<'EOF'
+[gdrive]
+type = drive
+scope = drive
+EOF
+
+          # 分別追加 client_id, client_secret, token
+          echo "client_id = ${GDRIVE_CLIENT_ID}" >> ~/.config/rclone/rclone.conf
+          echo "client_secret = ${GDRIVE_CLIENT_SECRET}" >> ~/.config/rclone/rclone.conf
+          echo "token = ${GDRIVE_TOKEN_JSON}" >> ~/.config/rclone/rclone.conf
 
           # 如果有設定 root_folder_id，追加到設定檔
           if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
@@ -61,7 +73,10 @@ jobs:
             echo "- root_folder_id set" >> $GITHUB_STEP_SUMMARY
           fi
 
+          # 顯示配置檔案（隱藏敏感資訊）
           echo "### rclone remote configured" >> $GITHUB_STEP_SUMMARY
+          echo "Config preview (secrets hidden):" >> $GITHUB_STEP_SUMMARY
+          grep -v "client_id\|client_secret\|token" ~/.config/rclone/rclone.conf >> $GITHUB_STEP_SUMMARY || true
 
       # 測試 rclone 配置是否正常
       - name: Test rclone connection
@@ -103,15 +118,27 @@ jobs:
       # 將更新後的資料回寫到雲端
       - name: Sync data back to Google Drive
         timeout-minutes: 5
+        continue-on-error: true
         run: |
-          rclone sync "./data" "gdrive:" \
+          # 檢查 ./data 目錄是否有內容
+          if [ ! -d "./data" ] || [ -z "$(ls -A ./data)" ]; then
+            echo "::warning::./data 目錄為空或不存在，跳過上傳"
+            exit 0
+          fi
+
+          # 使用 copy 取代 sync，避免刪除雲端現有檔案
+          rclone copy "./data" "gdrive:" \
             -vv \
             --log-file rclone.log \
             --timeout 30s \
             --contimeout 60s \
             --retries 3 \
             --low-level-retries 3 \
-            --delete-excluded
+            --update \
+            --checksum || {
+              echo "::warning::rclone copy 失敗，但繼續執行"
+              exit 0
+            }
 
       # 失敗或成功都上傳 rclone 日誌，方便除錯
       - name: Upload rclone logs
