@@ -19,6 +19,7 @@ from modules.database import (
 from modules.google_drive import (
     get_drive_service,
     sync_database_from_drive,
+    sync_line_ids_from_drive,
     sync_database_to_drive
 )
 from modules.line_messaging import broadcast_text, broadcast_image
@@ -49,8 +50,9 @@ def main():
             logger.info("\n📌 步驟 1: 設定 Google Drive 連線")
             drive_service = get_drive_service()
 
-            logger.info("\n📌 步驟 2: 從 Google Drive 同步資料庫")
+            logger.info("\n📌 步驟 2: 從 Google Drive 同步資料")
             sync_database_from_drive(drive_service)
+            sync_line_ids_from_drive(drive_service)
 
         # ===== 步驟 3: 初始化資料庫和訂閱者 =====
         logger.info("\n📌 步驟 3: 建立資料庫")

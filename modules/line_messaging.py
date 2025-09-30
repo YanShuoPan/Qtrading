@@ -1,12 +1,48 @@
 """
 LINE 訊息推送模組 - 處理 LINE Bot 訊息發送
 """
+import os
 import requests
 import sqlite3
 from .config import LINE_TOKEN, LINE_USER_ID, DB_PATH
 from .logger import get_logger
 
 logger = get_logger(__name__)
+
+
+# ===== LINE ID 檔案讀取 =====
+
+def read_line_ids_from_file():
+    """從 line_id.txt 讀取 LINE User IDs"""
+    line_id_file = os.path.join(os.path.dirname(DB_PATH), "..", "line_id.txt")
+    line_id_file = os.path.normpath(line_id_file)
+
+    user_ids = []
+
+    if not os.path.exists(line_id_file):
+        logger.warning(f"⚠️  line_id.txt 不存在: {line_id_file}")
+        return user_ids
+
+    try:
+        with open(line_id_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if not line or ':' not in line:
+                    continue
+                # 格式: name : USER_ID
+                parts = line.split(':', 1)
+                if len(parts) == 2:
+                    name = parts[0].strip()
+                    user_id = parts[1].strip()
+                    if user_id:
+                        user_ids.append({"user_id": user_id, "display_name": name})
+                        logger.debug(f"讀取 LINE ID: {name} -> {user_id}")
+
+        logger.info(f"✅ 從 line_id.txt 讀取到 {len(user_ids)} 個 LINE ID")
+    except Exception as e:
+        logger.error(f"❌ 讀取 line_id.txt 失敗: {e}")
+
+    return user_ids
 
 
 # ===== 基礎訊息發送函數 =====
@@ -96,8 +132,16 @@ def broadcast_image(url: str, user_ids: list[str]):
 # ===== 訂閱者管理 =====
 
 def get_active_subscribers():
-    """從資料庫取得所有活躍的訂閱者（包含詳細資訊）"""
+    """取得所有活躍的訂閱者（優先從 line_id.txt，再從資料庫，最後用環境變數）"""
     subscribers = []
+
+    # 優先從 line_id.txt 讀取
+    subscribers = read_line_ids_from_file()
+    if subscribers:
+        logger.info(f"✅ 使用 line_id.txt 中的 {len(subscribers)} 個訂閱者")
+        return subscribers
+
+    # 如果 line_id.txt 沒有，從資料庫讀取
     try:
         with sqlite3.connect(DB_PATH) as conn:
             cursor = conn.execute(
@@ -105,11 +149,17 @@ def get_active_subscribers():
             )
             for row in cursor:
                 subscribers.append({"user_id": row[0], "display_name": row[1]})
+        if subscribers:
+            logger.info(f"✅ 從資料庫讀取到 {len(subscribers)} 個訂閱者")
+            return subscribers
     except Exception as e:
-        logger.error(f"讀取訂閱者失敗: {e}")
-        # Fallback to single user from env if database fails
-        if LINE_USER_ID:
-            subscribers = [{"user_id": LINE_USER_ID, "display_name": "Default"}]
+        logger.error(f"❌ 讀取資料庫訂閱者失敗: {e}")
+
+    # 最後備用：使用環境變數
+    if LINE_USER_ID:
+        subscribers = [{"user_id": LINE_USER_ID, "display_name": "Default"}]
+        logger.warning("⚠️  使用 LINE_USER_ID 環境變數作為備用")
+
     return subscribers
 
 

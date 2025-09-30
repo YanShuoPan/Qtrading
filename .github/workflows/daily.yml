@@ -130,16 +130,17 @@ jobs:
             echo "::warning::rclone connection test failed, but continuing anyway"
           fi
 
-      # 先把雲端資料同步到 ./data
+      # 先把雲端資料同步到本地
       # 如果有設定 root_folder_id，只會同步該資料夾的內容
-      - name: Sync data from Google Drive -> ./data
+      - name: Sync data from Google Drive
         timeout-minutes: 5
         run: |
           mkdir -p data
           echo "開始從 Google Drive 同步資料..."
           echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
-          echo "本地: ./data"
+          echo "本地: ./data 和 ./line_id.txt"
 
+          # 同步 data 資料夾
           # 使用 --timeout 和 --contimeout 避免卡住
           rclone sync "gdrive:" "./data" \
             -vv \
@@ -149,6 +150,14 @@ jobs:
             --retries 3 \
             --low-level-retries 3 \
             --create-empty-src-dirs || true
+
+          # 下載 line_id.txt 到根目錄
+          if rclone ls "gdrive:" | grep -q "line_id.txt"; then
+            echo "發現 line_id.txt，下載中..."
+            rclone copy "gdrive:line_id.txt" "./" -vv --timeout 30s || echo "line_id.txt 下載失敗"
+          else
+            echo "⚠️  Google Drive 中未找到 line_id.txt"
+          fi
 
       # 執行你的主程式（會讀寫 ./data）
       - name: Run Taiwan stock recommendation bot

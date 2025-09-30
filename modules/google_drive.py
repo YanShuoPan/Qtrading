@@ -375,6 +375,44 @@ def sync_database_from_drive(service):
         return False
 
 
+def sync_line_ids_from_drive(service):
+    """從 Google Drive 同步 line_id.txt 到本地"""
+    logger.info("📥 開始從 Google Drive 同步 line_id.txt")
+
+    if not service:
+        logger.warning("⚠️  跳過 Google Drive 下載（Service 不可用）")
+        return False
+
+    try:
+        logger.debug("設定 Google Drive 資料夾結構")
+        data_folder_id = setup_google_drive_folders(service)
+        if not data_folder_id:
+            logger.error("無法取得 Google Drive data 資料夾 ID")
+            return False
+
+        logger.debug(f"Data 資料夾 ID: {data_folder_id}")
+
+        # 下載 line_id.txt
+        line_id_path = os.path.join(os.path.dirname(DB_PATH), "..", "line_id.txt")
+        line_id_path = os.path.normpath(line_id_path)
+
+        logger.info("下載 line_id.txt 檔案")
+        success = download_file_from_drive(service, "line_id.txt", data_folder_id, line_id_path)
+
+        if success:
+            logger.info("✅ line_id.txt 從 Google Drive 同步成功")
+        else:
+            logger.warning("⚠️  line_id.txt 同步失敗或檔案不存在")
+
+        return success
+
+    except Exception as e:
+        logger.error(f"❌ 從 Google Drive 同步 line_id.txt 失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
+        return False
+
+
 def sync_database_to_drive(service):
     """上傳本地資料庫到 Google Drive"""
     logger.info("📤 開始上傳資料庫到 Google Drive")
