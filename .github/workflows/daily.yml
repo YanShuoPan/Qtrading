@@ -23,6 +23,14 @@ jobs:
           python -m pip install -U pip
           pip install -r requirements.txt
 
+      - name: Install Chinese fonts for matplotlib
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei
+          fc-cache -fv
+          echo "Installed fonts:"
+          fc-list | grep -i "WenQuanYi" || echo "No WenQuanYi fonts found"
+
       - name: Install rclone
         run: |
           curl -fsSL https://rclone.org/install.sh | sudo bash

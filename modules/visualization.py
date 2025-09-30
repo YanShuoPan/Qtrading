@@ -7,7 +7,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
-from .stock_codes import STOCK_NAMES
+from .stock_codes import get_stock_name
 from .config import DEBUG_MODE
 from .logger import get_logger
 
@@ -65,6 +65,16 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
     plt.rcParams['font.sans-serif'] = fonts
     plt.rcParams['axes.unicode_minus'] = False
 
+    # 在 CI 環境中清除字體快取以確保使用新安裝的字體
+    import os
+    if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
+        try:
+            import matplotlib.font_manager
+            matplotlib.font_manager._load_fontmanager(try_read_cache=False)
+            logger.debug("CI 環境：已重新載入字體管理器")
+        except Exception as e:
+            logger.warning(f"重新載入字體管理器失敗: {e}")
+
     if DEBUG_MODE:
         logger.debug(f"matplotlib 後端: {matplotlib.get_backend()}")
         logger.debug(f"設定字體順序: {fonts}")
@@ -76,7 +86,8 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
         stock_data = prices[prices["code"] == code].sort_values("date").tail(90)
 
         if stock_data.empty or len(stock_data) < 20:
-            axes[i].text(0.5, 0.5, f"{code} {STOCK_NAMES.get(code, '')}\n數據不足",
+            stock_name = get_stock_name(code)
+            axes[i].text(0.5, 0.5, f"{code} {stock_name}\n數據不足",
                         ha='center', va='center', fontsize=14)
             axes[i].set_xticks([])
             axes[i].set_yticks([])
@@ -95,7 +106,7 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
             ax.plot(ma20_indices, valid_ma20["ma20"], label="MA20",
                    linewidth=2, linestyle="--", alpha=0.7, color='#2E86DE')
 
-        stock_name = STOCK_NAMES.get(code, code)
+        stock_name = get_stock_name(code)
         ax.set_title(f"{code} {stock_name}", fontsize=14, fontweight='bold', pad=10)
         ax.legend(fontsize=9, loc='upper left')
         ax.grid(True, alpha=0.3, linestyle='--')
