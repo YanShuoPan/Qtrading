@@ -40,7 +40,7 @@ jobs:
           GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
           GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
           GDRIVE_TOKEN_JSON: ${{ secrets.GDRIVE_TOKEN_JSON }}
-          GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_ROOT_FOLDER_ID }}
+          GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_ROOT_FOLDER_ID || secrets.GDRIVE_FOLDER_ID }}
         run: |
           set -e
           mkdir -p ~/.config/rclone
@@ -68,7 +68,11 @@ jobs:
           # 如果有設定 root_folder_id，追加到設定檔
           if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
             echo "root_folder_id = ${GDRIVE_ROOT_FOLDER_ID}" >> ~/.config/rclone/rclone.conf
-            echo "- root_folder_id set" >> $GITHUB_STEP_SUMMARY
+            echo "✓ root_folder_id 已設定 (限制存取範圍到指定資料夾)" >> $GITHUB_STEP_SUMMARY
+            echo "  Folder ID: ${GDRIVE_ROOT_FOLDER_ID:0:20}..." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ root_folder_id 未設定 (可存取整個 Google Drive)" >> $GITHUB_STEP_SUMMARY
+            echo "  建議設定 GDRIVE_ROOT_FOLDER_ID 或 GDRIVE_FOLDER_ID Secret" >> $GITHUB_STEP_SUMMARY
           fi
 
           # 顯示配置檔案（隱藏敏感資訊）
@@ -127,10 +131,15 @@ jobs:
           fi
 
       # 先把雲端資料同步到 ./data
+      # 如果有設定 root_folder_id，只會同步該資料夾的內容
       - name: Sync data from Google Drive -> ./data
         timeout-minutes: 5
         run: |
           mkdir -p data
+          echo "開始從 Google Drive 同步資料..."
+          echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
+          echo "本地: ./data"
+
           # 使用 --timeout 和 --contimeout 避免卡住
           rclone sync "gdrive:" "./data" \
             -vv \
@@ -153,6 +162,7 @@ jobs:
         run: python main.py
 
       # 將更新後的資料回寫到雲端
+      # 如果有設定 root_folder_id，只會上傳到該資料夾
       - name: Sync data back to Google Drive
         timeout-minutes: 5
         continue-on-error: true
@@ -162,6 +172,11 @@ jobs:
             echo "::warning::./data 目錄為空或不存在，跳過上傳"
             exit 0
           fi
+
+          echo "開始上傳資料到 Google Drive..."
+          echo "來源: ./data"
+          echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
+          echo "檔案數量: $(find ./data -type f | wc -l)"
 
           # 使用 copy 取代 sync，避免刪除雲端現有檔案
           rclone copy "./data" "gdrive:" \
