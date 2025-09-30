@@ -2,7 +2,8 @@ name: daily-picks
 
 on:
   schedule:
-    - cron: "0 0 * * *"   # 每天 00:00 UTC = 台北 08:00
+    # 每天 06:30 Asia/Taipei = 前一天 22:30 UTC
+    - cron: "30 22 * * *"
   workflow_dispatch:
 
 jobs:
@@ -17,66 +18,74 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install system dependencies and Chinese fonts
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y fonts-wqy-zenhei fonts-wqy-microhei
-          fc-cache -fv
-
       - name: Install Python deps
         run: |
           python -m pip install -U pip
           pip install -r requirements.txt
 
-      # Run script with LINE and Google Drive integration (supports OAuth 2.0 and Service Account)
+      - name: Install rclone
+        run: |
+          curl -fsSL https://rclone.org/install.sh | sudo bash
+          rclone version
+
+      # === Google Drive (OAuth) 設定 ===
+      # 需要事先在 Repository secrets 放入：
+      # - GDRIVE_CLIENT_ID
+      # - GDRIVE_CLIENT_SECRET
+      # - GDRIVE_TOKEN_JSON   (含 refresh_token 的整段 JSON)
+      # 可選：
+      # - GDRIVE_ROOT_FOLDER_ID  指定同步的目標資料夾 ID（建議）
+      - name: Configure rclone (Google Drive OAuth)
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_TOKEN_JSON: ${{ secrets.GDRIVE_TOKEN_JSON }}
+          GDRIVE_ROOT_FOLDER_ID: ${{ secrets.GDRIVE_ROOT_FOLDER_ID }}
+        run: |
+          set -e
+          mkdir -p ~/.config/rclone
+          {
+            echo "[gdrive]"
+            echo "type = drive"
+            # 若需要操作任何檔案用 drive；僅限本應用建立/選取過的檔案用 drive.file
+            echo "scope = drive.file"
+            echo "client_id = ${GDRIVE_CLIENT_ID}"
+            echo "client_secret = ${GDRIVE_CLIENT_SECRET}"
+            echo "token = ${GDRIVE_TOKEN_JSON}"
+            if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
+              echo "root_folder_id = ${GDRIVE_ROOT_FOLDER_ID}"
+            fi
+          } > ~/.config/rclone/rclone.conf
+
+          echo "### rclone remote configured" >> $GITHUB_STEP_SUMMARY
+          [ -n "${GDRIVE_ROOT_FOLDER_ID}" ] && echo "- root_folder_id set" >> $GITHUB_STEP_SUMMARY
+
+      # 先把雲端資料同步到 ./data
+      - name: Sync data from Google Drive -> ./data
+        run: |
+          mkdir -p data
+          rclone sync "gdrive:" "./data" -vv --log-file rclone.log --create-empty-src-dirs || true
+
+      # 執行你的主程式（會讀寫 ./data）
       - name: Run Taiwan stock recommendation bot
         env:
-          # LINE Bot credentials
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          # 可選參數（如有需要就在 Secrets 或 Variables 設定）
+          # EXTRA_USER_IDS: ${{ secrets.EXTRA_USER_IDS }}
+          # TWSE_CODES: "2330,2317,2303,2454,2603,2615,2881,2882,2886,1101"
+          # TOP_K: "10"
+        run: python main.py
 
-          # Google Drive authentication (OAuth 2.0 preferred, Service Account fallback)
-          OAUTH: ${{ secrets.OAUTH }}
-          GOOGLE_DRIVE_FOLDER_ID: ${{ secrets.GOOGLE_DRIVE_FOLDER_ID }}
-          GDRIVE_SERVICE_ACCOUNT: ${{ secrets.GDRIVE_SERVICE_ACCOUNT }}
-          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
-
-          # Debug settings
-          DEBUG_MODE: ${{ vars.DEBUG_MODE || 'false' }}
-          ACTIONS_STEP_DEBUG: true
-          ACTIONS_RUNNER_DEBUG: true
-
-          # Optional overrides:
-          # TWSE_CODES: "1101,1102,1103,2330,2317,2303,2454,2603,2615,2881"
-          # TOP_K: "300"
+      # 將更新後的資料回寫到雲端
+      - name: Sync data back to Google Drive
         run: |
-          echo "=== Debug Information ==="
-          echo "Python version: $(python --version)"
-          echo "Current directory: $(pwd)"
-          echo "Available fonts:"
-          fc-list :lang=zh-tw | head -10
-          echo "matplotlib backend: $(python -c 'import matplotlib; print(matplotlib.get_backend())')"
-          echo "DEBUG_MODE: $DEBUG_MODE"
-          echo "========================="
+          rclone sync "./data" "gdrive:" -vv --log-file rclone.log --delete-excluded
 
-          python main.py
-
-      - name: Upload debug artifacts
+      # 失敗或成功都上傳 rclone 日誌，方便除錯
+      - name: Upload rclone logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: debug-logs-${{ github.run_number }}
-          path: |
-            *.log
-            *.png
-            debug_*.png
-          retention-days: 7
-
-      - name: Upload database info (debug only)
-        if: ${{ failure() && vars.DEBUG_MODE == 'true' }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: database-debug-${{ github.run_number }}
-          path: |
-            data/*.sqlite
-          retention-days: 3
+          name: rclone-logs
+          path: rclone.log

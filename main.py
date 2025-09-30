@@ -342,14 +342,19 @@ def find_folder(service, folder_name, parent_id=None):
         if parent_id:
             query += f" and '{parent_id}' in parents"
 
+        logger.debug(f"尋找資料夾查詢: {query}")
         results = service.files().list(q=query, spaces='drive', fields='files(id, name)').execute()
         items = results.get('files', [])
 
         if items:
+            logger.debug(f"找到資料夾: {folder_name}, ID: {items[0]['id']}")
             return items[0]['id']
+        logger.debug(f"未找到資料夾: {folder_name}")
         return None
     except Exception as e:
-        print(f"❌ 尋找資料夾失敗: {e}")
+        logger.error(f"❌ 尋找資料夾失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return None
 
 
@@ -366,11 +371,15 @@ def create_folder(service, folder_name, parent_id=None):
         if parent_id:
             file_metadata['parents'] = [parent_id]
 
+        logger.debug(f"建立資料夾: {folder_name}, parent_id: {parent_id}")
         folder = service.files().create(body=file_metadata, fields='id').execute()
-        print(f"✅ 已建立資料夾: {folder_name}")
-        return folder.get('id')
+        folder_id = folder.get('id')
+        logger.info(f"✅ 已建立資料夾: {folder_name}, ID: {folder_id}")
+        return folder_id
     except Exception as e:
-        print(f"❌ 建立資料夾失敗: {e}")
+        logger.error(f"❌ 建立資料夾失敗: {folder_name}, 錯誤: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return None
 
 
@@ -553,37 +562,45 @@ def upload_text_to_google_drive(text_content: str, filename: str, folder_id: str
 def setup_google_drive_folders(service):
     """設定 Google Drive 資料夾結構"""
     if not service:
+        logger.warning("Google Drive service 不可用")
         return None
 
     try:
         # 如果有直接指定資料夾 ID，優先使用（支援兩種變數名稱）
         folder_id = GOOGLE_DRIVE_FOLDER_ID or GDRIVE_FOLDER_ID
         if folder_id:
-            print(f"✅ 使用指定的 Google Drive 資料夾 ID: {folder_id}")
+            logger.info(f"✅ 使用指定的 Google Drive 資料夾 ID: {folder_id}")
             main_folder_id = folder_id
         else:
             # 尋找或建立主資料夾 stocks-autobot-data
-            print(f"🔍 搜尋資料夾: {GDRIVE_FOLDER_NAME}")
+            logger.info(f"🔍 搜尋資料夾: {GDRIVE_FOLDER_NAME}")
             main_folder_id = find_folder(service, GDRIVE_FOLDER_NAME)
             if not main_folder_id:
+                logger.info(f"資料夾不存在，嘗試建立: {GDRIVE_FOLDER_NAME}")
                 main_folder_id = create_folder(service, GDRIVE_FOLDER_NAME)
 
             if not main_folder_id:
-                print("❌ 無法建立主資料夾")
+                logger.error("❌ 無法建立主資料夾")
                 return None
 
         # 尋找或建立 data 子資料夾
+        logger.debug(f"尋找子資料夾: {GDRIVE_DATA_FOLDER} in {main_folder_id}")
         data_folder_id = find_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
         if not data_folder_id:
+            logger.info(f"子資料夾不存在，嘗試建立: {GDRIVE_DATA_FOLDER}")
             data_folder_id = create_folder(service, GDRIVE_DATA_FOLDER, main_folder_id)
 
         if data_folder_id:
-            print(f"✅ Google Drive 資料夾已準備就緒: {GDRIVE_DATA_FOLDER}")
+            logger.info(f"✅ Google Drive 資料夾已準備就緒: {GDRIVE_DATA_FOLDER} (ID: {data_folder_id})")
+        else:
+            logger.error(f"❌ 無法取得或建立 data 資料夾")
 
         return data_folder_id
 
     except Exception as e:
-        print(f"❌ 設定 Google Drive 資料夾失敗: {e}")
+        logger.error(f"❌ 設定 Google Drive 資料夾失敗: {e}")
+        if DEBUG_MODE:
+            logger.debug(f"詳細錯誤: {str(e)}", exc_info=True)
         return None
 
 
@@ -1116,11 +1133,19 @@ def main():
     start_time = datetime.now()
 
     try:
-        logger.info("\n📌 步驟 1: 設定 Google Drive 連線")
-        drive_service = get_drive_service()
+        # 檢查是否在 GitHub Actions 環境（rclone 已處理同步）
+        in_github_actions = os.environ.get("GITHUB_ACTIONS") == "true"
 
-        logger.info("\n📌 步驟 2: 從 Google Drive 同步資料庫")
-        sync_database_from_drive(drive_service)
+        if in_github_actions:
+            logger.info("\n📌 步驟 1: GitHub Actions 環境，跳過 Google Drive OAuth 設定")
+            logger.info("   (rclone 已處理資料同步)")
+            drive_service = None
+        else:
+            logger.info("\n📌 步驟 1: 設定 Google Drive 連線")
+            drive_service = get_drive_service()
+
+            logger.info("\n📌 步驟 2: 從 Google Drive 同步資料庫")
+            sync_database_from_drive(drive_service)
 
         logger.info("\n📌 步驟 3: 建立資料庫")
         ensure_db()
@@ -1264,7 +1289,9 @@ def main():
                             logger.warning(f"❌ 圖表生成失敗")
 
         # 步驟 8: 同步資料庫到 Google Drive（如果有更新資料）
-        if data_updated and drive_service:
+        if in_github_actions:
+            logger.info("\n📌 步驟 8: GitHub Actions 環境，資料同步由 rclone 處理")
+        elif data_updated and drive_service:
             logger.info("\n📌 步驟 8: 同步資料庫到 Google Drive")
             sync_database_to_drive(drive_service)
         elif drive_service:
