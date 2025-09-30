@@ -87,16 +87,44 @@ jobs:
           echo "- TOKEN_JSON length: ${#GDRIVE_TOKEN_JSON}" >> $GITHUB_STEP_SUMMARY
           echo "- TOKEN starts with: ${GDRIVE_TOKEN_JSON:0:20}..." >> $GITHUB_STEP_SUMMARY
 
+      # 使用 Python 測試 Google Drive OAuth Token
+      - name: Test Google Drive OAuth with Python
+        timeout-minutes: 2
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_TOKEN_JSON: ${{ secrets.GDRIVE_TOKEN_JSON }}
+        run: |
+          echo "### Python OAuth Test" >> $GITHUB_STEP_SUMMARY
+          python test_gdrive_auth.py 2>&1 | tee /tmp/python_test.log
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat /tmp/python_test.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
       # 測試 rclone 配置是否正常
       - name: Test rclone connection
         timeout-minutes: 2
         run: |
           echo "Testing rclone connection to Google Drive..."
-          rclone about gdrive: --timeout 30s --contimeout 30s || {
+
+          # 顯示配置檔的實際內容結構（不顯示完整值）
+          echo "### Config File Structure" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          sed 's/client_id = .*/client_id = [HIDDEN]/; s/client_secret = .*/client_secret = [HIDDEN]/; s/token = .*/token = [HIDDEN - length: '$(grep "^token = " ~/.config/rclone/rclone.conf | wc -c)' chars]/' ~/.config/rclone/rclone.conf >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+          # 測試連接並捕獲錯誤
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Connection Test Result" >> $GITHUB_STEP_SUMMARY
+          if rclone about gdrive: --timeout 30s --contimeout 30s 2>&1 | tee /tmp/rclone_test.log; then
+            echo "✅ Connection successful!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ Connection failed" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            cat /tmp/rclone_test.log >> $GITHUB_STEP_SUMMARY 2>/dev/null || echo "No error log available" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
             echo "::warning::rclone connection test failed, but continuing anyway"
-            exit 0
-          }
-          echo "rclone connection OK" >> $GITHUB_STEP_SUMMARY
+          fi
 
       # 先把雲端資料同步到 ./data
       - name: Sync data from Google Drive -> ./data
