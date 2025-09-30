@@ -75,12 +75,14 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
     動能選股策略 - 選出符合條件的股票
 
     策略說明:
-    1. 計算 MA20 (20日移動平均線)
-    2. 檢查最近5天開盤價和收盤價都在MA20之上
-    3. MA20 斜率在合理範圍內 (< 1)
-    4. 波動率控制在 3% 以內
-    5. 價格與 MA20 距離在允許範圍內
-    6. 依照 MA20 斜率分組，選出最接近 MA20 的股票
+    1. 排除近10日平均成交量小於1000張的股票
+    2. 計算 MA20 (20日移動平均線)
+    3. 檢查最近5天開盤價與收盤價的平均都在MA20之上
+    4. MA20 斜率在合理範圍內 (< 1)
+    5. 波動率控制在 5% 以內
+    6. 近十日的最高點減最低點的平均要大於1塊
+    7. 價格與 MA20 距離在允許範圍內
+    8. 依照 MA20 斜率分組，選出最接近 MA20 的股票
 
     Args:
         prices: 股價數據 DataFrame
@@ -103,18 +105,33 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
     results = []
     for code, group in feat.groupby("code"):
         group = group.sort_values("date")
-        if len(group) < 5:
+        if len(group) < 10:
+            continue
+
+        # 檢查近10日平均成交量是否大於1000張（1張=1000股）
+        last_10 = group.tail(10)
+        avg_volume = last_10["volume"].mean()
+        avg_volume_lots = avg_volume / 1000  # 轉換為張數
+
+        if avg_volume_lots < 1000:
             continue
 
         last_5 = group.tail(5)
         if last_5["ma20"].isna().any():
             continue
 
-        # 檢查最近5天開盤價和收盤價都在MA20之上
-        open_above = (last_5["open"] > last_5["ma20"]).all()
-        close_above = (last_5["close"] > last_5["ma20"]).all()
+        # 檢查最近5天開盤價與收盤價的平均都在MA20之上
+        avg_price_5d = (last_5["open"] + last_5["close"]) / 2
+        price_above_ma20 = (avg_price_5d > last_5["ma20"]).all()
 
-        if not (open_above and close_above):
+        if not price_above_ma20:
+            continue
+
+        # 近十日的最高點減最低點的平均要大於1塊
+        high_low_diff = last_10["high"] - last_10["low"]
+        avg_high_low_diff = high_low_diff.mean()
+
+        if avg_high_low_diff <= 1.0:
             continue
 
         # 計算 MA20 斜率
@@ -129,7 +146,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
         price_std = last_5["close"].std()
         price_mean = last_5["close"].mean()
         volatility_pct = (price_std / price_mean * 100) if price_mean > 0 else 999
-        if volatility_pct > 3.0:
+        if volatility_pct > 5.0:
             continue
 
         # 動態調整距離限制
@@ -160,6 +177,8 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
             "ma20_slope": ma20_slope,
             "max_distance": max_distance_allowed,
             "volume": latest["volume"],
+            "avg_volume_10d": avg_volume,
+            "avg_volume_10d_lots": avg_volume_lots,
             "avg_ma20_distance": avg_ma20_distance,
             "is_lowest_close": is_lowest_close
         })
