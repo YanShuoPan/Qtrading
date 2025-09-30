@@ -55,17 +55,15 @@ jobs:
             exit 1
           fi
 
-          # 建立 rclone 配置檔（不要縮排）
-          cat > ~/.config/rclone/rclone.conf <<'EOF'
-[gdrive]
-type = drive
-scope = drive
-EOF
-
-          # 分別追加 client_id, client_secret, token
-          echo "client_id = ${GDRIVE_CLIENT_ID}" >> ~/.config/rclone/rclone.conf
-          echo "client_secret = ${GDRIVE_CLIENT_SECRET}" >> ~/.config/rclone/rclone.conf
-          echo "token = ${GDRIVE_TOKEN_JSON}" >> ~/.config/rclone/rclone.conf
+          # 建立 rclone 配置檔
+          {
+            echo "[gdrive]"
+            echo "type = drive"
+            echo "scope = drive"
+            echo "client_id = ${GDRIVE_CLIENT_ID}"
+            echo "client_secret = ${GDRIVE_CLIENT_SECRET}"
+            echo "token = ${GDRIVE_TOKEN_JSON}"
+          } > ~/.config/rclone/rclone.conf
 
           # 如果有設定 root_folder_id，追加到設定檔
           if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
