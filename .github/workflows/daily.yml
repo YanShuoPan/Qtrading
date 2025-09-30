@@ -76,6 +76,17 @@ jobs:
           echo "Config preview (secrets hidden):" >> $GITHUB_STEP_SUMMARY
           grep -v "client_id\|client_secret\|token" ~/.config/rclone/rclone.conf >> $GITHUB_STEP_SUMMARY || true
 
+          # 診斷資訊
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Diagnostic Info" >> $GITHUB_STEP_SUMMARY
+          echo "- Config file exists: $(test -f ~/.config/rclone/rclone.conf && echo 'YES' || echo 'NO')" >> $GITHUB_STEP_SUMMARY
+          echo "- Config file size: $(wc -c < ~/.config/rclone/rclone.conf) bytes" >> $GITHUB_STEP_SUMMARY
+          echo "- Number of lines: $(wc -l < ~/.config/rclone/rclone.conf)" >> $GITHUB_STEP_SUMMARY
+          echo "- CLIENT_ID length: ${#GDRIVE_CLIENT_ID}" >> $GITHUB_STEP_SUMMARY
+          echo "- CLIENT_SECRET length: ${#GDRIVE_CLIENT_SECRET}" >> $GITHUB_STEP_SUMMARY
+          echo "- TOKEN_JSON length: ${#GDRIVE_TOKEN_JSON}" >> $GITHUB_STEP_SUMMARY
+          echo "- TOKEN starts with: ${GDRIVE_TOKEN_JSON:0:20}..." >> $GITHUB_STEP_SUMMARY
+
       # 測試 rclone 配置是否正常
       - name: Test rclone connection
         timeout-minutes: 2
