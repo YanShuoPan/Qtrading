@@ -44,21 +44,24 @@ jobs:
         run: |
           set -e
           mkdir -p ~/.config/rclone
-          {
-            echo "[gdrive]"
-            echo "type = drive"
-            # 若需要操作任何檔案用 drive；僅限本應用建立/選取過的檔案用 drive.file
-            echo "scope = drive.file"
-            echo "client_id = ${GDRIVE_CLIENT_ID}"
-            echo "client_secret = ${GDRIVE_CLIENT_SECRET}"
-            echo "token = ${GDRIVE_TOKEN_JSON}"
-            if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
-              echo "root_folder_id = ${GDRIVE_ROOT_FOLDER_ID}"
-            fi
-          } > ~/.config/rclone/rclone.conf
+
+          # 建立 rclone 配置檔
+          cat > ~/.config/rclone/rclone.conf <<EOF
+          [gdrive]
+          type = drive
+          scope = drive
+          client_id = ${GDRIVE_CLIENT_ID}
+          client_secret = ${GDRIVE_CLIENT_SECRET}
+          token = ${GDRIVE_TOKEN_JSON}
+          EOF
+
+          # 如果有設定 root_folder_id，追加到設定檔
+          if [ -n "${GDRIVE_ROOT_FOLDER_ID}" ]; then
+            echo "root_folder_id = ${GDRIVE_ROOT_FOLDER_ID}" >> ~/.config/rclone/rclone.conf
+            echo "- root_folder_id set" >> $GITHUB_STEP_SUMMARY
+          fi
 
           echo "### rclone remote configured" >> $GITHUB_STEP_SUMMARY
-          [ -n "${GDRIVE_ROOT_FOLDER_ID}" ] && echo "- root_folder_id set" >> $GITHUB_STEP_SUMMARY
 
       # 先把雲端資料同步到 ./data
       - name: Sync data from Google Drive -> ./data
