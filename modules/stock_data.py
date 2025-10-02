@@ -34,7 +34,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
             logger.info(f"{c}: 無歷史資料，需下載")
         else:
             max_date = existing[c]["max"]
-            if max_date < (datetime.utcnow() - timedelta(days=2)).date().isoformat():
+            if max_date < datetime.utcnow().date().isoformat():
                 codes_to_fetch.append(c)
                 logger.info(f"{c}: 資料過舊 (最新: {max_date})，需更新")
             else:
