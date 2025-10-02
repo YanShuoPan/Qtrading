@@ -182,6 +182,17 @@ def send_group_messages(group_df, group_name, emoji, today_tpe, subscribers, his
     msg = "\n".join(lines)
     logger.info(f"訊息:\n{msg}")
 
+    # 創建日期資料夾
+    date_folder = os.path.join("data", str(today_tpe))
+    os.makedirs(date_folder, exist_ok=True)
+
+    # 保存股票清單到文字檔
+    list_filename = f"{group_name}_{today_tpe}.txt"
+    list_path = os.path.join(date_folder, list_filename)
+    with open(list_path, "w", encoding="utf-8") as f:
+        f.write(msg)
+    logger.info(f"📝 股票清單已保存: {list_path}")
+
     try:
         broadcast_text(msg, subscribers)
         logger.info(f"✅ {group_name}組訊息發送成功")
@@ -197,6 +208,13 @@ def send_group_messages(group_df, group_name, emoji, today_tpe, subscribers, his
 
         chart_path = plot_stock_charts(batch_codes, hist)
         if chart_path:
+            # 保存圖表到日期資料夾
+            import shutil
+            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}.png"
+            saved_chart_path = os.path.join(date_folder, chart_filename)
+            shutil.copy(chart_path, saved_chart_path)
+            logger.info(f"💾 圖表已保存: {saved_chart_path}")
+
             img_url = upload_image(chart_path)
             if img_url:
                 try:
@@ -204,9 +222,11 @@ def send_group_messages(group_df, group_name, emoji, today_tpe, subscribers, his
                     logger.info(f"✅ 圖表已發送到 LINE")
                 except Exception as e:
                     logger.error(f"❌ LINE 發送失敗: {e}")
-                os.unlink(chart_path)
             else:
                 logger.warning(f"❌ 圖床上傳失敗")
+
+            # 刪除臨時檔案
+            os.unlink(chart_path)
         else:
             logger.warning(f"❌ 圖表生成失敗")
 
