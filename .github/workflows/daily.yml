@@ -148,7 +148,14 @@ jobs:
           mkdir -p data
           echo "開始從 Google Drive 同步資料..."
           echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
-          echo "本地: ./data 和 ./line_id.txt"
+          echo "本地: ./data"
+
+          # 清理舊的根目錄 taiex.sqlite (如果存在)
+          # 資料庫應該只存在於 data/taiex.sqlite
+          if rclone ls "gdrive:" | grep -q "^[[:space:]]*[0-9]* taiex.sqlite$"; then
+            echo "⚠️  發現根目錄有舊的 taiex.sqlite，將刪除..."
+            rclone delete "gdrive:taiex.sqlite" -vv || echo "刪除失敗，繼續執行"
+          fi
 
           # 同步 data 資料夾
           # 使用 --timeout 和 --contimeout 避免卡住
