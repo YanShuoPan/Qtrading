@@ -12,7 +12,7 @@ DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() == "true"
 
 # ===== 資料庫設定 =====
 DATA_DIR = os.environ.get("DATA_DIR", "data")
-DB_PATH = os.path.join(DATA_DIR, "taiex.sqlite")
+DB_PATH = "taiex.sqlite"  # 資料庫存在根目錄
 
 # ===== LINE 設定 =====
 LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]

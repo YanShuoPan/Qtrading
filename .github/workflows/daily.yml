@@ -148,18 +148,19 @@ jobs:
           mkdir -p data
           echo "開始從 Google Drive 同步資料..."
           echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
-          echo "本地: ./data"
+          echo "本地: ./data 和 ./taiex.sqlite"
 
-          # 清理舊的根目錄 taiex.sqlite (如果存在)
-          # 資料庫應該只存在於 data/taiex.sqlite
-          if rclone ls "gdrive:" | grep -q "^[[:space:]]*[0-9]* taiex.sqlite$"; then
-            echo "⚠️  發現根目錄有舊的 taiex.sqlite，將刪除..."
-            rclone delete "gdrive:taiex.sqlite" -vv || echo "刪除失敗，繼續執行"
+          # 下載 taiex.sqlite 到根目錄
+          if rclone ls "gdrive:" | grep -q "taiex.sqlite"; then
+            echo "發現 taiex.sqlite，下載中..."
+            rclone copy "gdrive:taiex.sqlite" "./" -vv --timeout 30s || echo "taiex.sqlite 下載失敗"
+          else
+            echo "⚠️  Google Drive 中未找到 taiex.sqlite (首次執行會自動建立)"
           fi
 
-          # 同步 data 資料夾
+          # 同步 data 資料夾 (日期子資料夾)
           # 使用 --timeout 和 --contimeout 避免卡住
-          rclone sync "gdrive:" "./data" \
+          rclone sync "gdrive:data" "./data" \
             -vv \
             --log-file rclone.log \
             --timeout 30s \
@@ -193,30 +194,39 @@ jobs:
         timeout-minutes: 5
         continue-on-error: true
         run: |
-          # 檢查 ./data 目錄是否有內容
-          if [ ! -d "./data" ] || [ -z "$(ls -A ./data)" ]; then
-            echo "::warning::./data 目錄為空或不存在，跳過上傳"
-            exit 0
+          echo "開始上傳資料到 Google Drive..."
+
+          # 上傳 taiex.sqlite 到根目錄
+          if [ -f "./taiex.sqlite" ]; then
+            echo "上傳 taiex.sqlite 到根目錄..."
+            rclone copy "./taiex.sqlite" "gdrive:" \
+              -vv \
+              --log-file rclone.log \
+              --timeout 30s \
+              --contimeout 60s \
+              --retries 3 \
+              --update \
+              --checksum || echo "::warning::taiex.sqlite 上傳失敗"
+          else
+            echo "⚠️  找不到 taiex.sqlite"
           fi
 
-          echo "開始上傳資料到 Google Drive..."
-          echo "來源: ./data"
-          echo "目標: gdrive: (根目錄或 root_folder_id 指定的資料夾)"
-          echo "檔案數量: $(find ./data -type f | wc -l)"
-
-          # 使用 copy 取代 sync，避免刪除雲端現有檔案
-          rclone copy "./data" "gdrive:" \
-            -vv \
-            --log-file rclone.log \
-            --timeout 30s \
-            --contimeout 60s \
-            --retries 3 \
-            --low-level-retries 3 \
-            --update \
-            --checksum || {
-              echo "::warning::rclone copy 失敗，但繼續執行"
-              exit 0
-            }
+          # 上傳 data 資料夾 (日期子資料夾)
+          if [ -d "./data" ] && [ -n "$(ls -A ./data)" ]; then
+            echo "上傳 data 資料夾..."
+            echo "檔案數量: $(find ./data -type f | wc -l)"
+            rclone copy "./data" "gdrive:data" \
+              -vv \
+              --log-file rclone.log \
+              --timeout 30s \
+              --contimeout 60s \
+              --retries 3 \
+              --low-level-retries 3 \
+              --update \
+              --checksum || echo "::warning::data 資料夾上傳失敗"
+          else
+            echo "⚠️  data 資料夾為空或不存在"
+          fi
 
       # 失敗或成功都上傳 rclone 日誌，方便除錯
       - name: Upload rclone logs
