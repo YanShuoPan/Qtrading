@@ -15,7 +15,9 @@ logger = get_logger(__name__)
 
 def ensure_db():
     """建立股價資料表"""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir:  # 只有在資料庫不在根目錄時才創建目錄
+        os.makedirs(db_dir, exist_ok=True)
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
             """
@@ -33,7 +35,9 @@ def ensure_db():
 
 def ensure_users_table():
     """建立訂閱者資料表"""
-    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+    db_dir = os.path.dirname(DB_PATH)
+    if db_dir:  # 只有在資料庫不在根目錄時才創建目錄
+        os.makedirs(db_dir, exist_ok=True)
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute("""
             CREATE TABLE IF NOT EXISTS subscribers (
