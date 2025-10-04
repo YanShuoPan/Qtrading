@@ -72,15 +72,26 @@ def main():
 
         # ===== 步驟 4: 下載股價數據 =====
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
-        codes = get_stock_codes()
-        df_new = fetch_prices_yf(codes, lookback_days=120)
+
+        # 取得今日日期和星期
+        today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
+        today_weekday = today_tpe.weekday()  # 0=週一, 6=週日
+
+        # 週末不更新股價數據（股市休市）
         data_updated = False
-        if not df_new.empty:
-            upsert_prices(df_new)
-            data_updated = True
-            logger.info("✅ 資料庫已更新")
+        if today_weekday >= 5:  # 週六=5, 週日=6
+            weekday_names = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"]
+            logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過更新股價數據")
+            logger.info("ℹ️  使用資料庫中的現有數據")
         else:
-            logger.info("ℹ️  無需更新資料庫")
+            codes = get_stock_codes()
+            df_new = fetch_prices_yf(codes, lookback_days=120)
+            if not df_new.empty:
+                upsert_prices(df_new)
+                data_updated = True
+                logger.info("✅ 資料庫已更新")
+            else:
+                logger.info("ℹ️  無需更新資料庫")
 
         # ===== 步驟 5: 選股 =====
         logger.info("\n📌 步驟 5: 載入數據並篩選股票")
@@ -92,8 +103,6 @@ def main():
 
         # ===== 步驟 6: 股票分組 =====
         logger.info("\n📌 步驟 6: 將股票分組")
-        today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
-        today_weekday = today_tpe.weekday()  # 0=週一, 6=週日
 
         if picks.empty:
             group1 = picks
