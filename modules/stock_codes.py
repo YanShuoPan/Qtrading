@@ -280,4 +280,4 @@ def get_picks_top_k() -> int:
     Returns:
         int: TOP_K 數量
     """
-    return int(os.environ.get("TOP_K", "300"))
+    return int(os.environ.get("TOP_K", str(len(DEFAULT_CODES))))
