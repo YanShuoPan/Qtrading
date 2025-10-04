@@ -91,40 +91,48 @@ def push_image_to(user_id: str, original_url: str, preview_url: str):
 
 # ===== 廣播函數 =====
 
-def broadcast_text(msg: str, user_ids: list[str]):
+def broadcast_text(msg: str, user_ids: list):
     """
     廣播文字訊息給多個用戶
 
     Args:
         msg: 訊息內容
-        user_ids: 用戶 ID 列表
+        user_ids: 用戶 ID 列表（可以是字串列表或 dict 列表）
     """
     ok, fail = 0, 0
-    for uid in user_ids:
+    for user in user_ids:
+        # 處理 dict 或 str 格式
+        uid = user['user_id'] if isinstance(user, dict) else user
+        display_name = user.get('display_name', uid) if isinstance(user, dict) else uid
         try:
             line_push_text_to(uid, msg)
             ok += 1
+            logger.debug(f"✅ 發送給 {display_name} ({uid})")
         except Exception as e:
-            logger.error(f"❌ push 給 {uid} 失敗: {e}")
+            logger.error(f"❌ push 給 {display_name} ({uid}) 失敗: {e}")
             fail += 1
     logger.info(f"📨 文字廣播完成：成功 {ok}、失敗 {fail}")
 
 
-def broadcast_image(url: str, user_ids: list[str]):
+def broadcast_image(url: str, user_ids: list):
     """
     廣播圖片訊息給多個用戶
 
     Args:
         url: 圖片 URL
-        user_ids: 用戶 ID 列表
+        user_ids: 用戶 ID 列表（可以是字串列表或 dict 列表）
     """
     ok, fail = 0, 0
-    for uid in user_ids:
+    for user in user_ids:
+        # 處理 dict 或 str 格式
+        uid = user['user_id'] if isinstance(user, dict) else user
+        display_name = user.get('display_name', uid) if isinstance(user, dict) else uid
         try:
             push_image_to(uid, url, url)
             ok += 1
+            logger.debug(f"✅ 圖片發送給 {display_name} ({uid})")
         except Exception as e:
-            logger.error(f"❌ 圖片推送給 {uid} 失敗: {e}")
+            logger.error(f"❌ 圖片推送給 {display_name} ({uid}) 失敗: {e}")
             fail += 1
     logger.info(f"🖼️ 圖片廣播完成：成功 {ok}、失敗 {fail}")
 

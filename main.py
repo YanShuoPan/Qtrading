@@ -12,7 +12,6 @@ from modules.database import (
     ensure_db,
     ensure_users_table,
     seed_subscribers_from_env,
-    list_active_subscribers,
     upsert_prices,
     load_recent_prices
 )
@@ -22,7 +21,7 @@ from modules.google_drive import (
     sync_line_ids_from_drive,
     sync_database_to_drive
 )
-from modules.line_messaging import broadcast_text, broadcast_image
+from modules.line_messaging import broadcast_text, broadcast_image, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts
@@ -58,16 +57,18 @@ def main():
         logger.info("\n📌 步驟 3: 建立資料庫")
         ensure_db()
         ensure_users_table()
-        seed_subscribers_from_env()
-        subscribers = list_active_subscribers()
+        # 取得訂閱者（優先從 line_id.txt，再從資料庫，最後用環境變數）
+        subscribers = get_active_subscribers()
 
         if not subscribers:
-            if LINE_USER_ID:
-                subscribers = [LINE_USER_ID]
-                logger.warning("⚠️ subscribers 為空，使用 LINE_USER_ID 作為單一對象推送。")
-            else:
-                logger.warning("⚠️ 無任何可推送對象（subscribers 表與 LINE_USER_ID 皆為空）。")
-        logger.info(f"📱 活躍訂閱者數量: {len(subscribers)}")
+            logger.warning("⚠️ 無任何可推送對象（line_id.txt、資料庫、環境變數皆為空）。")
+        else:
+            logger.info(f"📱 活躍訂閱者數量: {len(subscribers)}")
+            for sub in subscribers:
+                if isinstance(sub, dict):
+                    logger.info(f"  - {sub.get('display_name', 'Unknown')}: {sub['user_id']}")
+                else:
+                    logger.info(f"  - {sub}")
 
         # ===== 步驟 4: 下載股價數據 =====
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
