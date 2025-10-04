@@ -14,8 +14,8 @@ logger = get_logger(__name__)
 
 def read_line_ids_from_file():
     """從 line_id.txt 讀取 LINE User IDs"""
-    line_id_file = os.path.join(os.path.dirname(DB_PATH), "..", "line_id.txt")
-    line_id_file = os.path.normpath(line_id_file)
+    # line_id.txt 位於專案根目錄
+    line_id_file = "line_id.txt"
 
     user_ids = []
 
