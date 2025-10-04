@@ -107,8 +107,8 @@ def main():
         # ===== 步驟 7: 發送 LINE 訊息 =====
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")
 
-        # 檢查是否為週末（週六=5, 週日=6）
-        if today_weekday >= 5:
+        # 測試模式：所有日期都發送訊息
+        if False:  # 停用週末檢查，測試用
             weekday_names = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"]
             logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過發送訊息")
             logger.info("📴 週末不發送股票推薦訊息")
