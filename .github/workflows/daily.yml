@@ -112,7 +112,7 @@ jobs:
           GDRIVE_TOKEN_JSON: ${{ secrets.GDRIVE_TOKEN_JSON }}
         run: |
           echo "### Python OAuth Test" >> $GITHUB_STEP_SUMMARY
-          python test_gdrive_auth.py 2>&1 | tee /tmp/python_test.log
+          python tests/test_gdrive_auth.py 2>&1 | tee /tmp/python_test.log
           echo '```' >> $GITHUB_STEP_SUMMARY
           cat /tmp/python_test.log >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
