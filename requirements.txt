@@ -1,8 +1,8 @@
-pandas
-yfinance
-requests
-matplotlib
-python-dotenv
+pandas>=2.0.0
+yfinance>=0.2.40
+requests>=2.31.0
+matplotlib>=3.7.0
+python-dotenv>=1.0.0
 google-auth
 google-api-python-client
 google-auth-oauthlib

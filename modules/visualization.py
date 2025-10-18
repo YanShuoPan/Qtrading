@@ -67,7 +67,14 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
     Returns:
         str: 圖表檔案路徑
     """
-    logger.debug(f'開始繪製圖表，股票代碼: {codes}')
+    logger.info(f'開始繪製圖表，股票代碼: {codes}')
+    logger.info(f'價格數據總筆數: {len(prices)}')
+
+    # 診斷：檢查資料範圍
+    if not prices.empty and 'date' in prices.columns:
+        logger.info(f'價格數據日期範圍: {prices["date"].min()} ~ {prices["date"].max()}')
+        logger.info(f'價格數據唯一日期數: {prices["date"].nunique()}')
+
     codes = codes[:6]
     n_stocks = len(codes)
     if n_stocks == 0:
@@ -98,6 +105,16 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
 
     for i, code in enumerate(codes):
         stock_data = prices[prices["code"] == code].sort_values("date").tail(90)
+
+        logger.info(f'股票 {code}: 原始資料筆數 = {len(prices[prices["code"] == code])}, tail(90) 後筆數 = {len(stock_data)}')
+        if not stock_data.empty and 'date' in stock_data.columns:
+            logger.info(f'股票 {code}: 日期範圍 = {stock_data["date"].min()} ~ {stock_data["date"].max()}')
+            logger.info(f'股票 {code}: 唯一日期數 = {stock_data["date"].nunique()}')
+            # 檢查是否所有資料都被擠在同一天
+            if stock_data["date"].nunique() == 1:
+                logger.warning(f'⚠️ 股票 {code}: 所有資料都在同一天! 日期 = {stock_data["date"].iloc[0]}')
+            # 檢查日期類型
+            logger.info(f'股票 {code}: 日期欄位類型 = {stock_data["date"].dtype}')
 
         if stock_data.empty or len(stock_data) < 20:
             stock_name = get_stock_name(code)

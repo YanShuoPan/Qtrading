@@ -1,7 +1,9 @@
 # webhook_app.py (verbose)
 import os, hmac, hashlib, base64, json, sqlite3, logging
 from fastapi import FastAPI, Request, Header, HTTPException
-
+# uvicorn webhook_app:app --reload --port 8000
+# ngrok http 8000
+# http://127.0.0.1:4040/inspect/http
 # 可選：讀 .env
 try:
     from dotenv import load_dotenv

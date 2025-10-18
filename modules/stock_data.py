@@ -56,17 +56,32 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         auto_adjust=False,
         progress=False,
     )
+
+    logger.info(f"yfinance 下載完成，原始資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
+
     out = []
     for c in codes_to_fetch:
         t = f"{c}.TW"
         if isinstance(df, pd.DataFrame) and t in df:
             tmp = df[t].reset_index().rename(columns=str.lower)
+            logger.info(f"股票 {c}: 下載 {len(tmp)} 筆資料")
+
             if "date" in tmp.columns:
+                logger.info(f"股票 {c}: 原始日期類型 = {tmp['date'].dtype}, 範圍 = {tmp['date'].min()} ~ {tmp['date'].max()}")
                 tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
+                logger.info(f"股票 {c}: 轉換後日期類型 = {tmp['date'].dtype}, 範圍 = {tmp['date'].min()} ~ {tmp['date'].max()}")
+                logger.info(f"股票 {c}: 唯一日期數 = {tmp['date'].nunique()}")
+
             tmp["code"] = c
             out.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
+        else:
+            logger.warning(f"股票 {c}: 無法從 yfinance 取得資料")
+
     result = pd.concat(out, ignore_index=True) if out else pd.DataFrame()
     logger.info(f"成功下載 {len(result)} 筆數據")
+    if not result.empty and 'date' in result.columns:
+        logger.info(f"合併後總日期範圍: {result['date'].min()} ~ {result['date'].max()}")
+        logger.info(f"合併後唯一日期數: {result['date'].nunique()}")
     return result
 
 

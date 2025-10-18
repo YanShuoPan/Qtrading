@@ -27,6 +27,15 @@ jobs:
           python -m pip install -U pip
           pip install -r requirements.txt
 
+      - name: Verify package versions
+        run: |
+          echo "### Python Package Versions" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          pip list | grep -E "(pandas|yfinance|matplotlib)" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python -c "import pandas as pd; import yfinance as yf; import matplotlib; print(f'pandas: {pd.__version__}'); print(f'yfinance: {yf.__version__}'); print(f'matplotlib: {matplotlib.__version__}')"
+
       - name: Install Chinese fonts for matplotlib
         run: |
           sudo apt-get update
