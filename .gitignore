@@ -15,8 +15,10 @@ data/
 # GitHub Pages (generated in CI/CD)
 docs/
 
-# Test files
+# Test files and directory
+tests/
 test_*.py
+test_*.png
 
 # Python
 __pycache__/
