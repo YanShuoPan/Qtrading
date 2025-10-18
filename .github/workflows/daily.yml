@@ -11,6 +11,8 @@ on:
 jobs:
   run:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # 允許推送到 gh-pages 分支
 
     steps:
       - uses: actions/checkout@v4
