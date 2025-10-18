@@ -26,6 +26,7 @@ from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts
 from modules.image_upload import upload_image
+from modules.html_generator import generate_daily_html, generate_index_html
 
 # 初始化日誌
 setup_logger()
@@ -113,6 +114,16 @@ def main():
 
         logger.info(f"📈 好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
         logger.info(f"📊 有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
+
+        # ===== 步驟 6.5: 生成 GitHub Pages HTML =====
+        logger.info("\n📌 步驟 6.5: 生成 GitHub Pages HTML")
+        try:
+            date_str = str(today_tpe)
+            generate_daily_html(date_str, group1, group2, output_dir="docs")
+            generate_index_html(output_dir="docs")
+            logger.info("✅ GitHub Pages HTML 已生成")
+        except Exception as e:
+            logger.error(f"❌ 生成 HTML 失敗: {e}")
 
         # ===== 步驟 7: 發送 LINE 訊息 =====
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")

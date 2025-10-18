@@ -12,6 +12,9 @@ data/
 *.sqlite
 *.sqlite3
 
+# GitHub Pages (generated in CI/CD)
+docs/
+
 # Test files
 test_*.py
 
