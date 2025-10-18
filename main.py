@@ -227,7 +227,10 @@ def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
         chart_path = plot_stock_charts(batch_codes, hist)
         if chart_path:
             # 保存圖表到 docs/images/{date}/ 資料夾
-            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}.png"
+            # 加入時間戳記避免瀏覽器快取問題
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%H%M%S")
+            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}_{timestamp}.png"
             saved_chart_path = os.path.join(output_dir, chart_filename)
             shutil.copy(chart_path, saved_chart_path)
             logger.info(f"  ✅ K 線圖已保存: {saved_chart_path}")
