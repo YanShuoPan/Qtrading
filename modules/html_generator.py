@@ -9,7 +9,7 @@ from .stock_codes import get_stock_name
 logger = get_logger(__name__)
 
 
-def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "docs"):
+def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "docs", images_dir: str = None):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -18,11 +18,16 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
         group1_df: 好像蠻強的組 DataFrame
         group2_df: 有機會噴 觀察一下組 DataFrame
         output_dir: 輸出目錄（預設 'docs' 給 GitHub Pages）
+        images_dir: 圖片資料夾路徑（相對於 output_dir）
 
     Returns:
         生成的 HTML 檔案路徑
     """
     os.makedirs(output_dir, exist_ok=True)
+
+    # 如果沒有指定圖片目錄，使用預設值
+    if images_dir is None:
+        images_dir = f"images/{date_str}"
 
     # 生成個別日期頁面
     html_file = os.path.join(output_dir, f"{date_str}.html")
@@ -146,6 +151,24 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
             font-size: 1.2em;
         }}
 
+        .chart-container {{
+            margin-top: 30px;
+            display: grid;
+            gap: 20px;
+        }}
+
+        .chart-image {{
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }}
+
+        .chart-image:hover {{
+            transform: scale(1.02);
+            cursor: pointer;
+        }}
+
         .footer {{
             text-align: center;
             padding: 30px;
@@ -236,6 +259,24 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
                 </div>
 """
 
+        # 添加 K 線圖（如果有圖片）
+        images_path = os.path.join(output_dir, images_dir)
+        if os.path.exists(images_path):
+            # 查找該組的圖片
+            group1_images = [f for f in os.listdir(images_path) if '好像蠻強的' in f and f.endswith('.png')]
+            if group1_images:
+                html_content += """
+                <div class="chart-container">
+"""
+                for img_file in sorted(group1_images):
+                    img_path = f"{images_dir}/{img_file}"
+                    html_content += f"""
+                    <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
+"""
+                html_content += """
+                </div>
+"""
+
     html_content += """
             </div>
 """
@@ -270,6 +311,24 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
                     </div>
 """
         html_content += """
+                </div>
+"""
+
+        # 添加 K 線圖（如果有圖片）
+        images_path = os.path.join(output_dir, images_dir)
+        if os.path.exists(images_path):
+            # 查找該組的圖片
+            group2_images = [f for f in os.listdir(images_path) if '有機會噴 觀察一下' in f and f.endswith('.png')]
+            if group2_images:
+                html_content += """
+                <div class="chart-container">
+"""
+                for img_file in sorted(group2_images):
+                    img_path = f"{images_dir}/{img_file}"
+                    html_content += f"""
+                    <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
+"""
+                html_content += """
                 </div>
 """
 

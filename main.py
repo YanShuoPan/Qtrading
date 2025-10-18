@@ -115,10 +115,23 @@ def main():
         logger.info(f"📈 好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
         logger.info(f"📊 有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
 
-        # ===== 步驟 6.5: 生成 GitHub Pages HTML =====
-        logger.info("\n📌 步驟 6.5: 生成 GitHub Pages HTML")
+        # ===== 步驟 6.5: 生成 K 線圖並複製到 docs 資料夾 =====
+        logger.info("\n📌 步驟 6.5: 生成 K 線圖並準備 GitHub Pages 資料")
+        date_str = str(today_tpe)
+        images_output_dir = os.path.join("docs", "images", date_str)
+        os.makedirs(images_output_dir, exist_ok=True)
+
+        # 生成並保存 Group1 圖片
+        if not group1.empty:
+            generate_and_save_charts(group1, "好像蠻強的", today_tpe, hist, images_output_dir)
+
+        # 生成並保存 Group2 圖片
+        if not group2.empty:
+            generate_and_save_charts(group2, "有機會噴 觀察一下", today_tpe, hist, images_output_dir)
+
+        # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
+        logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            date_str = str(today_tpe)
             generate_daily_html(date_str, group1, group2, output_dir="docs")
             generate_index_html(output_dir="docs")
             logger.info("✅ GitHub Pages HTML 已生成")
@@ -189,6 +202,40 @@ def main():
         from modules.config import DEBUG_MODE
         if DEBUG_MODE:
             logger.debug("程式執行結束")
+
+
+def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
+    """
+    生成 K 線圖並保存到指定目錄
+
+    Args:
+        group_df: 股票群組 DataFrame
+        group_name: 群組名稱
+        today_tpe: 今日日期
+        hist: 歷史股價數據
+        output_dir: 輸出目錄
+    """
+    import shutil
+    logger.info(f"生成「{group_name}」組 K 線圖...")
+
+    group_codes = group_df["code"].tolist()
+    for batch_num in range(0, len(group_codes), 6):
+        batch_codes = group_codes[batch_num:batch_num + 6]
+        batch_display = ", ".join(batch_codes)
+        logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
+
+        chart_path = plot_stock_charts(batch_codes, hist)
+        if chart_path:
+            # 保存圖表到 docs/images/{date}/ 資料夾
+            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}.png"
+            saved_chart_path = os.path.join(output_dir, chart_filename)
+            shutil.copy(chart_path, saved_chart_path)
+            logger.info(f"  ✅ K 線圖已保存: {saved_chart_path}")
+
+            # 刪除臨時檔案
+            os.unlink(chart_path)
+        else:
+            logger.warning(f"  ❌ K 線圖生成失敗")
 
 
 def save_stock_list(group_df, group_name, emoji, today_tpe):
