@@ -6,6 +6,7 @@ import pandas as pd
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
 
 from .stock_codes import get_stock_name
 from .config import DEBUG_MODE
@@ -16,7 +17,7 @@ logger = get_logger(__name__)
 
 def plot_candlestick(ax, stock_data):
     """
-    在指定的 ax 上繪製 K 棒圖
+    在指定的 ax 上繪製標準 K 線圖
 
     Args:
         ax: matplotlib axes 對象
@@ -31,15 +32,28 @@ def plot_candlestick(ax, stock_data):
         low_price = row['low']
         close_price = row['close']
 
-        color = '#FF4444' if close_price >= open_price else '#00AA00'
+        # 紅K（漲）綠K（跌）- 台股習慣
+        is_rise = close_price >= open_price
+        body_color = '#E74C3C' if is_rise else '#27AE60'  # 紅漲綠跌
+        line_color = body_color
 
         # 繪製上下影線
-        ax.plot([date_num, date_num], [low_price, high_price], color=color, linewidth=0.8)
+        ax.plot([date_num, date_num], [low_price, high_price],
+                color=line_color, linewidth=1, solid_capstyle='round')
 
-        # 繪製 K 棒實體
+        # 繪製 K 棒實體（使用矩形）
         body_height = abs(close_price - open_price)
         body_bottom = min(open_price, close_price)
-        ax.bar(date_num, body_height, bottom=body_bottom, color=color, width=0.6, alpha=0.8)
+
+        if body_height < 0.001:  # 十字線（開盤價=收盤價）
+            ax.plot([date_num - 0.3, date_num + 0.3], [close_price, close_price],
+                   color=line_color, linewidth=1.5)
+        else:
+            # 繪製實體矩形
+            rect = Rectangle((date_num - 0.3, body_bottom), 0.6, body_height,
+                           facecolor=body_color, edgecolor=line_color,
+                           linewidth=0.8, alpha=0.9)
+            ax.add_patch(rect)
 
 
 def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
