@@ -89,6 +89,60 @@ def push_image_to(user_id: str, original_url: str, preview_url: str):
     r.raise_for_status()
 
 
+def push_button_message_to(user_id: str, date_str: str, github_pages_url: str):
+    """
+    發送帶按鈕的訊息給指定用戶（使用 Button Template）
+
+    Args:
+        user_id: LINE 用戶 ID
+        date_str: 日期字串 (YYYY-MM-DD)
+        github_pages_url: GitHub Pages 網站 URL
+    """
+    if not LINE_TOKEN:
+        raise RuntimeError("LINE_CHANNEL_ACCESS_TOKEN is missing.")
+
+    url = "https://api.line.me/v2/bot/message/push"
+    headers = {"Authorization": f"Bearer {LINE_TOKEN}", "Content-Type": "application/json"}
+
+    # 使用 Button Template
+    body = {
+        "to": user_id,
+        "messages": [{
+            "type": "template",
+            "altText": f"📊 {date_str} 台股推薦已更新",
+            "template": {
+                "type": "buttons",
+                "text": f"📊 {date_str} 台股推薦已更新！\n\n點擊下方按鈕查看詳細內容",
+                "actions": [
+                    {
+                        "type": "uri",
+                        "label": "🌐 查看完整推薦",
+                        "uri": f"{github_pages_url}/{date_str}.html"
+                    },
+                    {
+                        "type": "uri",
+                        "label": "📅 歷史推薦記錄",
+                        "uri": github_pages_url
+                    },
+                    {
+                        "type": "postback",
+                        "label": "💪 強勢股清單",
+                        "data": f"action=view_strong&date={date_str}"
+                    },
+                    {
+                        "type": "postback",
+                        "label": "👀 潛力股清單",
+                        "data": f"action=view_potential&date={date_str}"
+                    }
+                ]
+            }
+        }]
+    }
+
+    r = requests.post(url, headers=headers, json=body, timeout=30)
+    r.raise_for_status()
+
+
 # ===== 廣播函數 =====
 
 def broadcast_text(msg: str, user_ids: list):
@@ -139,6 +193,32 @@ def broadcast_image(url: str, user_ids: list):
             logger.error(f"  ❌ 圖片發送給 {display_name} ({uid[:10]}...) 失敗: {e}")
             fail += 1
     logger.info(f"🖼️  圖片廣播完成：成功 {ok}、失敗 {fail}")
+
+
+def broadcast_button_message(date_str: str, github_pages_url: str, user_ids: list):
+    """
+    廣播按鈕訊息給多個用戶
+
+    Args:
+        date_str: 日期字串 (YYYY-MM-DD)
+        github_pages_url: GitHub Pages 網站 URL
+        user_ids: 用戶 ID 列表（可以是字串列表或 dict 列表）
+    """
+    logger.info(f"🔘 開始發送按鈕訊息給 {len(user_ids)} 位用戶")
+    ok, fail = 0, 0
+    for user in user_ids:
+        # 處理 dict 或 str 格式
+        uid = user['user_id'] if isinstance(user, dict) else user
+        display_name = user.get('display_name', uid) if isinstance(user, dict) else uid
+        try:
+            logger.info(f"  → 發送按鈕訊息給 {display_name} ({uid[:10]}...)")
+            push_button_message_to(uid, date_str, github_pages_url)
+            ok += 1
+            logger.info(f"  ✅ 按鈕訊息成功發送給 {display_name}")
+        except Exception as e:
+            logger.error(f"  ❌ 按鈕訊息發送給 {display_name} ({uid[:10]}...) 失敗: {e}")
+            fail += 1
+    logger.info(f"🔘 按鈕訊息廣播完成：成功 {ok}、失敗 {fail}")
 
 
 # ===== 訂閱者管理 =====

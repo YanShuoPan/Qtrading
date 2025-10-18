@@ -18,6 +18,9 @@ DB_PATH = "taiex.sqlite"  # 資料庫存在根目錄
 LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
 LINE_USER_ID = os.environ.get("LINE_USER_ID", "").strip()
 
+# ===== GitHub Pages 設定 =====
+GITHUB_PAGES_URL = os.environ.get("GITHUB_PAGES_URL", "https://yanshuo pan.github.io/Qtrading").replace(" ", "")
+
 # ===== Google Drive 設定 =====
 def extract_folder_id_from_url(folder_input):
     """從 Google Drive URL 或直接 ID 中提取 folder ID"""

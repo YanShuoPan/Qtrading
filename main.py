@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 # 導入模組
 from modules.logger import setup_logger, get_logger
-from modules.config import IN_GITHUB_ACTIONS, LINE_USER_ID
+from modules.config import IN_GITHUB_ACTIONS, LINE_USER_ID, GITHUB_PAGES_URL
 from modules.database import (
     ensure_db,
     ensure_users_table,
@@ -21,7 +21,7 @@ from modules.google_drive import (
     sync_line_ids_from_drive,
     sync_database_to_drive
 )
-from modules.line_messaging import broadcast_text, broadcast_image, get_active_subscribers
+from modules.line_messaging import broadcast_text, broadcast_image, broadcast_button_message, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts
@@ -134,8 +134,11 @@ def main():
             logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過發送訊息")
             logger.info("📴 週末不發送股票推薦訊息")
         else:
-            # 平日發送訊息
+            # 平日發送訊息 - 改用按鈕訊息
+            date_str = str(today_tpe)
+
             if group1.empty and group2.empty:
+                # 無推薦時仍然發送按鈕訊息，讓用戶可以查看歷史記錄
                 msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
                 logger.info(f"將發送的訊息:\n{msg}")
                 try:
@@ -144,13 +147,19 @@ def main():
                 except Exception as e:
                     logger.error(f"❌ LINE 訊息發送失敗: {e}")
             else:
-                # 發送 Group1: 好像蠻強的
-                if not group1.empty:
-                    send_group_messages(group1, "好像蠻強的", "💪", today_tpe, subscribers, hist)
+                # 有推薦時發送按鈕訊息（含網站連結和 Postback 互動）
+                logger.info(f"發送按鈕訊息，連結到 GitHub Pages: {GITHUB_PAGES_URL}")
+                try:
+                    broadcast_button_message(date_str, GITHUB_PAGES_URL, subscribers)
+                    logger.info("✅ LINE 按鈕訊息發送成功！")
+                except Exception as e:
+                    logger.error(f"❌ LINE 按鈕訊息發送失敗: {e}")
 
-                # 發送 Group2: 有機會噴 觀察一下
+                # 仍然保存股票清單到檔案（供 Postback 互動使用）
+                if not group1.empty:
+                    save_stock_list(group1, "好像蠻強的", "💪", today_tpe)
                 if not group2.empty:
-                    send_group_messages(group2, "有機會噴 觀察一下", "👀", today_tpe, subscribers, hist)
+                    save_stock_list(group2, "有機會噴 觀察一下", "👀", today_tpe)
 
         # ===== 步驟 8: 同步資料庫到 Google Drive =====
         if IN_GITHUB_ACTIONS:
@@ -180,6 +189,36 @@ def main():
         from modules.config import DEBUG_MODE
         if DEBUG_MODE:
             logger.debug("程式執行結束")
+
+
+def save_stock_list(group_df, group_name, emoji, today_tpe):
+    """
+    保存股票清單到文字檔（供 Postback 互動使用）
+
+    Args:
+        group_df: 股票群組 DataFrame
+        group_name: 群組名稱
+        emoji: 群組表情符號
+        today_tpe: 今日日期
+    """
+    logger.info(f"保存「{group_name}」組股票清單...")
+    lines = [f"{emoji} {group_name} ({today_tpe})"]
+    lines.append("以下股票可以參考：\n")
+    for i, r in group_df.iterrows():
+        stock_name = get_stock_name(r.code)
+        lines.append(f"{r.code} {stock_name}")
+    msg = "\n".join(lines)
+
+    # 創建日期資料夾
+    date_folder = os.path.join("data", str(today_tpe))
+    os.makedirs(date_folder, exist_ok=True)
+
+    # 保存股票清單到文字檔
+    list_filename = f"{group_name}_{today_tpe}.txt"
+    list_path = os.path.join(date_folder, list_filename)
+    with open(list_path, "w", encoding="utf-8") as f:
+        f.write(msg)
+    logger.info(f"📝 股票清單已保存: {list_path}")
 
 
 def send_group_messages(group_df, group_name, emoji, today_tpe, subscribers, hist):
