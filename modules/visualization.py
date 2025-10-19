@@ -21,9 +21,9 @@ def plot_candlestick(ax, stock_data):
 
     Args:
         ax: matplotlib axes 對象
-        stock_data: 股票數據 DataFrame
+        stock_data: 股票數據 DataFrame（索引應該已經是 0, 1, 2, ...）
     """
-    stock_data = stock_data.copy().reset_index(drop=True)
+    logger.info(f"plot_candlestick 輸入資料: 筆數={len(stock_data)}, 索引範圍={stock_data.index.min()}-{stock_data.index.max()}")
 
     for idx, row in stock_data.iterrows():
         date_num = idx
@@ -124,7 +124,8 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
             axes[i].set_yticks([])
             continue
 
-        stock_data = stock_data.copy()
+        stock_data = stock_data.copy().reset_index(drop=True)
+        logger.info(f'股票 {code}: reset_index() 後索引範圍 = {stock_data.index.min()}-{stock_data.index.max()}')
         stock_data["ma20"] = stock_data["close"].rolling(20, min_periods=20).mean()
 
         ax = axes[i]
@@ -133,7 +134,10 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
         # 繪製 MA20
         valid_ma20 = stock_data[stock_data["ma20"].notna()]
         if not valid_ma20.empty:
+            logger.info(f'股票 {code}: valid_ma20 索引範圍 = {valid_ma20.index.min()}-{valid_ma20.index.max()}')
+            logger.info(f'股票 {code}: stock_data.index[0] = {stock_data.index[0]}')
             ma20_indices = valid_ma20.index - stock_data.index[0]
+            logger.info(f'股票 {code}: ma20_indices 範圍 = {ma20_indices.min()}-{ma20_indices.max()}')
             ax.plot(ma20_indices, valid_ma20["ma20"], label="MA20",
                    linewidth=2, linestyle="--", alpha=0.7, color='#2E86DE')
 
