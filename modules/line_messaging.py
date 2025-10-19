@@ -104,35 +104,25 @@ def push_button_message_to(user_id: str, date_str: str, github_pages_url: str):
     url = "https://api.line.me/v2/bot/message/push"
     headers = {"Authorization": f"Bearer {LINE_TOKEN}", "Content-Type": "application/json"}
 
-    # 使用 Button Template
+    # 使用 Button Template - 簡化版本（只使用 URI 按鈕，不需要 webhook）
     body = {
         "to": user_id,
         "messages": [{
             "type": "template",
-            "altText": f"📊 {date_str} 台股推薦已更新",
+            "altText": f"📊 {date_str} 台股推薦已更新！點擊查看詳細內容",
             "template": {
                 "type": "buttons",
-                "text": f"📊 {date_str} 台股推薦已更新！\n\n點擊下方按鈕查看詳細內容",
+                "text": f"📊 {date_str}\n台股推薦已更新！\n\n點擊下方按鈕查看詳細內容",
                 "actions": [
                     {
                         "type": "uri",
-                        "label": "🌐 查看完整推薦",
+                        "label": "📈 查看今日推薦",
                         "uri": f"{github_pages_url}/{date_str}.html"
                     },
                     {
                         "type": "uri",
-                        "label": "📅 歷史推薦記錄",
+                        "label": "📅 歷史記錄",
                         "uri": github_pages_url
-                    },
-                    {
-                        "type": "postback",
-                        "label": "💪 強勢股清單",
-                        "data": f"action=view_strong&date={date_str}"
-                    },
-                    {
-                        "type": "postback",
-                        "label": "👀 潛力股清單",
-                        "data": f"action=view_potential&date={date_str}"
                     }
                 ]
             }
