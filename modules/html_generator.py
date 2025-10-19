@@ -249,7 +249,7 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
             slope = row.get('ma20_slope', 0)
 
             html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW', '_blank')">
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         <div class="stock-info">斜率: {slope:.3f}</div>
@@ -304,7 +304,7 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
             slope = row.get('ma20_slope', 0)
 
             html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW', '_blank')">
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         <div class="stock-info">斜率: {slope:.3f}</div>
