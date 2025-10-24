@@ -2,10 +2,10 @@ name: daily-picks
 
 on:
   schedule:
-    # 週一到週五 20:00 Asia/Taipei = 12:00 UTC (週一到週五)
+    # 週一到週五 18:00 Asia/Taipei = 10:00 UTC (週一到週五)
     # 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    # UTC 12:00 對應台北時間 20:00，週末不執行
-    - cron: "0 12 * * 1-5"
+    # UTC 10:00 對應台北時間 18:00，週末不執行
+    - cron: "0 10 * * 1-5"
   workflow_dispatch:
 
 jobs:
@@ -266,8 +266,8 @@ jobs:
           publish_branch: gh-pages
           keep_files: true  # 保留舊檔案，新檔案會覆蓋同名檔案
 
-      # 清理 gh-pages 分支中超過 5 天的舊資料
-      - name: Clean old data in gh-pages (keep last 5 days)
+      # 清理 gh-pages 分支中超過 7 天的舊資料
+      - name: Clean old data in gh-pages (keep last 7 days)
         continue-on-error: true
         run: |
           # 配置 git
@@ -300,11 +300,11 @@ jobs:
 
           dates.sort(reverse=True)  # 最新的在前
 
-          # 保留最近 5 天，刪除其他的
+          # 保留最近 7 天，刪除其他的
           files_deleted = False
-          if len(dates) > 5:
-              print(f"發現 {len(dates)} 天的資料，保留最近 5 天")
-              for date, date_str in dates[5:]:
+          if len(dates) > 7:
+              print(f"發現 {len(dates)} 天的資料，保留最近 7 天")
+              for date, date_str in dates[7:]:
                   # 刪除 HTML 檔案
                   html_file = f"{date_str}.html"
                   if os.path.exists(html_file):
@@ -332,7 +332,7 @@ jobs:
           if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
             echo "提交清理變更..."
             git add -A
-            git commit -m "🗑️ 清理超過 5 天的舊資料 (自動清理)" || echo "無變更需要提交"
+            git commit -m "🗑️ 清理超過 7 天的舊資料 (自動清理)" || echo "無變更需要提交"
             git push origin gh-pages || echo "推送失敗"
           else
             echo "無需提交變更"
