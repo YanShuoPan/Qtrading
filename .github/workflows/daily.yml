@@ -199,6 +199,54 @@ jobs:
           # TOP_K: "10"
         run: python main.py
 
+      # 從 gh-pages 拉取舊的 HTML 檔案，讓 index.html 可以列出所有歷史資料
+      - name: Fetch historical HTML files from gh-pages
+        continue-on-error: true
+        run: |
+          echo "從 gh-pages 分支拉取歷史 HTML 檔案..."
+
+          # 配置 git
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 拉取 gh-pages 分支
+          git fetch origin gh-pages:gh-pages 2>/dev/null || {
+            echo "gh-pages 分支不存在（可能是首次執行）"
+            exit 0
+          }
+
+          # 切換到 gh-pages 分支
+          git checkout gh-pages
+
+          # 複製所有 HTML 檔案（排除 index.html）和 images 資料夾到暫存目錄
+          mkdir -p /tmp/old_pages
+          cp -r *.html /tmp/old_pages/ 2>/dev/null || echo "無 HTML 檔案"
+          cp -r images /tmp/old_pages/ 2>/dev/null || echo "無 images 資料夾"
+
+          # 切回主分支
+          git checkout main
+
+          # 將舊檔案合併到 docs 資料夾（不覆蓋新生成的檔案）
+          mkdir -p docs/images
+          cp -n /tmp/old_pages/*.html docs/ 2>/dev/null || echo "無舊 HTML 檔案可複製"
+
+          # 合併 images 資料夾（保留新舊圖片）
+          if [ -d "/tmp/old_pages/images" ]; then
+            cp -rn /tmp/old_pages/images/* docs/images/ 2>/dev/null || echo "無舊圖片可複製"
+          fi
+
+          echo "歷史檔案合併完成，現在 docs 資料夾內容："
+          ls -la docs/ | head -20
+
+          # 重新生成 index.html，讓它包含所有歷史資料
+          python -c "
+          import sys
+          sys.path.insert(0, '.')
+          from modules.html_generator import generate_index_html
+          generate_index_html(output_dir='docs')
+          print('index.html 已更新，包含所有歷史資料')
+          "
+
       # 將更新後的資料回寫到雲端
       # 如果有設定 root_folder_id，只會上傳到該資料夾
       - name: Sync data back to Google Drive
@@ -266,8 +314,8 @@ jobs:
           publish_branch: gh-pages
           keep_files: true  # 保留舊檔案，新檔案會覆蓋同名檔案
 
-      # 清理 gh-pages 分支中超過 7 天的舊資料
-      - name: Clean old data in gh-pages (keep last 7 days)
+      # 清理 gh-pages 分支中超過 10 天的舊資料
+      - name: Clean old data in gh-pages (keep last 10 days)
         continue-on-error: true
         run: |
           # 配置 git
@@ -300,11 +348,11 @@ jobs:
 
           dates.sort(reverse=True)  # 最新的在前
 
-          # 保留最近 7 天，刪除其他的
+          # 保留最近 10 天，刪除其他的
           files_deleted = False
-          if len(dates) > 7:
-              print(f"發現 {len(dates)} 天的資料，保留最近 7 天")
-              for date, date_str in dates[7:]:
+          if len(dates) > 10:
+              print(f"發現 {len(dates)} 天的資料，保留最近 10 天")
+              for date, date_str in dates[10:]:
                   # 刪除 HTML 檔案
                   html_file = f"{date_str}.html"
                   if os.path.exists(html_file):
@@ -323,7 +371,7 @@ jobs:
               with open('/tmp/files_deleted.txt', 'w') as f:
                   f.write('true' if files_deleted else 'false')
           else:
-              print(f"目前有 {len(dates)} 天的資料，無需清理")
+              print(f"目前有 {len(dates)} 天的資料（≤10 天），無需清理")
               with open('/tmp/files_deleted.txt', 'w') as f:
                   f.write('false')
           EOF
@@ -332,7 +380,7 @@ jobs:
           if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
             echo "提交清理變更..."
             git add -A
-            git commit -m "🗑️ 清理超過 7 天的舊資料 (自動清理)" || echo "無變更需要提交"
+            git commit -m "🗑️ 清理超過 10 天的舊資料 (自動清理)" || echo "無變更需要提交"
             git push origin gh-pages || echo "推送失敗"
           else
             echo "無需提交變更"
