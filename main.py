@@ -133,8 +133,8 @@ def main():
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
             generate_daily_html(date_str, group1, group2, output_dir="docs")
-            generate_index_html(output_dir="docs")
-            logger.info("✅ GitHub Pages HTML 已生成")
+            # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
+            logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:
             logger.error(f"❌ 生成 HTML 失敗: {e}")
 
