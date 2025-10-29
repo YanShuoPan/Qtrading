@@ -336,6 +336,9 @@ jobs:
           git fetch origin gh-pages
           git checkout gh-pages
 
+          # 從 main 分支複製獨立的 index 生成腳本
+          git checkout main -- generate_index_standalone.py
+
           # 執行清理腳本
           python - <<EOF
           import os
@@ -388,7 +391,7 @@ jobs:
 
           # 重新生成 index.html（包含所有保留的日期）
           echo "重新生成 index.html..."
-          python -c "import sys; sys.path.insert(0, '.'); from modules.html_generator import generate_index_html; generate_index_html(output_dir='.')" || echo "::warning::生成 index.html 失敗"
+          python generate_index_standalone.py || echo "::warning::生成 index.html 失敗"
 
           # 如果有刪除檔案或 index.html 有變更，則提交變更
           if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
