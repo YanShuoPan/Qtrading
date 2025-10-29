@@ -1,71 +1,101 @@
-<!DOCTYPE html>
+#!/usr/bin/env python3
+"""
+獨立的 index.html 生成腳本
+用於在 gh-pages 分支上重新生成 index.html
+"""
+import os
+from datetime import datetime
+
+def generate_index_html(output_dir='.'):
+    """生成 index.html"""
+    os.makedirs(output_dir, exist_ok=True)
+
+    # 掃描所有 HTML 檔案
+    html_files = [f for f in os.listdir(output_dir)
+                  if f.endswith('.html') and f != 'index.html']
+    dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
+
+    print(f"找到 {len(dates)} 個日期: {dates}")
+
+    # 生成日期項目
+    date_items_html = '\n'.join([
+        f'''
+                <a href="{date}.html" class="date-item">
+                    <div class="date-item-date">📅 {date}</div>
+                    <div class="date-item-arrow">→</div>
+                </a>
+        '''
+        for date in dates
+    ])
+
+    html_content = f'''<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>台股推薦機器人</title>
     <style>
-        * {
+        * {{
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-        }
+        }}
 
-        body {
+        body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             padding: 20px;
-        }
+        }}
 
-        .container {
+        .container {{
             max-width: 900px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
-        }
+        }}
 
-        .header {
+        .header {{
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             padding: 60px 30px;
             text-align: center;
-        }
+        }}
 
-        .header h1 {
+        .header h1 {{
             font-size: 3em;
             margin-bottom: 15px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
+        }}
 
-        .header p {
+        .header p {{
             font-size: 1.2em;
             opacity: 0.95;
-        }
+        }}
 
-        .content {
+        .content {{
             padding: 40px 30px;
-        }
+        }}
 
-        .intro {
+        .intro {{
             text-align: center;
             margin-bottom: 40px;
             color: #666;
-        }
+        }}
 
-        .intro h2 {
+        .intro h2 {{
             color: #667eea;
             margin-bottom: 15px;
-        }
+        }}
 
-        .date-list {
+        .date-list {{
             display: grid;
             gap: 15px;
-        }
+        }}
 
-        .date-item {
+        .date-item {{
             display: block;
             padding: 25px 30px;
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -74,43 +104,43 @@
             color: #333;
             transition: transform 0.2s, box-shadow 0.2s;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
+        }}
 
-        .date-item:hover {
+        .date-item:hover {{
             transform: translateX(10px);
             box-shadow: 0 8px 15px rgba(0,0,0,0.2);
-        }
+        }}
 
-        .date-item-date {
+        .date-item-date {{
             font-size: 1.5em;
             font-weight: bold;
             color: #667eea;
             margin-bottom: 5px;
-        }
+        }}
 
-        .date-item-arrow {
+        .date-item-arrow {{
             float: right;
             font-size: 1.5em;
             color: #667eea;
-        }
+        }}
 
-        .footer {
+        .footer {{
             text-align: center;
             padding: 30px;
             background: #f5f7fa;
             color: #666;
             border-top: 1px solid #e0e0e0;
-        }
+        }}
 
-        @media (max-width: 768px) {
-            .header h1 {
+        @media (max-width: 768px) {{
+            .header h1 {{
                 font-size: 2em;
-            }
+            }}
 
-            .content {
+            .content {{
                 padding: 20px 15px;
-            }
-        }
+            }}
+        }}
     </style>
 </head>
 <body>
@@ -127,54 +157,7 @@
             </div>
 
             <div class="date-list">
-
-                <a href="2025-10-29.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-29</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-28.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-28</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-27.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-27</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-24.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-24</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-23.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-23</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-22.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-22</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-21.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-21</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
-
-                <a href="2025-10-20.html" class="date-item">
-                    <div class="date-item-date">📅 2025-10-20</div>
-                    <div class="date-item-arrow">→</div>
-                </a>
-        
+{date_items_html}
             </div>
         </div>
 
@@ -188,3 +171,13 @@
     </div>
 </body>
 </html>
+'''
+
+    index_file = os.path.join(output_dir, 'index.html')
+    with open(index_file, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    print(f"✅ index.html 已生成，包含 {len(dates)} 個日期")
+
+if __name__ == '__main__':
+    generate_index_html()
