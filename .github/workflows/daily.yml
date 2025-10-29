@@ -226,17 +226,27 @@ jobs:
           # 切回主分支
           git checkout main
 
-          # 將舊檔案合併到 docs 資料夾（不覆蓋新生成的檔案）
-          mkdir -p docs/images
-          cp -n /tmp/old_pages/*.html docs/ 2>/dev/null || echo "無舊 HTML 檔案可複製"
+          # 先備份今天新生成的檔案
+          mkdir -p /tmp/new_pages
+          cp -r docs/* /tmp/new_pages/ 2>/dev/null || echo "無新檔案需備份"
 
-          # 合併 images 資料夾（保留新舊圖片）
+          # 將 gh-pages 的所有檔案複製到 docs（先建立完整的歷史資料）
+          mkdir -p docs/images
+          cp -r /tmp/old_pages/*.html docs/ 2>/dev/null || echo "無舊 HTML 檔案"
+
+          # 複製 images 資料夾
           if [ -d "/tmp/old_pages/images" ]; then
-            cp -rn /tmp/old_pages/images/* docs/images/ 2>/dev/null || echo "無舊圖片可複製"
+            cp -r /tmp/old_pages/images/* docs/images/ 2>/dev/null || echo "無舊圖片"
           fi
+
+          # 再將今天新生成的檔案覆蓋回去（確保今天的資料是最新的）
+          cp -rf /tmp/new_pages/* docs/ 2>/dev/null || echo "無新檔案需要覆蓋"
 
           echo "歷史檔案合併完成，現在 docs 資料夾內容："
           ls -la docs/ | head -20
+          echo ""
+          echo "HTML 檔案列表:"
+          ls -1 docs/*.html 2>/dev/null || echo "無 HTML 檔案"
 
           # 重新生成 index.html，讓它包含所有歷史資料
           python -c "
