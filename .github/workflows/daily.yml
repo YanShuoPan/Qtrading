@@ -393,20 +393,25 @@ jobs:
           echo "重新生成 index.html..."
           python generate_index_standalone.py || echo "::warning::生成 index.html 失敗"
 
-          # 如果有刪除檔案或 index.html 有變更，則提交變更
+          # 顯示生成的 index.html 內容（除錯用）
+          echo "index.html 中包含的日期:"
+          grep -oP '"\d{4}-\d{2}-\d{2}\.html"' index.html | sort -r | head -20 || echo "無法解析日期"
+
+          # 始終提交 index.html 的更新（確保包含最新部署的檔案）
+          git add index.html
+
+          # 如果有刪除舊檔案，一併提交
           if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
             echo "提交清理變更和更新的 index.html..."
             git add -A
             git commit -m "🗑️ 清理超過 10 天的舊資料並更新 index.html" || echo "無變更需要提交"
-            git push origin gh-pages || echo "推送失敗"
-          elif ! git diff --quiet index.html 2>/dev/null; then
-            echo "提交更新的 index.html..."
-            git add index.html
-            git commit -m "📝 更新 index.html (包含所有歷史日期)" || echo "無變更需要提交"
-            git push origin gh-pages || echo "推送失敗"
           else
-            echo "無需提交變更"
+            echo "提交更新的 index.html..."
+            git commit -m "📝 更新 index.html (包含所有歷史日期)" || echo "無變更需要提交"
           fi
+
+          # 推送到 gh-pages
+          git push origin gh-pages || echo "::warning::推送 index.html 失敗"
 
           # 切回主分支
           git checkout main
