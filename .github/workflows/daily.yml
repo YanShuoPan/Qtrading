@@ -324,8 +324,8 @@ jobs:
           publish_branch: gh-pages
           keep_files: true  # 保留舊檔案，新檔案會覆蓋同名檔案
 
-      # 清理 gh-pages 分支中超過 10 天的舊資料
-      - name: Clean old data in gh-pages (keep last 10 days)
+      # 清理 gh-pages 分支中超過 7 天的舊資料
+      - name: Clean old data in gh-pages (keep last 7 days)
         continue-on-error: true
         run: |
           # 配置 git
@@ -361,11 +361,11 @@ jobs:
 
           dates.sort(reverse=True)  # 最新的在前
 
-          # 保留最近 10 天，刪除其他的
+          # 保留最近 7 天，刪除其他的
           files_deleted = False
-          if len(dates) > 10:
-              print(f"發現 {len(dates)} 天的資料，保留最近 10 天")
-              for date, date_str in dates[10:]:
+          if len(dates) > 7:
+              print(f"發現 {len(dates)} 天的資料，保留最近 7 天")
+              for date, date_str in dates[7:]:
                   # 刪除 HTML 檔案
                   html_file = f"{date_str}.html"
                   if os.path.exists(html_file):
@@ -384,7 +384,7 @@ jobs:
               with open('/tmp/files_deleted.txt', 'w') as f:
                   f.write('true' if files_deleted else 'false')
           else:
-              print(f"目前有 {len(dates)} 天的資料（≤10 天），無需清理")
+              print(f"目前有 {len(dates)} 天的資料（≤7 天），無需清理")
               with open('/tmp/files_deleted.txt', 'w') as f:
                   f.write('false')
           EOF
@@ -404,7 +404,7 @@ jobs:
           if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
             echo "提交清理變更和更新的 index.html..."
             git add -A
-            git commit -m "🗑️ 清理超過 10 天的舊資料並更新 index.html" || echo "無變更需要提交"
+            git commit -m "🗑️ 清理超過 7 天的舊資料並更新 index.html" || echo "無變更需要提交"
           else
             echo "提交更新的 index.html..."
             git commit -m "📝 更新 index.html (包含所有歷史日期)" || echo "無變更需要提交"
