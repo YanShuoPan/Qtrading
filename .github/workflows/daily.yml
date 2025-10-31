@@ -389,6 +389,9 @@ jobs:
                   f.write('false')
           EOF
 
+          # 刪除舊的 index.html，強制重新生成
+          rm -f index.html
+
           # 重新生成 index.html（包含所有保留的日期）
           echo "重新生成 index.html..."
           python generate_index_standalone.py || echo "::warning::生成 index.html 失敗"
@@ -396,6 +399,9 @@ jobs:
           # 顯示生成的 index.html 內容（除錯用）
           echo "index.html 中包含的日期:"
           grep -oP '"\d{4}-\d{2}-\d{2}\.html"' index.html | sort -r | head -20 || echo "無法解析日期"
+          echo ""
+          echo "檢查 index.html 格式（顯示前 3 個日期項目）:"
+          grep -A 3 "date-item-date" index.html | head -12 || echo "無法找到日期項目"
 
           # 始終提交 index.html 的更新（確保包含最新部署的檔案）
           git add index.html
