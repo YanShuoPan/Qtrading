@@ -17,16 +17,23 @@ def generate_index_html(output_dir='.'):
 
     print(f"找到 {len(dates)} 個日期: {dates}")
 
-    # 生成日期項目
-    date_items_html = '\n'.join([
-        f'''
+    # 生成日期項目（包含星期幾）
+    date_items_html = []
+    for date in dates:
+        weekday = datetime.strptime(date, '%Y-%m-%d').strftime('%A')
+        weekday_zh = {
+            'Monday': '週一', 'Tuesday': '週二', 'Wednesday': '週三',
+            'Thursday': '週四', 'Friday': '週五', 'Saturday': '週六', 'Sunday': '週日'
+        }[weekday]
+
+        date_items_html.append(f'''
                 <a href="{date}.html" class="date-item">
-                    <div class="date-item-date">📅 {date}</div>
+                    <div class="date-item-date">📅 {date} ({weekday_zh})</div>
                     <div class="date-item-arrow">→</div>
                 </a>
-        '''
-        for date in dates
-    ])
+        ''')
+
+    date_items_html = '\n'.join(date_items_html)
 
     html_content = f'''<!DOCTYPE html>
 <html lang="zh-TW">
