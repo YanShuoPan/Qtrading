@@ -332,12 +332,19 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+          # 確保有最新的 main 分支代碼
+          git fetch origin main
+
           # 切換到 gh-pages 分支
           git fetch origin gh-pages
           git checkout gh-pages
 
-          # 從 main 分支複製獨立的 index 生成腳本
-          git checkout main -- generate_index_standalone.py
+          # 從最新的 main 分支複製獨立的 index 生成腳本
+          git checkout origin/main -- generate_index_standalone.py
+
+          # 顯示複製的腳本版本（除錯用）
+          echo "檢查 generate_index_standalone.py 是否包含星期幾邏輯:"
+          grep -A 2 "weekday" generate_index_standalone.py | head -5 || echo "⚠️ 未找到 weekday 相關代碼"
 
           # 執行清理腳本
           python - <<EOF
