@@ -15,7 +15,8 @@ DATA_DIR = os.environ.get("DATA_DIR", "data")
 DB_PATH = "taiex.sqlite"  # 資料庫存在根目錄
 
 # ===== LINE 設定 =====
-LINE_TOKEN = os.environ["LINE_CHANNEL_ACCESS_TOKEN"]
+LINE_NOTIFY_ENABLED = os.environ.get("LINE_NOTIFY_ENABLED", "false").lower() == "true"
+LINE_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN", "")
 LINE_USER_ID = os.environ.get("LINE_USER_ID", "").strip()
 
 # ===== GitHub Pages 設定 =====
