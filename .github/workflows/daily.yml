@@ -335,9 +335,10 @@ jobs:
           # 確保有最新的 main 分支代碼
           git fetch origin main
 
-          # 切換到 gh-pages 分支
+          # 切換到 gh-pages 分支並拉取最新變更（包含剛剛部署的新檔案）
           git fetch origin gh-pages
           git checkout gh-pages
+          git pull origin gh-pages
 
           # 從最新的 main 分支複製獨立的 index 生成腳本
           git checkout origin/main -- generate_index_standalone.py
