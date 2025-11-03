@@ -414,18 +414,27 @@ jobs:
           # 始終提交 index.html 的更新（確保包含最新部署的檔案）
           git add index.html
 
-          # 如果有刪除舊檔案，一併提交
-          if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
-            echo "提交清理變更和更新的 index.html..."
-            git add -A
-            git commit -m "🗑️ 清理超過 7 天的舊資料並更新 index.html" || echo "無變更需要提交"
+          # 檢查是否有任何變更需要提交
+          if git diff --cached --quiet; then
+            echo "ℹ️  index.html 無變更，可能已是最新版本"
           else
-            echo "提交更新的 index.html..."
-            git commit -m "📝 更新 index.html (包含所有歷史日期)" || echo "無變更需要提交"
-          fi
+            # 如果有刪除舊檔案，一併提交
+            if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
+              echo "提交清理變更和更新的 index.html..."
+              git add -A
+              git commit -m "🗑️ 清理超過 7 天的舊資料並更新 index.html"
+            else
+              echo "提交更新的 index.html..."
+              git commit -m "📝 更新 index.html (包含所有歷史日期)"
+            fi
 
-          # 推送到 gh-pages
-          git push origin gh-pages || echo "::warning::推送 index.html 失敗"
+            # 推送到 gh-pages
+            echo "推送 index.html 到 gh-pages..."
+            git push origin gh-pages || {
+              echo "::error::推送 index.html 失敗"
+              exit 1
+            }
+          fi
 
           # 切回主分支
           git checkout main
