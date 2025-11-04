@@ -397,15 +397,25 @@ jobs:
                   f.write('false')
           EOF
 
+          # 重新生成 index.html（包含所有保留的日期）
+          echo "重新生成 index.html..."
+
+          # 先顯示生成前的狀態
+          echo "生成前 index.html 包含的日期:"
+          grep -oP '"\d{4}-\d{2}-\d{2}\.html"' index.html 2>/dev/null | sort -r | head -20 || echo "index.html 不存在或無法解析"
+
           # 刪除舊的 index.html，強制重新生成
           rm -f index.html
 
-          # 重新生成 index.html（包含所有保留的日期）
-          echo "重新生成 index.html..."
-          python generate_index_standalone.py || echo "::warning::生成 index.html 失敗"
+          # 重新生成
+          python generate_index_standalone.py || {
+            echo "::error::生成 index.html 失敗"
+            exit 1
+          }
 
-          # 顯示生成的 index.html 內容（除錯用）
-          echo "index.html 中包含的日期:"
+          # 顯示生成後的 index.html 內容（除錯用）
+          echo ""
+          echo "生成後 index.html 包含的日期:"
           grep -oP '"\d{4}-\d{2}-\d{2}\.html"' index.html | sort -r | head -20 || echo "無法解析日期"
           echo ""
           echo "檢查 index.html 格式（顯示前 3 個日期項目）:"
@@ -416,7 +426,13 @@ jobs:
 
           # 檢查是否有任何變更需要提交
           if git diff --cached --quiet; then
-            echo "ℹ️  index.html 無變更，可能已是最新版本"
+            echo "⚠️  index.html 無變更，但仍然強制提交以確保同步"
+            # 即使沒有變更，也使用 --allow-empty 提交
+            git commit --allow-empty -m "📝 更新 index.html (確保同步)"
+            git push origin gh-pages || {
+              echo "::error::推送 index.html 失敗"
+              exit 1
+            }
           else
             # 如果有刪除舊檔案，一併提交
             if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
