@@ -112,20 +112,6 @@ jobs:
           echo "- TOKEN_JSON length: ${#GDRIVE_TOKEN_JSON}" >> $GITHUB_STEP_SUMMARY
           echo "- TOKEN starts with: ${GDRIVE_TOKEN_JSON:0:20}..." >> $GITHUB_STEP_SUMMARY
 
-      # 使用 Python 測試 Google Drive OAuth Token
-      - name: Test Google Drive OAuth with Python
-        timeout-minutes: 2
-        env:
-          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
-          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
-          GDRIVE_TOKEN_JSON: ${{ secrets.GDRIVE_TOKEN_JSON }}
-        run: |
-          echo "### Python OAuth Test" >> $GITHUB_STEP_SUMMARY
-          python tests/test_gdrive_auth.py 2>&1 | tee /tmp/python_test.log
-          echo '```' >> $GITHUB_STEP_SUMMARY
-          cat /tmp/python_test.log >> $GITHUB_STEP_SUMMARY
-          echo '```' >> $GITHUB_STEP_SUMMARY
-
       # 測試 rclone 配置是否正常
       - name: Test rclone connection
         timeout-minutes: 2
