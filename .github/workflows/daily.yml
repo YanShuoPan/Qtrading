@@ -195,6 +195,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+          # 暫存本地變更（避免切換分支時衝突）
+          git stash push -m "Stash before switching to gh-pages" || echo "無需 stash"
+
           # 拉取 gh-pages 分支
           git fetch origin gh-pages:gh-pages 2>/dev/null || {
             echo "gh-pages 分支不存在（可能是首次執行）"
@@ -317,6 +320,9 @@ jobs:
           # 配置 git
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 暫存本地變更（避免切換分支時衝突）
+          git stash push -m "Stash before switching to gh-pages for cleanup" || echo "無需 stash"
 
           # 確保有最新的 main 分支代碼
           git fetch origin main
