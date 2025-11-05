@@ -1,0 +1,676 @@
+2025/11/05 10:50:38 DEBUG : rclone: Version "v1.71.2" starting with parameters ["rclone" "sync" "gdrive:data" "./data" "-vv" "--log-file" "rclone.log" "--timeout" "30s" "--contimeout" "60s" "--retries" "3" "--low-level-retries" "3" "--create-empty-src-dirs"]
+2025/11/05 10:50:38 DEBUG : Creating backend with remote "gdrive:data"
+2025/11/05 10:50:38 DEBUG : Using config file from "/home/runner/.config/rclone/rclone.conf"
+2025/11/05 10:50:38 DEBUG : Creating backend with remote "./data"
+2025/11/05 10:50:38 DEBUG : fs cache: renaming cache item "./data" to be canonical "/home/runner/work/Qtrading/Qtrading/data"
+2025/11/05 10:50:39 DEBUG : 2025-10-04: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-04: Made directory with metadata (mtime=2025-10-04T13:36:41.123Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-04", newDst=2025-10-04
+2025/11/05 10:50:39 DEBUG : 2025-10-06: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-06: Made directory with metadata (mtime=2025-10-06T12:58:22.105Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-06", newDst=2025-10-06
+2025/11/05 10:50:39 DEBUG : 2025-10-07: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-07: Made directory with metadata (mtime=2025-10-07T12:57:55.315Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-07", newDst=2025-10-07
+2025/11/05 10:50:39 DEBUG : 2025-10-08: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-08: Made directory with metadata (mtime=2025-10-08T12:57:27.653Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-08", newDst=2025-10-08
+2025/11/05 10:50:39 DEBUG : 2025-10-09: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-09: Made directory with metadata (mtime=2025-10-09T12:57:53.705Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-09", newDst=2025-10-09
+2025/11/05 10:50:39 DEBUG : 2025-10-10: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-10: Made directory with metadata (mtime=2025-10-10T12:56:21.233Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-10", newDst=2025-10-10
+2025/11/05 10:50:39 DEBUG : 2025-10-13: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-13: Made directory with metadata (mtime=2025-10-13T12:58:25.392Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-13", newDst=2025-10-13
+2025/11/05 10:50:39 DEBUG : 2025-10-14: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-14: Made directory with metadata (mtime=2025-10-14T13:00:10.77Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-14", newDst=2025-10-14
+2025/11/05 10:50:39 DEBUG : 2025-10-15: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-15: Made directory with metadata (mtime=2025-10-15T12:59:41.545Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-15", newDst=2025-10-15
+2025/11/05 10:50:39 DEBUG : 2025-10-16: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-16: Made directory with metadata (mtime=2025-10-16T12:58:01.333Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-16", newDst=2025-10-16
+2025/11/05 10:50:39 DEBUG : 2025-10-17: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-17: Made directory with metadata (mtime=2025-10-17T12:56:59.943Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-17", newDst=2025-10-17
+2025/11/05 10:50:39 DEBUG : 2025-10-20: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-20: Made directory with metadata (mtime=2025-10-20T12:58:12.076Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-20", newDst=2025-10-20
+2025/11/05 10:50:39 DEBUG : 2025-10-21: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-21: Made directory with metadata (mtime=2025-10-21T12:59:24.893Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-21", newDst=2025-10-21
+2025/11/05 10:50:39 DEBUG : 2025-10-22: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-22: Made directory with metadata (mtime=2025-10-22T12:59:39.479Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-22", newDst=2025-10-22
+2025/11/05 10:50:39 DEBUG : 2025-10-23: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-23: Made directory with metadata (mtime=2025-10-23T12:58:46.294Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-23", newDst=2025-10-23
+2025/11/05 10:50:39 DEBUG : 2025-10-24: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-24: Made directory with metadata (mtime=2025-10-24T06:31:56.82Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-24", newDst=2025-10-24
+2025/11/05 10:50:39 DEBUG : 2025-10-27: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-27: Made directory with metadata (mtime=2025-10-27T10:18:32.8Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-27", newDst=2025-10-27
+2025/11/05 10:50:39 DEBUG : 2025-10-28: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-28: Made directory with metadata (mtime=2025-10-28T10:17:31.992Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-28", newDst=2025-10-28
+2025/11/05 10:50:39 DEBUG : 2025-10-29: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-29: Made directory with metadata (mtime=2025-10-29T10:17:19.821Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-29", newDst=2025-10-29
+2025/11/05 10:50:39 DEBUG : 2025-10-30: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-30: Made directory with metadata (mtime=2025-10-30T10:16:37.028Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-30", newDst=2025-10-30
+2025/11/05 10:50:39 DEBUG : 2025-10-31: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-10-31: Made directory with metadata (mtime=2025-10-31T09:59:23.674Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-10-31", newDst=2025-10-31
+2025/11/05 10:50:39 DEBUG : 2025-11-03: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-11-03: Made directory with metadata (mtime=2025-11-03T08:56:28.306Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-11-03", newDst=2025-11-03
+2025/11/05 10:50:39 DEBUG : 2025-11-04: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-11-04: Made directory with metadata (mtime=2025-11-04T10:17:32.104Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-11-04", newDst=2025-11-04
+2025/11/05 10:50:39 DEBUG : 2025-11-05: Making directory with metadata
+2025/11/05 10:50:39 INFO  : 2025-11-05: Made directory with metadata (mtime=2025-11-05T10:17:22.503Z)
+2025/11/05 10:50:39 DEBUG : Added delayed dir = "2025-11-05", newDst=2025-11-05
+2025/11/05 10:50:39 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt: md5 = d6dac843695d5e09b5ecc3df8dca2113 OK
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt.a9606759.partial: renamed to: 2025-10-04/好像蠻強的_2025-10-04.txt
+2025/11/05 10:50:39 INFO  : 2025-10-04/好像蠻強的_2025-10-04.txt: Copied (new)
+2025/11/05 10:50:39 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt: md5 = 8f35de650eb1775966bbe5c5f1df1252 OK
+2025/11/05 10:50:39 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt.dce304fb.partial: renamed to: 2025-10-13/好像蠻強的_2025-10-13.txt
+2025/11/05 10:50:39 INFO  : 2025-10-13/好像蠻強的_2025-10-13.txt: Copied (new)
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: md5 = ae53ad2f5266f09eff0e57ecdb6b5b8c OK
+2025/11/05 10:50:39 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png.fc83f9df.partial: renamed to: 2025-10-04/好像蠻強的_batch_1_2025-10-04.png
+2025/11/05 10:50:39 INFO  : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: Copied (new)
+2025/11/05 10:50:39 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: Need to transfer - File not found at Destination
+2025/11/05 10:50:39 DEBUG : Local file system at /home/runner/work/Qtrading/Qtrading/data: Waiting for checks to finish
+2025/11/05 10:50:39 DEBUG : Local file system at /home/runner/work/Qtrading/Qtrading/data: Waiting for transfers to finish
+2025/11/05 10:50:39 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: md5 = d9aa0af0f0e58eb12a2b44e411ed13f5 OK
+2025/11/05 10:50:39 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt.031312cb.partial: renamed to: 2025-10-04/有機會噴 觀察一下_2025-10-04.txt
+2025/11/05 10:50:39 INFO  : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: Copied (new)
+2025/11/05 10:50:40 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: md5 = 63985c017e9171f032d0d10783fa1a13 OK
+2025/11/05 10:50:40 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt.26388204.partial: renamed to: 2025-10-13/有機會噴 觀察一下_2025-10-13.txt
+2025/11/05 10:50:40 INFO  : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: Copied (new)
+2025/11/05 10:50:40 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: md5 = 35ee24c543c6c1b6f664bfaea3cf81f1 OK
+2025/11/05 10:50:40 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png.710726db.partial: renamed to: 2025-10-13/好像蠻強的_batch_1_2025-10-13.png
+2025/11/05 10:50:40 INFO  : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: Copied (new)
+2025/11/05 10:50:40 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt: md5 = f85a150d8f8895ef5116cb58847b16e4 OK
+2025/11/05 10:50:40 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt.89a3367e.partial: renamed to: 2025-10-07/好像蠻強的_2025-10-07.txt
+2025/11/05 10:50:40 INFO  : 2025-10-07/好像蠻強的_2025-10-07.txt: Copied (new)
+2025/11/05 10:50:40 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: md5 = 17a3bbd06254fa5c9b079da24242ddfb OK
+2025/11/05 10:50:40 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png.838fd4ec.partial: renamed to: 2025-10-07/好像蠻強的_batch_1_2025-10-07.png
+2025/11/05 10:50:40 INFO  : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: Copied (new)
+2025/11/05 10:50:40 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: md5 = 5039ca11f6489e3734de422628b3edbb OK
+2025/11/05 10:50:40 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png.adfe64cb.partial: renamed to: 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png
+2025/11/05 10:50:40 INFO  : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: md5 = 98e2a1d07b9a68d966c490f58fb224c8 OK
+2025/11/05 10:50:41 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png.fb35f021.partial: renamed to: 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png
+2025/11/05 10:50:41 INFO  : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: md5 = cacbfe473203f00f016fbe47d7ed064a OK
+2025/11/05 10:50:41 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt.21d0296b.partial: renamed to: 2025-10-07/有機會噴 觀察一下_2025-10-07.txt
+2025/11/05 10:50:41 INFO  : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt: md5 = d1d17a37d6c554383023e6fefe94325c OK
+2025/11/05 10:50:41 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt.a2100e4d.partial: renamed to: 2025-10-10/好像蠻強的_2025-10-10.txt
+2025/11/05 10:50:41 INFO  : 2025-10-10/好像蠻強的_2025-10-10.txt: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: md5 = 082843c4a945fd729412601b80bdebfe OK
+2025/11/05 10:50:41 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png.d78821a0.partial: renamed to: 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png
+2025/11/05 10:50:41 INFO  : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: md5 = 0f68ffe763ebd7c3f9b70a8a9cf6d455 OK
+2025/11/05 10:50:41 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt.4616e088.partial: renamed to: 2025-10-10/有機會噴 觀察一下_2025-10-10.txt
+2025/11/05 10:50:41 INFO  : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: md5 = 1833672f15730d872d2caec5a96d3d99 OK
+2025/11/05 10:50:41 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png.719b20ad.partial: renamed to: 2025-10-10/好像蠻強的_batch_1_2025-10-10.png
+2025/11/05 10:50:41 INFO  : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: Copied (new)
+2025/11/05 10:50:41 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt: md5 = 9266500e0aaeb76f93997f428cc310f2 OK
+2025/11/05 10:50:41 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt.61c434b6.partial: renamed to: 2025-10-09/好像蠻強的_2025-10-09.txt
+2025/11/05 10:50:41 INFO  : 2025-10-09/好像蠻強的_2025-10-09.txt: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: md5 = fe98cc5e5177694c9535b8337d0dc299 OK
+2025/11/05 10:50:42 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt.0e359da4.partial: renamed to: 2025-10-09/有機會噴 觀察一下_2025-10-09.txt
+2025/11/05 10:50:42 INFO  : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: md5 = 9424153dac0c741a05f28a8809573a24 OK
+2025/11/05 10:50:42 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png.03586454.partial: renamed to: 2025-10-09/好像蠻強的_batch_1_2025-10-09.png
+2025/11/05 10:50:42 INFO  : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: md5 = 5b7c9bf4943d04e01f066533fe9bd435 OK
+2025/11/05 10:50:42 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png.bf478db5.partial: renamed to: 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png
+2025/11/05 10:50:42 INFO  : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: md5 = 4d741831a68f04505e43f1df62f6f420 OK
+2025/11/05 10:50:42 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png.f6fdd620.partial: renamed to: 2025-10-08/好像蠻強的_batch_1_2025-10-08.png
+2025/11/05 10:50:42 INFO  : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt: md5 = 2644c77c2021b88155317d9694ed423f OK
+2025/11/05 10:50:42 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt.0719cd47.partial: renamed to: 2025-10-08/好像蠻強的_2025-10-08.txt
+2025/11/05 10:50:42 INFO  : 2025-10-08/好像蠻強的_2025-10-08.txt: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: md5 = 83166ee4aff817ca23f5f59feeec2a96 OK
+2025/11/05 10:50:42 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png.1cebccd2.partial: renamed to: 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png
+2025/11/05 10:50:42 INFO  : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: Copied (new)
+2025/11/05 10:50:42 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: md5 = dfd4ff82b8d98ea7bb992b940077b27e OK
+2025/11/05 10:50:42 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt.33c98cc6.partial: renamed to: 2025-10-08/有機會噴 觀察一下_2025-10-08.txt
+2025/11/05 10:50:42 INFO  : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: md5 = ad76b5662d8118bef38143d1c30dae59 OK
+2025/11/05 10:50:43 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png.69301d74.partial: renamed to: 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png
+2025/11/05 10:50:43 INFO  : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: md5 = 5bba53b0d219fc4b6f9a3f9d97b2969b OK
+2025/11/05 10:50:43 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png.af88e7be.partial: renamed to: 2025-10-14/好像蠻強的_batch_1_2025-10-14.png
+2025/11/05 10:50:43 INFO  : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: md5 = 266976d7adfbfc016c187786004c69b4 OK
+2025/11/05 10:50:43 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt.5437ac88.partial: renamed to: 2025-10-14/有機會噴 觀察一下_2025-10-14.txt
+2025/11/05 10:50:43 INFO  : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: md5 = ae53ad2f5266f09eff0e57ecdb6b5b8c OK
+2025/11/05 10:50:43 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png.f4a257f8.partial: renamed to: 2025-10-06/好像蠻強的_batch_1_2025-10-06.png
+2025/11/05 10:50:43 INFO  : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt: md5 = 14d0a3b9484af7b6cce2b765e757ee65 OK
+2025/11/05 10:50:43 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt.88b8b72e.partial: renamed to: 2025-10-14/好像蠻強的_2025-10-14.txt
+2025/11/05 10:50:43 INFO  : 2025-10-14/好像蠻強的_2025-10-14.txt: Copied (new)
+2025/11/05 10:50:43 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: md5 = 1e87f8a54f83645492e0f3b36bdb3da5 OK
+2025/11/05 10:50:43 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png.3305b427.partial: renamed to: 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png
+2025/11/05 10:50:43 INFO  : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: md5 = c606aa029bed86d5971031bd2a1a9a3e OK
+2025/11/05 10:50:44 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt.601aa680.partial: renamed to: 2025-10-06/有機會噴 觀察一下_2025-10-06.txt
+2025/11/05 10:50:44 INFO  : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: md5 = 98e2a1d07b9a68d966c490f58fb224c8 OK
+2025/11/05 10:50:44 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png.c80f562f.partial: renamed to: 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png
+2025/11/05 10:50:44 INFO  : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: md5 = 714061860d5efb34febad0c0d512dc76 OK
+2025/11/05 10:50:44 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt.964ff79e.partial: renamed to: 2025-10-23/有機會噴 觀察一下_2025-10-23.txt
+2025/11/05 10:50:44 INFO  : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt: md5 = 01a09c9aa837f71da3963e09bba8142b OK
+2025/11/05 10:50:44 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt.46daf330.partial: renamed to: 2025-10-23/好像蠻強的_2025-10-23.txt
+2025/11/05 10:50:44 INFO  : 2025-10-23/好像蠻強的_2025-10-23.txt: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt: md5 = a97b687ec30b110470abb6e40142294a OK
+2025/11/05 10:50:44 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt.2c43613f.partial: renamed to: 2025-10-06/好像蠻強的_2025-10-06.txt
+2025/11/05 10:50:44 INFO  : 2025-10-06/好像蠻強的_2025-10-06.txt: Copied (new)
+2025/11/05 10:50:44 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt: md5 = bc1c951b86527e3bbc6561f6e40b720a OK
+2025/11/05 10:50:44 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt.580b0399.partial: renamed to: 2025-10-21/好像蠻強的_2025-10-21.txt
+2025/11/05 10:50:44 INFO  : 2025-10-21/好像蠻強的_2025-10-21.txt: Copied (new)
+2025/11/05 10:50:45 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: md5 = 5413f88b8adf141a4927fbcb30359aaf OK
+2025/11/05 10:50:45 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt.b42cd921.partial: renamed to: 2025-10-20/有機會噴 觀察一下_2025-10-20.txt
+2025/11/05 10:50:45 INFO  : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: Copied (new)
+2025/11/05 10:50:45 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt: md5 = 22316ae371a691eb3f89c003708bfe4a OK
+2025/11/05 10:50:45 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt.77c4db0e.partial: renamed to: 2025-10-20/好像蠻強的_2025-10-20.txt
+2025/11/05 10:50:45 INFO  : 2025-10-20/好像蠻強的_2025-10-20.txt: Copied (new)
+2025/11/05 10:50:45 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: md5 = fde723bb146825978cb9ff2a8aac362e OK
+2025/11/05 10:50:45 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt.4da09330.partial: renamed to: 2025-10-21/有機會噴 觀察一下_2025-10-21.txt
+2025/11/05 10:50:45 INFO  : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: Copied (new)
+2025/11/05 10:50:45 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt: md5 = 6d1ff5672783e7a17ebfafb4f1390e4f OK
+2025/11/05 10:50:45 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt.1566c373.partial: renamed to: 2025-10-16/好像蠻強的_2025-10-16.txt
+2025/11/05 10:50:45 INFO  : 2025-10-16/好像蠻強的_2025-10-16.txt: Copied (new)
+2025/11/05 10:50:45 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: md5 = 6ef3bfd872b79fba3c1f9aca64f26e11 OK
+2025/11/05 10:50:45 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png.1c60aef8.partial: renamed to: 2025-10-16/好像蠻強的_batch_1_2025-10-16.png
+2025/11/05 10:50:45 INFO  : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt: md5 = fa0f6a7adc37e9949a771a679d441954 OK
+2025/11/05 10:50:46 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt.dc12bde9.partial: renamed to: 2025-10-17/好像蠻強的_2025-10-17.txt
+2025/11/05 10:50:46 INFO  : 2025-10-17/好像蠻強的_2025-10-17.txt: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: md5 = ef7fccdf857eac072eec2bce44aabfe4 OK
+2025/11/05 10:50:46 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt.dd98b974.partial: renamed to: 2025-10-16/有機會噴 觀察一下_2025-10-16.txt
+2025/11/05 10:50:46 INFO  : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: md5 = b66f3ffcacea53c027a05f4db324979a OK
+2025/11/05 10:50:46 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png.9db7a813.partial: renamed to: 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png
+2025/11/05 10:50:46 INFO  : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: md5 = c1c2bdf4da3a756739e5534fc83d31be OK
+2025/11/05 10:50:46 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png.bc1d9984.partial: renamed to: 2025-10-17/好像蠻強的_batch_1_2025-10-17.png
+2025/11/05 10:50:46 INFO  : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: md5 = 6605908eb04acf419ef59c7410cd1bff OK
+2025/11/05 10:50:46 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png.728319f2.partial: renamed to: 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png
+2025/11/05 10:50:46 INFO  : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: Copied (new)
+2025/11/05 10:50:46 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt: md5 = ff45d1810bda027c5ae60201d00124ec OK
+2025/11/05 10:50:46 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt.66ae0dbd.partial: renamed to: 2025-10-22/好像蠻強的_2025-10-22.txt
+2025/11/05 10:50:46 INFO  : 2025-10-22/好像蠻強的_2025-10-22.txt: Copied (new)
+2025/11/05 10:50:47 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: md5 = b54240bcb5fb6fa2cf17eaf4cce0714f OK
+2025/11/05 10:50:47 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt.395d96ad.partial: renamed to: 2025-10-22/有機會噴 觀察一下_2025-10-22.txt
+2025/11/05 10:50:47 INFO  : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: Copied (new)
+2025/11/05 10:50:47 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt: md5 = 70b3096503faa929f48763ee5ebeb913 OK
+2025/11/05 10:50:47 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt.3be7986a.partial: renamed to: 2025-10-24/好像蠻強的_2025-10-24.txt
+2025/11/05 10:50:47 INFO  : 2025-10-24/好像蠻強的_2025-10-24.txt: Copied (new)
+2025/11/05 10:50:47 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt: md5 = 975d14cc9fac6ff4087e20076db678db OK
+2025/11/05 10:50:47 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt.a80afea4.partial: renamed to: 2025-10-15/好像蠻強的_2025-10-15.txt
+2025/11/05 10:50:47 INFO  : 2025-10-15/好像蠻強的_2025-10-15.txt: Copied (new)
+2025/11/05 10:50:47 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: md5 = 067e993e49528c8243eda1d282e8e13b OK
+2025/11/05 10:50:47 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt.1260a1e6.partial: renamed to: 2025-10-24/有機會噴 觀察一下_2025-10-24.txt
+2025/11/05 10:50:47 INFO  : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: Copied (new)
+2025/11/05 10:50:47 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: md5 = cb59396c7f986be0ed52afcbfb4fdcbe OK
+2025/11/05 10:50:47 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png.319b07cd.partial: renamed to: 2025-10-15/好像蠻強的_batch_1_2025-10-15.png
+2025/11/05 10:50:47 INFO  : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: md5 = 875767f7f28735e52c3c5f3840996c79 OK
+2025/11/05 10:50:48 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt.637cabfa.partial: renamed to: 2025-10-17/有機會噴 觀察一下_2025-10-17.txt
+2025/11/05 10:50:48 INFO  : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: md5 = 1e1b229f0eb6bc54276c07ad9118896d OK
+2025/11/05 10:50:48 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png.6fd2a740.partial: renamed to: 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png
+2025/11/05 10:50:48 INFO  : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt: md5 = 010265676302c749b1a373d314a0565f OK
+2025/11/05 10:50:48 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt.5f8b72d9.partial: renamed to: 2025-10-27/好像蠻強的_2025-10-27.txt
+2025/11/05 10:50:48 INFO  : 2025-10-27/好像蠻強的_2025-10-27.txt: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: md5 = 25d9045fb7367111f1204a20f0d7330e OK
+2025/11/05 10:50:48 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt.b51407cc.partial: renamed to: 2025-10-30/有機會噴 觀察一下_2025-10-30.txt
+2025/11/05 10:50:48 INFO  : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: md5 = d0490f16997a930444edb6834382a4cd OK
+2025/11/05 10:50:48 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt.ec525470.partial: renamed to: 2025-10-15/有機會噴 觀察一下_2025-10-15.txt
+2025/11/05 10:50:48 INFO  : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: Copied (new)
+2025/11/05 10:50:48 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: md5 = d520c89eaa0276b1cfae10a3b0fae987 OK
+2025/11/05 10:50:48 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt.e74b5a32.partial: renamed to: 2025-10-27/有機會噴 觀察一下_2025-10-27.txt
+2025/11/05 10:50:48 INFO  : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt: md5 = a9c50757441210041b50d437d6c7d941 OK
+2025/11/05 10:50:49 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt.a4966679.partial: renamed to: 2025-10-30/好像蠻強的_2025-10-30.txt
+2025/11/05 10:50:49 INFO  : 2025-10-30/好像蠻強的_2025-10-30.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt: md5 = 9fe663190594766d200ff62347aba928 OK
+2025/11/05 10:50:49 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt.5eaa3f5b.partial: renamed to: 2025-10-28/好像蠻強的_2025-10-28.txt
+2025/11/05 10:50:49 INFO  : 2025-10-28/好像蠻強的_2025-10-28.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: md5 = 9ccb066e98eaaaebce300814c3782f7f OK
+2025/11/05 10:50:49 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt.16669273.partial: renamed to: 2025-10-28/有機會噴 觀察一下_2025-10-28.txt
+2025/11/05 10:50:49 INFO  : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt: md5 = 2073696ba94fefe6cd67faa38b3d91fc OK
+2025/11/05 10:50:49 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt.52917efe.partial: renamed to: 2025-10-29/好像蠻強的_2025-10-29.txt
+2025/11/05 10:50:49 INFO  : 2025-10-29/好像蠻強的_2025-10-29.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt: md5 = 1618d413d8f9e5114b446ba9968de327 OK
+2025/11/05 10:50:49 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt.cd1ce1c4.partial: renamed to: 2025-10-31/好像蠻強的_2025-10-31.txt
+2025/11/05 10:50:49 INFO  : 2025-10-31/好像蠻強的_2025-10-31.txt: Copied (new)
+2025/11/05 10:50:49 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: md5 = 408e21b261beb49fc3927e94328e4c64 OK
+2025/11/05 10:50:49 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt.baec89c7.partial: renamed to: 2025-10-31/有機會噴 觀察一下_2025-10-31.txt
+2025/11/05 10:50:49 INFO  : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: md5 = fa7e4b092ae8437c7cac7daefaf9405a OK
+2025/11/05 10:50:50 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt.df96aad4.partial: renamed to: 2025-11-04/有機會噴 觀察一下_2025-11-04.txt
+2025/11/05 10:50:50 INFO  : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: md5 = 18927fa42628686106f3b2b0976baca9 OK
+2025/11/05 10:50:50 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt.90abf8ad.partial: renamed to: 2025-10-29/有機會噴 觀察一下_2025-10-29.txt
+2025/11/05 10:50:50 INFO  : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt: md5 = 860c1af087dc086fb63b81248f4271f2 OK
+2025/11/05 10:50:50 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt.8d67c423.partial: renamed to: 2025-11-04/好像蠻強的_2025-11-04.txt
+2025/11/05 10:50:50 INFO  : 2025-11-04/好像蠻強的_2025-11-04.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt: md5 = e1a42d4e3667dead1390aa48307115c4 OK
+2025/11/05 10:50:50 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt.ca4d7bf1.partial: renamed to: 2025-11-05/好像蠻強的_2025-11-05.txt
+2025/11/05 10:50:50 INFO  : 2025-11-05/好像蠻強的_2025-11-05.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: md5 = 1f346ab4b728d9b314f8447829b2872f OK
+2025/11/05 10:50:50 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt.528317c8.partial: renamed to: 2025-11-03/有機會噴 觀察一下_2025-11-03.txt
+2025/11/05 10:50:50 INFO  : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: md5 = ccc566ae3f8f02a737dfbb77b08f56a4 OK
+2025/11/05 10:50:50 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt.f39645c3.partial: renamed to: 2025-11-05/有機會噴 觀察一下_2025-11-05.txt
+2025/11/05 10:50:50 INFO  : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt: md5 = df61d50b4bf37dcba43ad4f5577cb9b1 OK
+2025/11/05 10:50:50 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt.ddcda3fa.partial: renamed to: 2025-11-03/好像蠻強的_2025-11-03.txt
+2025/11/05 10:50:50 INFO  : 2025-11-03/好像蠻強的_2025-11-03.txt: Copied (new)
+2025/11/05 10:50:50 DEBUG : Waiting for deletions to finish
+2025/11/05 10:50:50 INFO  : 2025-10-14: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-15: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-08: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-16: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-17: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-06: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-21: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-13: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-22: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-23: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-09: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-24: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-27: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-28: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-29: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-30: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-31: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-11-03: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-11-04: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-11-05: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-10: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-20: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-04: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 2025-10-07: Set directory modification time (using SetModTime)
+2025/11/05 10:50:50 INFO  : 
+Transferred:   	    2.859 MiB / 2.859 MiB, 100%, 266.085 KiB/s, ETA 0s
+Checks:                 0 / 0, -, Listed 94
+Transferred:           70 / 70, 100%
+Elapsed time:        11.8s
+
+2025/11/05 10:50:50 DEBUG : 39 go routines active
+2025/11/05 10:51:00 DEBUG : rclone: Version "v1.71.2" starting with parameters ["rclone" "copy" "./taiex.sqlite" "gdrive:" "-vv" "--log-file" "rclone.log" "--timeout" "30s" "--contimeout" "60s" "--retries" "3" "--update" "--checksum"]
+2025/11/05 10:51:00 DEBUG : Creating backend with remote "./taiex.sqlite"
+2025/11/05 10:51:00 DEBUG : Using config file from "/home/runner/.config/rclone/rclone.conf"
+2025/11/05 10:51:00 DEBUG : fs cache: renaming child cache item "./taiex.sqlite" to be canonical for parent "/home/runner/work/Qtrading/Qtrading"
+2025/11/05 10:51:00 DEBUG : Creating backend with remote "gdrive:"
+2025/11/05 10:51:00 DEBUG : taiex.sqlite: md5 = bc3e99a9268a927f7a50dcf374a8661f OK
+2025/11/05 10:51:00 DEBUG : taiex.sqlite: Size and md5 of src and dst objects identical
+2025/11/05 10:51:00 DEBUG : taiex.sqlite: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:00 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Elapsed time:         0.0s
+
+2025/11/05 10:51:00 DEBUG : 7 go routines active
+2025/11/05 10:51:01 DEBUG : rclone: Version "v1.71.2" starting with parameters ["rclone" "copy" "./data" "gdrive:data" "-vv" "--log-file" "rclone.log" "--timeout" "30s" "--contimeout" "60s" "--retries" "3" "--low-level-retries" "3" "--update" "--checksum"]
+2025/11/05 10:51:01 DEBUG : Creating backend with remote "./data"
+2025/11/05 10:51:01 DEBUG : Using config file from "/home/runner/.config/rclone/rclone.conf"
+2025/11/05 10:51:01 DEBUG : fs cache: renaming cache item "./data" to be canonical "/home/runner/work/Qtrading/Qtrading/data"
+2025/11/05 10:51:01 DEBUG : Creating backend with remote "gdrive:data"
+2025/11/05 10:51:01 DEBUG : 2025-10-04: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-04", newDst=2025-10-04
+2025/11/05 10:51:01 DEBUG : 2025-10-06: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-06", newDst=2025-10-06
+2025/11/05 10:51:01 DEBUG : 2025-10-07: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-07", newDst=2025-10-07
+2025/11/05 10:51:01 DEBUG : 2025-10-08: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-08", newDst=2025-10-08
+2025/11/05 10:51:01 DEBUG : 2025-10-09: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-09", newDst=2025-10-09
+2025/11/05 10:51:01 DEBUG : 2025-10-10: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-10", newDst=2025-10-10
+2025/11/05 10:51:01 DEBUG : 2025-10-13: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-13", newDst=2025-10-13
+2025/11/05 10:51:01 DEBUG : 2025-10-14: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-14", newDst=2025-10-14
+2025/11/05 10:51:01 DEBUG : 2025-10-15: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-15", newDst=2025-10-15
+2025/11/05 10:51:01 DEBUG : 2025-10-16: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-16", newDst=2025-10-16
+2025/11/05 10:51:01 DEBUG : 2025-10-17: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-17", newDst=2025-10-17
+2025/11/05 10:51:01 DEBUG : 2025-10-20: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-20", newDst=2025-10-20
+2025/11/05 10:51:01 DEBUG : 2025-10-21: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-21", newDst=2025-10-21
+2025/11/05 10:51:01 DEBUG : 2025-10-22: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-22", newDst=2025-10-22
+2025/11/05 10:51:01 DEBUG : 2025-10-23: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-23", newDst=2025-10-23
+2025/11/05 10:51:01 DEBUG : 2025-10-24: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-24", newDst=2025-10-24
+2025/11/05 10:51:01 DEBUG : 2025-10-27: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-27", newDst=2025-10-27
+2025/11/05 10:51:01 DEBUG : 2025-10-28: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-28", newDst=2025-10-28
+2025/11/05 10:51:01 DEBUG : 2025-10-29: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-29", newDst=2025-10-29
+2025/11/05 10:51:01 DEBUG : 2025-10-30: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-30", newDst=2025-10-30
+2025/11/05 10:51:01 DEBUG : 2025-10-31: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-10-31", newDst=2025-10-31
+2025/11/05 10:51:01 DEBUG : 2025-11-03: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-11-03", newDst=2025-11-03
+2025/11/05 10:51:01 DEBUG : 2025-11-04: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-11-04", newDst=2025-11-04
+2025/11/05 10:51:01 DEBUG : 2025-11-05: Directory modification time the same (differ by 0s, within tolerance 1ms)
+2025/11/05 10:51:01 DEBUG : Added delayed dir = "2025-11-05", newDst=2025-11-05
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: md5 = 266976d7adfbfc016c187786004c69b4 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt: md5 = 14d0a3b9484af7b6cce2b765e757ee65 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_2025-10-14.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_2025-10-14.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: md5 = 1e87f8a54f83645492e0f3b36bdb3da5 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: md5 = 5bba53b0d219fc4b6f9a3f9d97b2969b OK
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-14/有機會噴 觀察一下_batch_1_2025-10-14.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-14/好像蠻強的_batch_1_2025-10-14.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt: md5 = 8f35de650eb1775966bbe5c5f1df1252 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_2025-10-13.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: md5 = 63985c017e9171f032d0d10783fa1a13 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: md5 = 35ee24c543c6c1b6f664bfaea3cf81f1 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_2025-10-13.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-13/好像蠻強的_batch_1_2025-10-13.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: md5 = 5039ca11f6489e3734de422628b3edbb OK
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-13/有機會噴 觀察一下_batch_1_2025-10-13.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt: md5 = f85a150d8f8895ef5116cb58847b16e4 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: md5 = cacbfe473203f00f016fbe47d7ed064a OK
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_2025-10-07.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_2025-10-07.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: md5 = 17a3bbd06254fa5c9b079da24242ddfb OK
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-07/好像蠻強的_batch_1_2025-10-07.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: md5 = 082843c4a945fd729412601b80bdebfe OK
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-07/有機會噴 觀察一下_batch_1_2025-10-07.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt: md5 = d6dac843695d5e09b5ecc3df8dca2113 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_2025-10-04.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: md5 = d9aa0af0f0e58eb12a2b44e411ed13f5 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_2025-10-04.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: md5 = ae53ad2f5266f09eff0e57ecdb6b5b8c OK
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-04/好像蠻強的_batch_1_2025-10-04.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: md5 = 98e2a1d07b9a68d966c490f58fb224c8 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-04/有機會噴 觀察一下_batch_1_2025-10-04.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt: md5 = d1d17a37d6c554383023e6fefe94325c OK
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_2025-10-10.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: md5 = 0f68ffe763ebd7c3f9b70a8a9cf6d455 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_2025-10-10.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: md5 = 1833672f15730d872d2caec5a96d3d99 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-10/好像蠻強的_batch_1_2025-10-10.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: md5 = 5b7c9bf4943d04e01f066533fe9bd435 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-10/有機會噴 觀察一下_batch_1_2025-10-10.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt: md5 = 9266500e0aaeb76f93997f428cc310f2 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_2025-10-09.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: md5 = fe98cc5e5177694c9535b8337d0dc299 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_2025-10-09.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: md5 = 9424153dac0c741a05f28a8809573a24 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-09/好像蠻強的_batch_1_2025-10-09.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: md5 = 83166ee4aff817ca23f5f59feeec2a96 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-09/有機會噴 觀察一下_batch_1_2025-10-09.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt: md5 = a97b687ec30b110470abb6e40142294a OK
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_2025-10-06.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: md5 = c606aa029bed86d5971031bd2a1a9a3e OK
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_2025-10-06.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: md5 = ae53ad2f5266f09eff0e57ecdb6b5b8c OK
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-06/好像蠻強的_batch_1_2025-10-06.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: md5 = 98e2a1d07b9a68d966c490f58fb224c8 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-06/有機會噴 觀察一下_batch_1_2025-10-06.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt: md5 = 22316ae371a691eb3f89c003708bfe4a OK
+2025/11/05 10:51:01 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: md5 = 5413f88b8adf141a4927fbcb30359aaf OK
+2025/11/05 10:51:01 DEBUG : 2025-10-20/好像蠻強的_2025-10-20.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-20/有機會噴 觀察一下_2025-10-20.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt: md5 = 2644c77c2021b88155317d9694ed423f OK
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_2025-10-08.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: md5 = dfd4ff82b8d98ea7bb992b940077b27e OK
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_2025-10-08.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: md5 = 4d741831a68f04505e43f1df62f6f420 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-08/好像蠻強的_batch_1_2025-10-08.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: md5 = ad76b5662d8118bef38143d1c30dae59 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-08/有機會噴 觀察一下_batch_1_2025-10-08.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: md5 = ef7fccdf857eac072eec2bce44aabfe4 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_2025-10-16.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt: md5 = 6d1ff5672783e7a17ebfafb4f1390e4f OK
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_2025-10-16.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: md5 = 6ef3bfd872b79fba3c1f9aca64f26e11 OK
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-16/好像蠻強的_batch_1_2025-10-16.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: md5 = b66f3ffcacea53c027a05f4db324979a OK
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-16/有機會噴 觀察一下_batch_1_2025-10-16.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt: md5 = 975d14cc9fac6ff4087e20076db678db OK
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_2025-10-15.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: md5 = d0490f16997a930444edb6834382a4cd OK
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_2025-10-15.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: md5 = cb59396c7f986be0ed52afcbfb4fdcbe OK
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-15/好像蠻強的_batch_1_2025-10-15.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: md5 = 1e1b229f0eb6bc54276c07ad9118896d OK
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:01 DEBUG : 2025-10-15/有機會噴 觀察一下_batch_1_2025-10-15.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt: md5 = bc1c951b86527e3bbc6561f6e40b720a OK
+2025/11/05 10:51:02 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-21/好像蠻強的_2025-10-21.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: md5 = fde723bb146825978cb9ff2a8aac362e OK
+2025/11/05 10:51:02 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-21/有機會噴 觀察一下_2025-10-21.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt: md5 = fa0f6a7adc37e9949a771a679d441954 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: md5 = 875767f7f28735e52c3c5f3840996c79 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_2025-10-17.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_2025-10-17.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: md5 = c1c2bdf4da3a756739e5534fc83d31be OK
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-17/好像蠻強的_batch_1_2025-10-17.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: md5 = 6605908eb04acf419ef59c7410cd1bff OK
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-17/有機會噴 觀察一下_batch_1_2025-10-17.png: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: md5 = 067e993e49528c8243eda1d282e8e13b OK
+2025/11/05 10:51:02 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-24/有機會噴 觀察一下_2025-10-24.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt: md5 = 70b3096503faa929f48763ee5ebeb913 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-24/好像蠻強的_2025-10-24.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt: md5 = 2073696ba94fefe6cd67faa38b3d91fc OK
+2025/11/05 10:51:02 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: md5 = 18927fa42628686106f3b2b0976baca9 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-29/好像蠻強的_2025-10-29.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-29/有機會噴 觀察一下_2025-10-29.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: md5 = 714061860d5efb34febad0c0d512dc76 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-23/有機會噴 觀察一下_2025-10-23.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt: md5 = 01a09c9aa837f71da3963e09bba8142b OK
+2025/11/05 10:51:02 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-23/好像蠻強的_2025-10-23.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt: md5 = 9fe663190594766d200ff62347aba928 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-28/好像蠻強的_2025-10-28.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: md5 = 9ccb066e98eaaaebce300814c3782f7f OK
+2025/11/05 10:51:02 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-28/有機會噴 觀察一下_2025-10-28.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt: md5 = ff45d1810bda027c5ae60201d00124ec OK
+2025/11/05 10:51:02 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: md5 = b54240bcb5fb6fa2cf17eaf4cce0714f OK
+2025/11/05 10:51:02 DEBUG : 2025-10-22/好像蠻強的_2025-10-22.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-22/有機會噴 觀察一下_2025-10-22.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: md5 = d520c89eaa0276b1cfae10a3b0fae987 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-27/有機會噴 觀察一下_2025-10-27.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt: md5 = 010265676302c749b1a373d314a0565f OK
+2025/11/05 10:51:02 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-27/好像蠻強的_2025-10-27.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt: md5 = a9c50757441210041b50d437d6c7d941 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-30/好像蠻強的_2025-10-30.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: md5 = 25d9045fb7367111f1204a20f0d7330e OK
+2025/11/05 10:51:02 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-30/有機會噴 觀察一下_2025-10-30.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt: md5 = df61d50b4bf37dcba43ad4f5577cb9b1 OK
+2025/11/05 10:51:02 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-03/好像蠻強的_2025-11-03.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: md5 = 1f346ab4b728d9b314f8447829b2872f OK
+2025/11/05 10:51:02 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-03/有機會噴 觀察一下_2025-11-03.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt: md5 = 860c1af087dc086fb63b81248f4271f2 OK
+2025/11/05 10:51:02 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-04/好像蠻強的_2025-11-04.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: md5 = fa7e4b092ae8437c7cac7daefaf9405a OK
+2025/11/05 10:51:02 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-04/有機會噴 觀察一下_2025-11-04.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt: md5 = e1a42d4e3667dead1390aa48307115c4 OK
+2025/11/05 10:51:02 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-05/好像蠻強的_2025-11-05.txt: Unchanged skipping
+2025/11/05 10:51:02 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: md5 = ccc566ae3f8f02a737dfbb77b08f56a4 OK
+2025/11/05 10:51:02 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-11-05/有機會噴 觀察一下_2025-11-05.txt: Unchanged skipping
+2025/11/05 10:51:02 DEBUG : Google drive root 'data': Waiting for checks to finish
+2025/11/05 10:51:02 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt: md5 = 1618d413d8f9e5114b446ba9968de327 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-31/好像蠻強的_2025-10-31.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: md5 = 408e21b261beb49fc3927e94328e4c64 OK
+2025/11/05 10:51:02 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: Size and md5 of src and dst objects identical
+2025/11/05 10:51:02 DEBUG : 2025-10-31/有機會噴 觀察一下_2025-10-31.txt: Destination mod time is within 1ms of source and files identical, skipping
+2025/11/05 10:51:02 DEBUG : Google drive root 'data': Waiting for transfers to finish
+2025/11/05 10:51:02 INFO  : There was nothing to transfer
+2025/11/05 10:51:02 INFO  : 
+Transferred:   	          0 B / 0 B, -, 0 B/s, ETA -
+Checks:                70 / 70, 100%, Listed 188
+Elapsed time:         1.1s
+
+2025/11/05 10:51:02 DEBUG : 21 go routines active

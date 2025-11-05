@@ -6,11 +6,14 @@
 import os
 from datetime import datetime
 
+# 設定保留天數（與 workflow 使用相同參數）
+KEEP_DAYS = 7
+
 def generate_index_html(output_dir='.'):
-    """生成 index.html"""
+    """生成 index.html，只顯示最近 KEEP_DAYS 天的資料"""
     os.makedirs(output_dir, exist_ok=True)
 
-    # 掃描所有 HTML 檔案
+    # 掃描所有 HTML 檔案（只掃描主目錄，不包含 archive）
     html_files = [f for f in os.listdir(output_dir)
                   if f.endswith('.html') and f != 'index.html']
     dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
@@ -172,6 +175,11 @@ def generate_index_html(output_dir='.'):
             <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
             <p>投資有風險，請謹慎評估</p>
             <p style="margin-top: 15px; font-size: 0.9em;">
+                <a href="archive/" style="color: #667eea; text-decoration: none; border: 1px solid #667eea; padding: 8px 16px; border-radius: 5px; display: inline-block; margin-bottom: 10px;">
+                    📁 查看歷史歸檔資料
+                </a>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
                 Powered by <a href="https://github.com/YanShuoPan/Qtrading" style="color: #667eea;">GitHub Actions</a>
             </p>
         </div>
