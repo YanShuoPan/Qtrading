@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 # 導入模組
 from modules.logger import setup_logger, get_logger
-from modules.config import IN_GITHUB_ACTIONS, LINE_USER_ID, GITHUB_PAGES_URL
+from modules.config import IN_GITHUB_ACTIONS, LINE_USER_ID, GITHUB_PAGES_URL, LINE_NOTIFY_ENABLED
 from modules.database import (
     ensure_db,
     ensure_users_table,
@@ -141,8 +141,11 @@ def main():
         # ===== 步驟 7: 發送 LINE 訊息 =====
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")
 
+        # 檢查 LINE 通知是否啟用
+        if not LINE_NOTIFY_ENABLED:
+            logger.info("📴 LINE 通知功能已關閉（可透過設定 LINE_NOTIFY_ENABLED=true 啟用）")
         # 檢查是否為週末（週六=5, 週日=6）
-        if today_weekday >= 5:
+        elif today_weekday >= 5:
             weekday_names = ["週一", "週二", "週三", "週四", "週五", "週六", "週日"]
             logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過發送訊息")
             logger.info("📴 週末不發送股票推薦訊息")
@@ -168,11 +171,11 @@ def main():
                 except Exception as e:
                     logger.error(f"❌ LINE 按鈕訊息發送失敗: {e}")
 
-                # 仍然保存股票清單到檔案（供 Postback 互動使用）
-                if not group1.empty:
-                    save_stock_list(group1, "好像蠻強的", "💪", today_tpe)
-                if not group2.empty:
-                    save_stock_list(group2, "有機會噴 觀察一下", "👀", today_tpe)
+        # 無論是否發送 LINE，都保存股票清單到檔案（供未來使用）
+        if not group1.empty:
+            save_stock_list(group1, "好像蠻強的", "💪", today_tpe)
+        if not group2.empty:
+            save_stock_list(group2, "有機會噴 觀察一下", "👀", today_tpe)
 
         # ===== 步驟 8: 同步資料庫到 Google Drive =====
         if IN_GITHUB_ACTIONS:
