@@ -333,11 +333,14 @@ jobs:
           echo "檢查 generate_index_standalone.py 是否包含星期幾邏輯:"
           grep -A 2 "weekday" generate_index_standalone.py | head -5 || echo "⚠️ 未找到 weekday 相關代碼"
 
-          # 執行清理腳本
+          # 執行歸檔腳本（將超過 7 天的檔案移到 archive 資料夾）
           python - <<EOF
           import os
           from datetime import datetime
           import shutil
+
+          # 設定保留天數（與 index.html 使用相同參數）
+          KEEP_DAYS = 7
 
           # 取得所有 HTML 檔案（排除 index.html）
           html_files = [f for f in os.listdir('.')
@@ -355,36 +358,45 @@ jobs:
 
           dates.sort(reverse=True)  # 最新的在前
 
-          # 保留最近 7 天，刪除其他的
-          files_deleted = False
-          if len(dates) > 7:
-              print(f"發現 {len(dates)} 天的資料，保留最近 7 天")
-              for date, date_str in dates[7:]:
-                  # 刪除 HTML 檔案
+          # 保留最近 KEEP_DAYS 天，將其他的移到歸檔資料夾
+          files_archived = False
+          if len(dates) > KEEP_DAYS:
+              print(f"發現 {len(dates)} 天的資料，保留最近 {KEEP_DAYS} 天，歸檔其他資料")
+
+              # 建立歸檔資料夾
+              os.makedirs('archive', exist_ok=True)
+              os.makedirs('archive/images', exist_ok=True)
+
+              for date, date_str in dates[KEEP_DAYS:]:
+                  # 移動 HTML 檔案到歸檔資料夾
                   html_file = f"{date_str}.html"
                   if os.path.exists(html_file):
-                      os.remove(html_file)
-                      print(f"已刪除: {html_file}")
-                      files_deleted = True
+                      archive_path = os.path.join('archive', html_file)
+                      shutil.move(html_file, archive_path)
+                      print(f"已歸檔: {html_file} -> archive/{html_file}")
+                      files_archived = True
 
-                  # 刪除對應的圖片資料夾
+                  # 移動對應的圖片資料夾到歸檔
                   images_dir = os.path.join("images", date_str)
                   if os.path.exists(images_dir):
-                      shutil.rmtree(images_dir)
-                      print(f"已刪除: {images_dir}")
-                      files_deleted = True
+                      archive_images_path = os.path.join('archive', 'images', date_str)
+                      shutil.move(images_dir, archive_images_path)
+                      print(f"已歸檔: {images_dir} -> archive/images/{date_str}")
+                      files_archived = True
 
               # 寫入標記檔案，告訴後續步驟是否需要 commit
-              with open('/tmp/files_deleted.txt', 'w') as f:
-                  f.write('true' if files_deleted else 'false')
+              with open('/tmp/files_archived.txt', 'w') as f:
+                  f.write('true' if files_archived else 'false')
+
+              print(f"\n✅ 歸檔完成！主頁保留 {KEEP_DAYS} 天，舊資料已移至 archive/ 資料夾")
           else:
-              print(f"目前有 {len(dates)} 天的資料（≤7 天），無需清理")
-              with open('/tmp/files_deleted.txt', 'w') as f:
+              print(f"目前有 {len(dates)} 天的資料（≤{KEEP_DAYS} 天），無需歸檔")
+              with open('/tmp/files_archived.txt', 'w') as f:
                   f.write('false')
           EOF
 
-          # 重新生成 index.html（包含所有保留的日期）
-          echo "重新生成 index.html..."
+          # 重新生成主頁 index.html（包含所有保留的日期）
+          echo "重新生成主頁 index.html..."
 
           # 先顯示生成前的狀態
           echo "生成前 index.html 包含的日期:"
@@ -393,11 +405,146 @@ jobs:
           # 刪除舊的 index.html，強制重新生成
           rm -f index.html
 
-          # 重新生成
+          # 重新生成主頁
           python generate_index_standalone.py || {
             echo "::error::生成 index.html 失敗"
             exit 1
           }
+
+          # 如果 archive 資料夾存在，生成 archive/index.html
+          if [ -d "archive" ]; then
+            echo "生成歸檔索引頁 archive/index.html..."
+            python - <<'ARCHIVE_EOF'
+          import os
+          from datetime import datetime
+
+          # 掃描 archive 資料夾中的所有 HTML 檔案
+          archive_dir = 'archive'
+          if not os.path.exists(archive_dir):
+              exit(0)
+
+          html_files = [f for f in os.listdir(archive_dir)
+                        if f.endswith('.html') and f != 'index.html']
+          dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
+
+          print(f"找到 {len(dates)} 個歸檔日期")
+
+          # 生成日期項目
+          date_items_html = []
+          for date in dates:
+              try:
+                  weekday = datetime.strptime(date, '%Y-%m-%d').strftime('%A')
+                  weekday_zh = {
+                      'Monday': '週一', 'Tuesday': '週二', 'Wednesday': '週三',
+                      'Thursday': '週四', 'Friday': '週五', 'Saturday': '週六', 'Sunday': '週日'
+                  }[weekday]
+
+                  date_items_html.append(f'''
+                      <a href="{date}.html" class="date-item">
+                          <div class="date-item-date">📅 {date} ({weekday_zh})</div>
+                          <div class="date-item-arrow">→</div>
+                      </a>
+                  ''')
+              except ValueError:
+                  print(f"無法解析日期: {date}")
+
+          date_items_html = '\n'.join(date_items_html)
+
+          # 生成 archive/index.html
+          html_content = f'''<!DOCTYPE html>
+          <html lang="zh-TW">
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>歷史歸檔 - 台股推薦機器人</title>
+              <style>
+                  * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+                  body {{
+                      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      min-height: 100vh;
+                      padding: 20px;
+                  }}
+                  .container {{
+                      max-width: 900px;
+                      margin: 0 auto;
+                      background: white;
+                      border-radius: 20px;
+                      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                      overflow: hidden;
+                  }}
+                  .header {{
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      padding: 60px 30px;
+                      text-align: center;
+                  }}
+                  .header h1 {{ font-size: 3em; margin-bottom: 15px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }}
+                  .header p {{ font-size: 1.2em; opacity: 0.95; }}
+                  .content {{ padding: 40px 30px; }}
+                  .intro {{ text-align: center; margin-bottom: 40px; color: #666; }}
+                  .intro h2 {{ color: #667eea; margin-bottom: 15px; }}
+                  .date-list {{ display: grid; gap: 15px; }}
+                  .date-item {{
+                      display: block;
+                      padding: 25px 30px;
+                      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+                      border-radius: 12px;
+                      text-decoration: none;
+                      color: #333;
+                      transition: transform 0.2s, box-shadow 0.2s;
+                      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                  }}
+                  .date-item:hover {{ transform: translateX(10px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }}
+                  .date-item-date {{ font-size: 1.5em; font-weight: bold; color: #667eea; margin-bottom: 5px; }}
+                  .date-item-arrow {{ float: right; font-size: 1.5em; color: #667eea; }}
+                  .footer {{ text-align: center; padding: 30px; background: #f5f7fa; color: #666; border-top: 1px solid #e0e0e0; }}
+                  .btn {{
+                      padding: 12px 30px;
+                      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                      color: white;
+                      text-decoration: none;
+                      border-radius: 25px;
+                      font-weight: bold;
+                      transition: transform 0.2s;
+                      display: inline-block;
+                      margin: 20px 0;
+                  }}
+                  .btn:hover {{ transform: translateY(-2px); box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4); }}
+              </style>
+          </head>
+          <body>
+              <div class="container">
+                  <div class="header">
+                      <h1>📁 歷史歸檔</h1>
+                      <p>台股推薦機器人 - 歷史資料</p>
+                  </div>
+                  <div class="content">
+                      <div class="intro">
+                          <a href="../index.html" class="btn">← 回到主頁</a>
+                          <h2>歷史推薦記錄</h2>
+                          <p>這裡保存了所有超過 7 天的歷史推薦資料</p>
+                      </div>
+                      <div class="date-list">
+          {date_items_html if date_items_html else '<div class="intro"><p>目前無歸檔資料</p></div>'}
+                      </div>
+                  </div>
+                  <div class="footer">
+                      <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
+                      <p>投資有風險，請謹慎評估</p>
+                  </div>
+              </div>
+          </body>
+          </html>
+          '''
+
+          index_file = os.path.join(archive_dir, 'index.html')
+          with open(index_file, 'w', encoding='utf-8') as f:
+              f.write(html_content)
+
+          print(f"✅ archive/index.html 已生成，包含 {len(dates)} 個歷史日期")
+          ARCHIVE_EOF
+          fi
 
           # 顯示生成後的 index.html 內容（除錯用）
           echo ""
@@ -420,11 +567,11 @@ jobs:
               exit 1
             }
           else
-            # 如果有刪除舊檔案，一併提交
-            if [ -f "/tmp/files_deleted.txt" ] && grep -q "true" /tmp/files_deleted.txt; then
-              echo "提交清理變更和更新的 index.html..."
+            # 如果有歸檔舊檔案，一併提交
+            if [ -f "/tmp/files_archived.txt" ] && grep -q "true" /tmp/files_archived.txt; then
+              echo "提交歸檔變更和更新的 index.html..."
               git add -A
-              git commit -m "🗑️ 清理超過 7 天的舊資料並更新 index.html"
+              git commit -m "📦 將超過 7 天的資料歸檔至 archive/ 並更新 index.html"
             else
               echo "提交更新的 index.html..."
               git commit -m "📝 更新 index.html (包含所有歷史日期)"

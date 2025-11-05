@@ -8,6 +8,9 @@ from .stock_codes import get_stock_name
 
 logger = get_logger(__name__)
 
+# 設定保留天數（與 workflow 和 generate_index_standalone.py 使用相同參數）
+KEEP_DAYS = 7
+
 
 def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "docs", images_dir: str = None):
     """
@@ -515,7 +518,8 @@ def generate_index_html(output_dir: str = "docs"):
                 </div>
 """
     else:
-        for date in dates[:30]:  # 只顯示最近 30 天
+        # 只顯示最近 KEEP_DAYS 天（與 workflow 歸檔邏輯一致）
+        for date in dates[:KEEP_DAYS]:
             weekday = datetime.strptime(date, '%Y-%m-%d').strftime('%A')
             weekday_zh = {
                 'Monday': '週一', 'Tuesday': '週二', 'Wednesday': '週三',
@@ -537,6 +541,11 @@ def generate_index_html(output_dir: str = "docs"):
             <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
             <p>投資有風險，請謹慎評估</p>
             <p style="margin-top: 15px; font-size: 0.9em;">
+                <a href="archive/" style="color: #667eea; text-decoration: none; border: 1px solid #667eea; padding: 8px 16px; border-radius: 5px; display: inline-block; margin-bottom: 10px;">
+                    📁 查看歷史歸檔資料
+                </a>
+            </p>
+            <p style="margin-top: 10px; font-size: 0.9em;">
                 Powered by <a href="https://github.com/YanShuoPan/Qtrading" style="color: #667eea;">GitHub Actions</a>
             </p>
         </div>
