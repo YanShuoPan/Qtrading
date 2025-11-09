@@ -195,6 +195,9 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+          # 清理 rclone.log 避免分支切換衝突
+          rm -f rclone.log
+
           # 暫存本地變更（避免切換分支時衝突）
           git stash push -m "Stash before switching to gh-pages" || echo "無需 stash"
 
@@ -320,6 +323,9 @@ jobs:
           # 配置 git
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          # 清理 rclone.log 避免分支切換衝突
+          rm -f rclone.log
 
           # 暫存本地變更（避免切換分支時衝突）
           git stash push -m "Stash before switching to gh-pages for cleanup" || echo "無需 stash"
