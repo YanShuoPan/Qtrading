@@ -3,10 +3,13 @@
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 ![LINE](https://img.shields.io/badge/LINE-00C300?style=for-the-badge&logo=line&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge&logo=github&logoColor=white)
 
-每天台北時間 **08:00** 自動執行，提供台股技術分析推薦，透過 LINE 推播文字訊息和 K 線圖表。
+每天台北時間 **18:00** 自動執行，提供台股技術分析推薦，透過 LINE 推播文字訊息和 K 線圖表，並自動發布到 GitHub Pages 網頁展示。
 
-⭐ **最新特色**：智能週末檢測，股市休市時自動跳過訊息推送，支援 OAuth 2.0 認證與詳細除錯日誌。
+📊 **[查看線上展示頁面](https://yanshuopan.github.io/Qtrading/)** (範例)
+
+⭐ **最新特色**：GitHub Pages 展示頁面、智能歷史資料歸檔(保留7天)、智能週末檢測、支援 OAuth 2.0 認證與 LINE 通知開關。
 
 ## 🎯 核心功能
 
@@ -34,32 +37,55 @@
   - 資料庫管理訂閱者清單
   - 支援啟用/停用訂閱狀態
   - 批量推送訊息與圖表
+- **LINE 通知開關**：透過 `line_id.txt` 控制是否發送 LINE 訊息
+  - 檔案存在時發送通知
+  - 檔案不存在時跳過通知（方便測試與除錯）
 - **文字推薦訊息**：包含股票代碼和中文名稱
 - **圖表推送**：高清K線圖直接傳送到LINE
 - **智能週末檢測**：股市休市日（週六/日）自動跳過訊息
 - **無推薦時通知**：市場條件不符時的友善提醒
 
+### 🌐 GitHub Pages 展示
+- **每日推薦頁面**：自動生成精美的 HTML 展示頁面
+  - 響應式設計，支援手機與桌面瀏覽
+  - 顯示股票代碼、中文名稱與 K 線圖
+  - 自動顯示日期與星期幾
+- **智能歷史管理**：
+  - 主頁保留最近 7 天的推薦資料
+  - 超過 7 天的資料自動歸檔至 `archive/` 資料夾
+  - 歸檔頁面獨立索引，方便查閱歷史資料
+- **即時更新**：每日執行後自動部署到 GitHub Pages
+
 ### 🐛 除錯與監控
 - **DEBUG_MODE**：詳細執行日誌與錯誤追蹤
 - **Google Drive 狀態監控**：上傳下載進度詳細記錄
 - **GitHub Actions 文件保存**：自動收集除錯日誌與圖片
+- **rclone 日誌上傳**：失敗或成功都保存完整日誌供除錯
 
 ## 🚀 自動化流程
 
 ```mermaid
 graph TD
-    A[GitHub Actions 觸發<br/>每日 08:00] --> B[OAuth 2.0 認證<br/>Google Drive API]
-    B --> C[從 Google Drive 下載<br/>stocks-autobot-data/data/taiex.sqlite]
+    A[GitHub Actions 觸發<br/>每日 18:00 台北時間] --> B[OAuth 2.0 認證<br/>Google Drive API]
+    B --> C[從 Google Drive 同步<br/>taiex.sqlite & line_id.txt]
     C --> D[檢查本地資料庫<br/>保留90天歷史資料]
     D --> E[下載最新台股數據<br/>yfinance API - 300支股票]
     E --> F[技術分析篩選<br/>MA20 斜率演算法]
     F --> G[週末檢測<br/>股市休市時跳過]
     G --> H{是否為週末?}
-    H -->|週末| I[記錄休市日誌<br/>跳過 LINE 推播]
+    H -->|週末| I[記錄休市日誌<br/>跳過推播與網頁生成]
     H -->|平日| J[股票分組分類]
     J --> K[生成 K線圖表<br/>中文字體支援]
-    K --> L[LINE 推播訊息+圖片]
-    L --> M[上傳更新後資料庫<br/>到 Google Drive]
+    K --> L{line_id.txt<br/>是否存在?}
+    L -->|存在| M[LINE 推播訊息+圖片]
+    L -->|不存在| N[跳過 LINE 推播]
+    M --> O[生成 HTML 頁面<br/>含 K線圖與股票清單]
+    N --> O
+    O --> P[從 gh-pages 拉取<br/>歷史 HTML 檔案]
+    P --> Q[合併新舊資料<br/>重新生成 index.html]
+    Q --> R[部署到 GitHub Pages]
+    R --> S[清理 gh-pages 分支<br/>歸檔超過7天資料]
+    S --> T[上傳更新後資料庫<br/>到 Google Drive]
 ```
 
 ## 🔧 設定指南
@@ -88,7 +114,15 @@ graph TD
 
 💡 **認證優先順序**：OAuth 2.0 → Service Account → 跳過雲端同步
 
-### 4. GitHub Secrets 設定
+### 4. GitHub Pages 設定（可選）
+如果想要網頁展示功能：
+1. 前往 Repository → Settings → Pages
+2. Source 選擇 **Deploy from a branch**
+3. Branch 選擇 **gh-pages** → **/ (root)**
+4. 儲存後等待部署完成
+5. 訪問 `https://<your-username>.github.io/<repo-name>/` 查看推薦頁面
+
+### 5. GitHub Secrets 設定
 在 Repository → Settings → Secrets and variables → Actions 新增：
 
 | Secret/Variable Name | 說明 | 類型 | 必需 |
@@ -108,7 +142,13 @@ graph TD
 3. 從 `~/.config/rclone/rclone.conf` 複製 token JSON
 4. 將整段 JSON（包含 `access_token` 和 `refresh_token`）設為 `GDRIVE_TOKEN_JSON`
 
-### 5. 環境變數自訂（可選）
+### 6. LINE 通知開關控制
+透過 `line_id.txt` 檔案控制是否發送 LINE 推播：
+- **開啟通知**：在 Google Drive 根目錄放置 `line_id.txt` 檔案（可為空檔案）
+- **關閉通知**：刪除 Google Drive 中的 `line_id.txt` 檔案
+- 這個功能方便在測試或除錯時暫時關閉 LINE 通知，但仍然執行選股與網頁生成
+
+### 7. 環境變數自訂（可選）
 在 `.github/workflows/daily.yml` 中可設定：
 - `TWSE_CODES`：自訂股票代碼清單（預設300支台股）
 - `TOP_K`：選股數量上限（預設300）
@@ -128,35 +168,40 @@ graph TD
 
 1. **Fork 此專案**到你的 GitHub 帳號
 2. **設定 Secrets**（參考上方設定指南）
-3. **手動測試**：GitHub Actions → 選擇 `daily-picks` → Run workflow
-4. **檢查 LINE**：確認收到推薦訊息和圖表
-5. **等待每日自動執行**：每天 08:00 會自動運行
+3. **啟用 GitHub Pages**（可選，若要網頁展示功能）
+4. **手動測試**：GitHub Actions → 選擇 `daily-picks` → Run workflow
+5. **檢查結果**：
+   - 確認 LINE 收到推薦訊息和圖表（若有開啟通知）
+   - 訪問 GitHub Pages 查看網頁展示（若有啟用）
+6. **等待每日自動執行**：每天 18:00 台北時間會自動運行
 
 ## 📁 專案結構
 
 ```
 stocks-autobot/
-├── main.py                    # 主要執行程式
-├── modules/                   # 模組化架構
-│   ├── __init__.py           # 套件初始化
-│   ├── config.py             # 配置管理
-│   ├── logger.py             # 日誌系統
-│   ├── database.py           # 資料庫操作
-│   ├── google_drive.py       # Google Drive 整合
-│   ├── line_messaging.py     # LINE 訊息推送
-│   ├── stock_codes.py        # 股票代碼管理
-│   ├── stock_data.py         # 股價資料處理與選股策略
-│   ├── visualization.py      # K線圖表生成
-│   └── image_upload.py       # 圖床上傳服務
-├── test_line_oauth.py         # LINE 推播測試版本
-├── test_local_oauth.py        # 本地顯示測試版本
-├── requirements.txt           # Python 套件依賴
-├── data/                      # 資料庫檔案（與 Google Drive 同步）
-│   └── taiex.sqlite          # 股價歷史資料
+├── main.py                       # 主要執行程式
+├── generate_historical_data.py   # 歷史資料生成工具（用於測試或補資料）
+├── generate_index_standalone.py  # 獨立的 index.html 生成器（用於 gh-pages）
+├── webhook_app.py                # LINE Webhook 伺服器（處理用戶訂閱）
+├── modules/                      # 模組化架構
+│   ├── __init__.py              # 套件初始化
+│   ├── config.py                # 配置管理
+│   ├── logger.py                # 日誌系統
+│   ├── database.py              # 資料庫操作（訂閱者管理）
+│   ├── google_drive.py          # Google Drive 整合
+│   ├── line_messaging.py        # LINE 訊息推送
+│   ├── stock_codes.py           # 股票代碼管理（300支股票）
+│   ├── stock_data.py            # 股價資料處理與選股策略
+│   ├── visualization.py         # K線圖表生成
+│   ├── image_upload.py          # 圖床上傳服務（Telegraph/Catbox）
+│   └── html_generator.py        # GitHub Pages HTML 生成器
+├── requirements.txt              # Python 套件依賴
+├── taiex.sqlite                  # 股價歷史資料（與 Google Drive 同步）
+├── line_id.txt                   # LINE 通知開關（存在=開啟，不存在=關閉）
 ├── .github/
 │   └── workflows/
-│       └── daily.yml         # GitHub Actions 自動化流程
-└── README.md                 # 專案說明
+│       └── daily.yml            # GitHub Actions 自動化流程
+└── README.md                    # 專案說明
 ```
 
 ## 🔬 技術架構
@@ -169,7 +214,8 @@ stocks-autobot/
 - **圖床服務**：Telegraph、Catbox（無需API key）
 - **訊息推播**：LINE Messaging API
 - **雲端同步**：Google Drive API (rclone)
-- **自動化**：GitHub Actions
+- **網頁展示**：GitHub Pages (靜態 HTML)
+- **自動化**：GitHub Actions (每日 18:00 台北時間執行)
 - **認證方式**：OAuth 2.0 with refresh token
 
 ### 模組化架構
@@ -183,6 +229,7 @@ stocks-autobot/
 - **stock_data.py**：股價下載與動能選股策略
 - **visualization.py**：K線圖表繪製
 - **image_upload.py**：多重圖床上傳備援
+- **html_generator.py**：GitHub Pages HTML 頁面生成（每日推薦頁、索引頁、歸檔頁）
 
 ## 📈 演算法說明
 
@@ -222,7 +269,71 @@ python test_local_oauth.py
 python main.py
 ```
 
+## 🧰 工具腳本
+
+### `generate_historical_data.py` - 歷史資料生成工具
+用於生成過去 N 天的歷史測試資料（含 HTML 頁面與 K 線圖）：
+
+```bash
+# 生成過去 7 天的資料（預設）
+python generate_historical_data.py
+
+# 生成過去 30 天的資料
+python generate_historical_data.py 30
+```
+
+**功能說明**：
+- 自動跳過週末（股市休市日）
+- 為每一天執行選股、生成圖表、建立 HTML 頁面
+- 更新首頁 index.html 包含所有歷史日期
+- 適合用於測試 GitHub Pages 功能或補充缺失的歷史資料
+
+### `generate_index_standalone.py` - 獨立索引頁生成器
+在 gh-pages 分支中使用的獨立腳本，用於重新生成首頁：
+
+```bash
+python generate_index_standalone.py
+```
+
+**功能說明**：
+- 掃描當前目錄所有 HTML 檔案（排除 index.html）
+- 自動解析日期並排序（最新的在前）
+- 生成包含日期與星期幾的索引頁
+- GitHub Actions workflow 會自動使用此腳本
+
+### `webhook_app.py` - LINE Webhook 伺服器
+處理 LINE 用戶的訂閱與退訂請求（需部署到公開伺服器）：
+
+```bash
+# 本地測試（需要設定 ngrok 或其他隧道工具）
+python webhook_app.py
+```
+
+**功能說明**：
+- 處理 LINE Bot 的 Webhook 事件
+- 支援加好友自動訂閱、封鎖自動退訂
+- 將訂閱資料同步到資料庫與 Google Drive
+- 需要公開 HTTPS 端點才能接收 LINE 的 Webhook
+
 ## 📝 更新日誌
+
+### v3.2.0 (2025-01-17)
+- 🌐 **GitHub Pages 展示功能**：自動生成精美的推薦展示頁面
+  - 響應式設計，支援手機與桌面瀏覽
+  - 自動顯示日期與星期幾
+  - 包含股票代碼、名稱與 K 線圖
+- 📦 **智能歷史資料歸檔**：自動管理歷史資料
+  - 主頁保留最近 7 天的推薦資料
+  - 超過 7 天的資料自動歸檔至 `archive/` 資料夾
+  - 歸檔頁面獨立索引，方便查閱歷史紀錄
+- 🔔 **LINE 通知開關功能**：透過 `line_id.txt` 控制推播
+  - 檔案存在時發送 LINE 通知
+  - 檔案不存在時跳過通知（方便測試與除錯）
+  - 不影響選股與網頁生成功能
+- 🐛 **修復 GitHub Actions 衝突問題**
+  - 修復 `rclone.log` 檔案在分支切換時的衝突
+  - 改進 `index.html` 提交邏輯，確保包含最新日期
+  - 優化 gh-pages 分支清理流程
 
 ### v3.1.0 (2025-01-02)
 - 🏗️ **模組化重構**：將 1320 行主程式拆分為 10 個獨立模組
@@ -271,6 +382,38 @@ python main.py
 - 📱 LINE 推播整合
 - ☁️ Google Drive 同步
 - ⚡ GitHub Actions 自動化
+
+## ❓ 常見問題
+
+### Q1: 如何暫時關閉 LINE 通知但保留選股功能？
+在 Google Drive 根目錄刪除 `line_id.txt` 檔案即可。程式仍會執行選股、生成圖表並部署到 GitHub Pages，但不會發送 LINE 訊息。
+
+### Q2: 為什麼 GitHub Pages 只顯示最近 7 天的資料？
+這是設計行為，主頁只保留最近 7 天的推薦資料以保持頁面簡潔。超過 7 天的資料會自動歸檔到 `archive/` 資料夾，可以透過歸檔頁面查閱完整歷史紀錄。
+
+### Q3: 如何新增更多訂閱者？
+有兩種方式：
+1. **環境變數**：在 GitHub Secrets 中設定 `EXTRA_USER_IDS`（逗號分隔多個 User ID）
+2. **Webhook**：部署 `webhook_app.py` 到公開伺服器，用戶加好友時自動訂閱
+
+### Q4: 可以更改每日執行時間嗎？
+可以！編輯 [.github/workflows/daily.yml](.github/workflows/daily.yml#L8) 中的 cron 排程設定。注意時區為 UTC，需要換算台北時間（UTC+8）。
+
+### Q5: 圖表中文顯示亂碼怎麼辦？
+專案已內建中文字體支援（Windows：微軟正黑體，Linux：文泉驛微米黑）。如果在本地開發遇到問題，請確認系統已安裝對應字體。
+
+### Q6: 如何補充缺失的歷史資料？
+使用 `generate_historical_data.py` 腳本：
+```bash
+python generate_historical_data.py 30  # 生成過去 30 天的資料
+```
+生成後提交到 gh-pages 分支即可。
+
+### Q7: rclone 同步失敗怎麼辦？
+檢查以下項目：
+1. 確認 `GDRIVE_CLIENT_ID`、`GDRIVE_CLIENT_SECRET`、`GDRIVE_TOKEN_JSON` 正確設定
+2. 檢查 token 是否包含 `refresh_token`（需要在本地用 `rclone config` 授權時取得）
+3. 查看 GitHub Actions 的 rclone logs artifact 了解詳細錯誤訊息
 
 ## 🤝 貢獻指南
 
