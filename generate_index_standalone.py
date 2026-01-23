@@ -13,8 +13,16 @@ def generate_index_html(output_dir='.'):
     """生成 index.html，只顯示最近 KEEP_DAYS 天的資料"""
     os.makedirs(output_dir, exist_ok=True)
 
-    # 掃描所有 HTML 檔案（只掃描主目錄，不包含 archive）
-    html_files = [f for f in os.listdir(output_dir)
+    # 掃描所有 HTML 檔案（從 docs/ 資料夾掃描，不包含 archive）
+    # 如果在 gh-pages 分支根目錄執行，掃描 docs/ 子資料夾
+    if os.path.exists('docs') and output_dir == '.':
+        scan_dir = 'docs'
+        print(f"掃描 docs/ 資料夾中的 HTML 檔案...")
+    else:
+        scan_dir = output_dir
+        print(f"掃描 {scan_dir} 資料夾中的 HTML 檔案...")
+
+    html_files = [f for f in os.listdir(scan_dir)
                   if f.endswith('.html') and f != 'index.html']
     dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
 
@@ -29,8 +37,11 @@ def generate_index_html(output_dir='.'):
             'Thursday': '週四', 'Friday': '週五', 'Saturday': '週六', 'Sunday': '週日'
         }[weekday]
 
+        # 如果檔案在 docs/ 資料夾，連結需要包含 docs/ 前綴
+        href = f"docs/{date}.html" if scan_dir == 'docs' else f"{date}.html"
+
         date_items_html.append(f'''
-                <a href="{date}.html" class="date-item">
+                <a href="{href}" class="date-item">
                     <div class="date-item-date">📅 {date} ({weekday_zh})</div>
                     <div class="date-item-arrow">→</div>
                 </a>
