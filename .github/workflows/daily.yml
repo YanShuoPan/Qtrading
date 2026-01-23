@@ -374,8 +374,13 @@ jobs:
           # 設定保留天數（與 index.html 使用相同參數）
           KEEP_DAYS = 7
 
-          # 取得所有 HTML 檔案（排除 index.html）
-          html_files = [f for f in os.listdir('.')
+          # 取得所有 HTML 檔案（從 docs/ 資料夾掃描，排除 index.html）
+          docs_dir = 'docs'
+          if not os.path.exists(docs_dir):
+              print(f"⚠️  {docs_dir} 資料夾不存在")
+              exit(0)
+
+          html_files = [f for f in os.listdir(docs_dir)
                         if f.endswith('.html') and f != 'index.html']
 
           # 解析日期並排序
@@ -400,20 +405,22 @@ jobs:
               os.makedirs('archive/images', exist_ok=True)
 
               for date, date_str in dates[KEEP_DAYS:]:
-                  # 移動 HTML 檔案到歸檔資料夾
-                  html_file = f"{date_str}.html"
+                  # 移動 HTML 檔案到歸檔資料夾（從 docs/ 移到 archive/）
+                  html_file = os.path.join(docs_dir, f"{date_str}.html")
                   if os.path.exists(html_file):
-                      archive_path = os.path.join('archive', html_file)
+                      os.makedirs('archive', exist_ok=True)
+                      archive_path = os.path.join('archive', f"{date_str}.html")
                       shutil.move(html_file, archive_path)
-                      print(f"已歸檔: {html_file} -> archive/{html_file}")
+                      print(f"已歸檔: {html_file} -> {archive_path}")
                       files_archived = True
 
-                  # 移動對應的圖片資料夾到歸檔
-                  images_dir = os.path.join("images", date_str)
+                  # 移動對應的圖片資料夾到歸檔（從 docs/images/ 移到 archive/images/）
+                  images_dir = os.path.join(docs_dir, "images", date_str)
                   if os.path.exists(images_dir):
+                      os.makedirs(os.path.join('archive', 'images'), exist_ok=True)
                       archive_images_path = os.path.join('archive', 'images', date_str)
                       shutil.move(images_dir, archive_images_path)
-                      print(f"已歸檔: {images_dir} -> archive/images/{date_str}")
+                      print(f"已歸檔: {images_dir} -> {archive_images_path}")
                       files_archived = True
 
               # 寫入標記檔案，告訴後續步驟是否需要 commit
