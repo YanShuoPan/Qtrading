@@ -12,14 +12,14 @@ logger = get_logger(__name__)
 KEEP_DAYS = 7
 
 
-def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "docs", images_dir: str = None):
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None):
     """
     生成每日股票推薦 HTML 頁面
 
     Args:
         date_str: 日期字串 (YYYY-MM-DD)
-        group1_df: 好像蠻強的組 DataFrame
-        group2_df: 有機會噴 觀察一下組 DataFrame
+        group2a_df: 有機會噴 - 前100大交易量能組 DataFrame
+        group2b_df: 有機會噴 - 其餘組 DataFrame
         output_dir: 輸出目錄（預設 'docs' 給 GitHub Pages）
         images_dir: 圖片資料夾路徑（相對於 output_dir）
 
@@ -229,24 +229,24 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
         <div class="content">
 """
 
-    # 添加 Group 1: 好像蠻強的
+    # 添加 Group 2A: 有機會噴 - 前100大交易量能
     html_content += """
             <div class="section">
                 <div class="section-title strong">
-                    <span>💪</span>
-                    <span>好像蠻強的</span>
+                    <span>👀</span>
+                    <span>有機會噴 - 前100大交易量能</span>
                 </div>
 """
 
-    if group1_df.empty:
+    if group2a_df.empty:
         html_content += """
-                <div class="empty-message">今日無符合條件的強勢股</div>
+                <div class="empty-message">今日無符合條件的股票</div>
 """
     else:
         html_content += """
                 <div class="stock-grid">
 """
-        for idx, row in group1_df.iterrows():
+        for idx, row in group2a_df.iterrows():
             code = row['code']
             name = get_stock_name(code)
             slope = row.get('ma20_slope', 0)
@@ -266,12 +266,12 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
         images_path = os.path.join(output_dir, images_dir)
         if os.path.exists(images_path):
             # 查找該組的圖片
-            group1_images = [f for f in os.listdir(images_path) if '好像蠻強的' in f and f.endswith('.png')]
-            if group1_images:
+            group2a_images = [f for f in os.listdir(images_path) if '有機會噴-前100大交易量能' in f and f.endswith('.png')]
+            if group2a_images:
                 html_content += """
                 <div class="chart-container">
 """
-                for img_file in sorted(group1_images):
+                for img_file in sorted(group2a_images):
                     img_path = f"{images_dir}/{img_file}"
                     html_content += f"""
                     <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
@@ -284,24 +284,24 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
             </div>
 """
 
-    # 添加 Group 2: 有機會噴 觀察一下
+    # 添加 Group 2B: 有機會噴 - 其餘
     html_content += """
             <div class="section">
                 <div class="section-title potential">
                     <span>👀</span>
-                    <span>有機會噴 觀察一下</span>
+                    <span>有機會噴 - 其餘</span>
                 </div>
 """
 
-    if group2_df.empty:
+    if group2b_df.empty:
         html_content += """
-                <div class="empty-message">今日無符合條件的潛力股</div>
+                <div class="empty-message">今日無符合條件的股票</div>
 """
     else:
         html_content += """
                 <div class="stock-grid">
 """
-        for idx, row in group2_df.iterrows():
+        for idx, row in group2b_df.iterrows():
             code = row['code']
             name = get_stock_name(code)
             slope = row.get('ma20_slope', 0)
@@ -321,12 +321,12 @@ def generate_daily_html(date_str: str, group1_df, group2_df, output_dir: str = "
         images_path = os.path.join(output_dir, images_dir)
         if os.path.exists(images_path):
             # 查找該組的圖片
-            group2_images = [f for f in os.listdir(images_path) if '有機會噴 觀察一下' in f and f.endswith('.png')]
-            if group2_images:
+            group2b_images = [f for f in os.listdir(images_path) if '有機會噴-其餘' in f and f.endswith('.png')]
+            if group2b_images:
                 html_content += """
                 <div class="chart-container">
 """
-                for img_file in sorted(group2_images):
+                for img_file in sorted(group2b_images):
                     img_path = f"{images_dir}/{img_file}"
                     html_content += f"""
                     <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">

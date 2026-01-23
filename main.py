@@ -102,18 +102,34 @@ def main():
         logger.debug(f"載入 {len(hist)} 筆歷史資料")
         logger.debug(f"篩選出 {len(picks)} 支符合條件的股票")
 
-        # ===== 步驟 6: 股票分組 =====
-        logger.info("\n📌 步驟 6: 將股票分組")
+        # ===== 步驟 6: 股票分組（依交易量能分組）=====
+        logger.info("\n📌 步驟 6: 將股票分組（依交易量能）")
 
         if picks.empty:
-            group1 = picks
-            group2 = picks
+            group2a = picks  # 前100大交易量能
+            group2b = picks  # 其餘
         else:
-            group1 = picks[(picks["ma20_slope"] >= 0.5) & (picks["ma20_slope"] < 1)]
-            group2 = picks[picks["ma20_slope"] < 0.5]
+            # 只保留斜率 < 0.7 的股票（刪除原本的 group1）
+            candidates = picks[picks["ma20_slope"] < 0.7].copy()
 
-        logger.info(f"📈 好像蠻強的（斜率 0.5-1）：{len(group1)} 支")
-        logger.info(f"📊 有機會噴 觀察一下（斜率 < 0.5）：{len(group2)} 支")
+            if candidates.empty:
+                group2a = candidates
+                group2b = candidates
+            else:
+                # 計算交易量能（交易量 × 收盤價）
+                # 從歷史資料取得最近一日的收盤價和交易量
+                latest_data = hist.sort_values('date').groupby('code').tail(1)
+                latest_data['trading_value'] = latest_data['close'] * latest_data['volume']
+
+                # 找出前100大交易量能的股票代碼
+                top100_codes = latest_data.nlargest(100, 'trading_value')['code'].tolist()
+
+                # 分成兩組
+                group2a = candidates[candidates["code"].isin(top100_codes)]  # 前100大交易量能
+                group2b = candidates[~candidates["code"].isin(top100_codes)]  # 其餘
+
+        logger.info(f"📈 有機會噴 - 前100大交易量能（斜率 < 0.7）：{len(group2a)} 支")
+        logger.info(f"📊 有機會噴 - 其餘（斜率 < 0.7）：{len(group2b)} 支")
 
         # ===== 步驟 6.5: 生成 K 線圖並複製到 docs 資料夾 =====
         logger.info("\n📌 步驟 6.5: 生成 K 線圖並準備 GitHub Pages 資料")
@@ -121,18 +137,18 @@ def main():
         images_output_dir = os.path.join("docs", "images", date_str)
         os.makedirs(images_output_dir, exist_ok=True)
 
-        # 生成並保存 Group1 圖片
-        if not group1.empty:
-            generate_and_save_charts(group1, "好像蠻強的", today_tpe, hist, images_output_dir)
+        # 生成並保存 Group2A 圖片（前100大交易量能）
+        if not group2a.empty:
+            generate_and_save_charts(group2a, "有機會噴-前100大交易量能", today_tpe, hist, images_output_dir)
 
-        # 生成並保存 Group2 圖片
-        if not group2.empty:
-            generate_and_save_charts(group2, "有機會噴 觀察一下", today_tpe, hist, images_output_dir)
+        # 生成並保存 Group2B 圖片（其餘）
+        if not group2b.empty:
+            generate_and_save_charts(group2b, "有機會噴-其餘", today_tpe, hist, images_output_dir)
 
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            generate_daily_html(date_str, group1, group2, output_dir="docs")
+            generate_daily_html(date_str, group2a, group2b, output_dir="docs")
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:
@@ -153,7 +169,7 @@ def main():
             # 平日發送訊息 - 改用按鈕訊息
             date_str = str(today_tpe)
 
-            if group1.empty and group2.empty:
+            if group2a.empty and group2b.empty:
                 # 無推薦時仍然發送按鈕訊息，讓用戶可以查看歷史記錄
                 msg = f"📉 {today_tpe}\n今日無符合條件之台股推薦。"
                 logger.info(f"將發送的訊息:\n{msg}")
@@ -172,10 +188,10 @@ def main():
                     logger.error(f"❌ LINE 按鈕訊息發送失敗: {e}")
 
         # 無論是否發送 LINE，都保存股票清單到檔案（供未來使用）
-        if not group1.empty:
-            save_stock_list(group1, "好像蠻強的", "💪", today_tpe)
-        if not group2.empty:
-            save_stock_list(group2, "有機會噴 觀察一下", "👀", today_tpe)
+        if not group2a.empty:
+            save_stock_list(group2a, "有機會噴-前100大交易量能", "👀", today_tpe)
+        if not group2b.empty:
+            save_stock_list(group2b, "有機會噴-其餘", "👀", today_tpe)
 
         # ===== 步驟 8: 同步資料庫到 Google Drive =====
         if IN_GITHUB_ACTIONS:
