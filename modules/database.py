@@ -168,7 +168,7 @@ def load_recent_prices(days=120) -> pd.DataFrame:
         days: 天數
 
     Returns:
-        DataFrame: 股價數據
+        DataFrame: 股價數據（包含 code, date, open, high, low, close, volume 欄位）
     """
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query(
@@ -176,6 +176,16 @@ def load_recent_prices(days=120) -> pd.DataFrame:
             conn,
             parse_dates=["date"],
         )
+
+    # 如果資料庫完全空的，返回空 DataFrame 但保留欄位結構
+    if df.empty:
+        return pd.DataFrame(columns=["code", "date", "open", "high", "low", "close", "volume"])
+
     cutoff = datetime.utcnow() - timedelta(days=days)
     df = df[df["date"] >= cutoff]
+
+    # 如果過濾後變成空的，仍保留欄位結構
+    if df.empty:
+        return pd.DataFrame(columns=["code", "date", "open", "high", "low", "close", "volume"])
+
     return df

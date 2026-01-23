@@ -97,10 +97,22 @@ def main():
         # ===== 步驟 5: 選股 =====
         logger.info("\n📌 步驟 5: 載入數據並篩選股票")
         hist = load_recent_prices(days=120)
+
+        # 檢查資料是否正常載入
+        if hist.empty:
+            logger.warning("⚠️  資料庫中沒有可用的股價數據")
+            logger.warning("   可能原因：")
+            logger.warning("   1. 首次執行，資料庫為空")
+            logger.warning("   2. yfinance 下載失敗")
+            logger.warning("   3. 網路連線問題")
+        else:
+            logger.info(f"✅ 載入 {len(hist)} 筆歷史資料")
+            logger.info(f"   涵蓋 {hist['code'].nunique()} 支股票")
+            logger.info(f"   日期範圍: {hist['date'].min()} ~ {hist['date'].max()}")
+
         top_k = get_picks_top_k()
         picks = pick_stocks(hist, top_k=top_k)
-        logger.debug(f"載入 {len(hist)} 筆歷史資料")
-        logger.debug(f"篩選出 {len(picks)} 支符合條件的股票")
+        logger.info(f"📊 篩選出 {len(picks)} 支符合條件的股票")
 
         # ===== 步驟 6: 股票分組（依交易量能分組）=====
         logger.info("\n📌 步驟 6: 將股票分組（依交易量能）")

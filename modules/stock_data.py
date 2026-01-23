@@ -48,16 +48,30 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     logger.info(f"\n開始下載 {len(codes_to_fetch)} 支股票")
     logger.info(f"期間: {target_start} ~ 今日")
 
-    df = yf.download(
-        tickers=" ".join(tickers),
-        start=target_start,
-        interval="1d",
-        group_by="ticker",
-        auto_adjust=False,
-        progress=False,
-    )
+    try:
+        df = yf.download(
+            tickers=" ".join(tickers),
+            start=target_start,
+            interval="1d",
+            group_by="ticker",
+            auto_adjust=False,
+            progress=False,
+        )
+        logger.info(f"yfinance 下載完成，原始資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
+    except Exception as e:
+        logger.error(f"❌ yfinance 下載失敗: {e}")
+        logger.error("   可能原因：")
+        logger.error("   1. Yahoo Finance API 暫時無法訪問")
+        logger.error("   2. 網路連線問題")
+        logger.error("   3. API 限流")
+        return pd.DataFrame()
 
-    logger.info(f"yfinance 下載完成，原始資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
+    # 檢查下載結果是否為空
+    if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+        logger.error("❌ yfinance 返回空資料")
+        logger.error(f"   嘗試下載的股票數量: {len(codes_to_fetch)}")
+        logger.error("   建議稍後重試或檢查股票代碼是否正確")
+        return pd.DataFrame()
 
     out = []
     for c in codes_to_fetch:
@@ -106,7 +120,8 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
     Returns:
         DataFrame: 選股結果
     """
-    if prices.empty:
+    if prices.empty or 'code' not in prices.columns:
+        logger.warning("股價資料為空或缺少必要欄位，無法進行選股")
         return pd.DataFrame()
     prices = prices.sort_values(["code", "date"])
 
