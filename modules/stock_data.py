@@ -156,12 +156,11 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
         return pd.DataFrame()
     prices = prices.sort_values(["code", "date"])
 
-    def add_feat(g):
-        g = g.copy()
-        g["ma20"] = g["close"].rolling(20, min_periods=20).mean()
-        return g
-
-    feat = prices.groupby("code", group_keys=False).apply(add_feat)
+    # 使用 transform 代替 apply 以確保保留所有欄位（包括 code）
+    # 這避免了某些 pandas 版本中 group_keys=False 導致 code 欄位消失的問題
+    prices = prices.copy()
+    prices["ma20"] = prices.groupby("code")["close"].transform(lambda x: x.rolling(20, min_periods=20).mean())
+    feat = prices
 
     results = []
     for code, group in feat.groupby("code"):
