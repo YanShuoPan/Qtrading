@@ -140,6 +140,15 @@ def main():
                 group2a = candidates[candidates["code"].isin(top100_codes)]  # 前100大交易量能
                 group2b = candidates[~candidates["code"].isin(top100_codes)]  # 其餘
 
+                # 限制每組最多 6 支股票
+                MAX_STOCKS_PER_GROUP = 6
+                if len(group2a) > MAX_STOCKS_PER_GROUP:
+                    logger.info(f"   前100大交易量能組有 {len(group2a)} 支，限制為 {MAX_STOCKS_PER_GROUP} 支")
+                    group2a = group2a.head(MAX_STOCKS_PER_GROUP)
+                if len(group2b) > MAX_STOCKS_PER_GROUP:
+                    logger.info(f"   其餘組有 {len(group2b)} 支，限制為 {MAX_STOCKS_PER_GROUP} 支")
+                    group2b = group2b.head(MAX_STOCKS_PER_GROUP)
+
         logger.info(f"📈 有機會噴 - 前100大交易量能（斜率 < 0.7）：{len(group2a)} 支")
         logger.info(f"📊 有機會噴 - 其餘（斜率 < 0.7）：{len(group2b)} 支")
 
