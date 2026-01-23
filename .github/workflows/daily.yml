@@ -358,6 +358,34 @@ jobs:
             git commit -m "🧹 移除錯誤上傳的 taiex.sqlite 資料庫檔案" || echo "已經移除"
           fi
 
+          # 清理根目錄中的舊 HTML 檔案（舊結構遺留）
+          echo "清理根目錄中的舊 HTML 檔案..."
+          OLD_HTML_FILES=$(find . -maxdepth 1 -name "20*.html" -type f)
+          if [ -n "$OLD_HTML_FILES" ]; then
+            echo "發現根目錄中的舊 HTML 檔案，準備移除："
+            echo "$OLD_HTML_FILES"
+            rm -f 20*.html
+            git add -A
+            git commit -m "🧹 清理根目錄中的舊 HTML 檔案（已遷移至 docs/ 資料夾）" || echo "無需提交"
+            echo "✅ 已清理根目錄中的舊 HTML 檔案"
+          else
+            echo "✅ 根目錄中沒有舊 HTML 檔案需要清理"
+          fi
+
+          # 清理根目錄中的舊圖片資料夾（舊結構遺留）
+          if [ -d "images" ]; then
+            echo "發現根目錄中的舊 images 資料夾，準備移除..."
+            # 只移除日期格式的資料夾（避免誤刪）
+            find images -maxdepth 1 -type d -name "20*" -exec rm -rf {} + 2>/dev/null || true
+            # 如果 images 資料夾為空，也移除
+            if [ -z "$(ls -A images 2>/dev/null)" ]; then
+              rm -rf images
+              git add -A
+              git commit -m "🧹 清理根目錄中的舊 images 資料夾（已遷移至 docs/images/）" || echo "無需提交"
+              echo "✅ 已清理根目錄中的舊 images 資料夾"
+            fi
+          fi
+
           # 從最新的 main 分支複製獨立的 index 生成腳本
           git checkout origin/main -- generate_index_standalone.py
 
