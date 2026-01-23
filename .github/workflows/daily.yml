@@ -297,14 +297,26 @@ jobs:
           name: rclone-logs
           path: rclone.log
 
-      # 清理超過 5 天的舊資料（在部署前執行）
+      # 清理不該部署的檔案（在部署前執行）
       - name: Prepare docs directory for deployment
         run: |
           echo "準備部署資料夾..."
+
+          # 移除資料庫檔案（不應該部署到 GitHub Pages）
+          if [ -f "docs/taiex.sqlite" ]; then
+            echo "⚠️  發現 taiex.sqlite，移除中..."
+            rm -f docs/taiex.sqlite
+          fi
+
+          # 移除 .gitignore 等不需要的檔案
+          rm -f docs/.gitignore docs/.DS_Store
+
+          echo "檢查 docs 資料夾內容:"
           ls -la docs/ || echo "docs 資料夾為空"
+
           if [ -d "docs/images" ]; then
             echo "圖片資料夾內容:"
-            ls -la docs/images/
+            ls -la docs/images/ | head -20
           fi
 
       # 部署到 GitHub Pages（使用 keep_files 保留舊檔案）
@@ -337,6 +349,14 @@ jobs:
           git fetch origin gh-pages
           git checkout gh-pages
           git pull origin gh-pages
+
+          # 移除不該存在的資料庫檔案（如果存在）
+          if [ -f "taiex.sqlite" ]; then
+            echo "⚠️  發現 taiex.sqlite 在 gh-pages 分支中，移除中..."
+            rm -f taiex.sqlite
+            git add taiex.sqlite
+            git commit -m "🧹 移除錯誤上傳的 taiex.sqlite 資料庫檔案" || echo "已經移除"
+          fi
 
           # 從最新的 main 分支複製獨立的 index 生成腳本
           git checkout origin/main -- generate_index_standalone.py
