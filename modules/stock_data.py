@@ -4,6 +4,7 @@
 from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
+import time
 from .database import get_existing_data_range
 from .logger import get_logger
 
@@ -44,54 +45,84 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         logger.info("所有股票資料都已是最新，無需下載")
         return pd.DataFrame()
 
-    tickers = [f"{c}.TW" for c in codes_to_fetch]
+    # 為了避免 Yahoo Finance API 限流，採用分批下載策略
+    # 每批最多 200 支股票，批次之間延遲 3 秒
+    BATCH_SIZE = 200
+    BATCH_DELAY = 3  # 秒
+
     logger.info(f"\n開始下載 {len(codes_to_fetch)} 支股票")
     logger.info(f"期間: {target_start} ~ 今日")
 
-    try:
-        df = yf.download(
-            tickers=" ".join(tickers),
-            start=target_start,
-            interval="1d",
-            group_by="ticker",
-            auto_adjust=False,
-            progress=False,
-        )
-        logger.info(f"yfinance 下載完成，原始資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
-    except Exception as e:
-        logger.error(f"❌ yfinance 下載失敗: {e}")
+    # 如果股票數量超過 BATCH_SIZE，採用分批下載
+    if len(codes_to_fetch) > BATCH_SIZE:
+        num_batches = (len(codes_to_fetch) + BATCH_SIZE - 1) // BATCH_SIZE
+        logger.info(f"⚠️  股票數量較多，將分成 {num_batches} 批下載（每批 {BATCH_SIZE} 支）")
+        logger.info(f"   批次之間延遲 {BATCH_DELAY} 秒，以避免 API 限流")
+
+    all_results = []
+    for batch_idx in range(0, len(codes_to_fetch), BATCH_SIZE):
+        batch_codes = codes_to_fetch[batch_idx:batch_idx + BATCH_SIZE]
+        batch_num = batch_idx // BATCH_SIZE + 1
+        total_batches = (len(codes_to_fetch) + BATCH_SIZE - 1) // BATCH_SIZE
+
+        if total_batches > 1:
+            logger.info(f"\n📦 批次 {batch_num}/{total_batches}: 下載 {len(batch_codes)} 支股票")
+
+        tickers = [f"{c}.TW" for c in batch_codes]
+
+        try:
+            df = yf.download(
+                tickers=" ".join(tickers),
+                start=target_start,
+                interval="1d",
+                group_by="ticker",
+                auto_adjust=False,
+                progress=False,
+            )
+            logger.info(f"   ✅ 批次 {batch_num} 下載完成，資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
+
+            # 處理這批資料
+            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
+                logger.warning(f"   ⚠️  批次 {batch_num} 返回空資料")
+            else:
+                batch_results = []
+                for c in batch_codes:
+                    t = f"{c}.TW"
+                    if isinstance(df, pd.DataFrame) and t in df:
+                        tmp = df[t].reset_index().rename(columns=str.lower)
+                        if "date" in tmp.columns:
+                            tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
+                        tmp["code"] = c
+                        batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
+                    else:
+                        logger.debug(f"   股票 {c}: 批次中無資料")
+
+                if batch_results:
+                    all_results.extend(batch_results)
+                    logger.info(f"   ✅ 批次 {batch_num} 成功處理 {len(batch_results)} 支股票")
+
+        except Exception as e:
+            logger.error(f"   ❌ 批次 {batch_num} 下載失敗: {e}")
+            logger.error(f"   可能原因：API 限流或網路問題")
+            # 繼續處理下一批，不中斷整個流程
+
+        # 如果還有下一批，延遲一段時間避免限流
+        if batch_idx + BATCH_SIZE < len(codes_to_fetch):
+            logger.debug(f"   ⏸️  延遲 {BATCH_DELAY} 秒後繼續下一批...")
+            time.sleep(BATCH_DELAY)
+
+    # 合併所有批次的結果
+    if not all_results:
+        logger.error("❌ 所有批次都未能成功下載資料")
         logger.error("   可能原因：")
         logger.error("   1. Yahoo Finance API 暫時無法訪問")
         logger.error("   2. 網路連線問題")
-        logger.error("   3. API 限流")
+        logger.error("   3. API 限流（Too Many Requests）")
+        logger.error("   建議：稍後重試或檢查 GitHub Actions 日誌")
         return pd.DataFrame()
 
-    # 檢查下載結果是否為空
-    if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-        logger.error("❌ yfinance 返回空資料")
-        logger.error(f"   嘗試下載的股票數量: {len(codes_to_fetch)}")
-        logger.error("   建議稍後重試或檢查股票代碼是否正確")
-        return pd.DataFrame()
-
-    out = []
-    for c in codes_to_fetch:
-        t = f"{c}.TW"
-        if isinstance(df, pd.DataFrame) and t in df:
-            tmp = df[t].reset_index().rename(columns=str.lower)
-            logger.info(f"股票 {c}: 下載 {len(tmp)} 筆資料")
-
-            if "date" in tmp.columns:
-                logger.info(f"股票 {c}: 原始日期類型 = {tmp['date'].dtype}, 範圍 = {tmp['date'].min()} ~ {tmp['date'].max()}")
-                tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
-                logger.info(f"股票 {c}: 轉換後日期類型 = {tmp['date'].dtype}, 範圍 = {tmp['date'].min()} ~ {tmp['date'].max()}")
-                logger.info(f"股票 {c}: 唯一日期數 = {tmp['date'].nunique()}")
-
-            tmp["code"] = c
-            out.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
-        else:
-            logger.warning(f"股票 {c}: 無法從 yfinance 取得資料")
-
-    result = pd.concat(out, ignore_index=True) if out else pd.DataFrame()
+    # 合併所有批次的結果
+    result = pd.concat(all_results, ignore_index=True) if all_results else pd.DataFrame()
     logger.info(f"成功下載 {len(result)} 筆數據")
     if not result.empty and 'date' in result.columns:
         logger.info(f"合併後總日期範圍: {result['date'].min()} ~ {result['date'].max()}")
