@@ -155,9 +155,9 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
         ax.set_xticklabels(tick_labels, rotation=45, fontsize=9)
         ax.tick_params(axis='y', labelsize=9)
 
-    # 移除多餘的子圖
+    # 隱藏多餘的子圖（但不移除，保持固定大小）
     for i in range(n_stocks, 6):
-        fig.delaxes(axes[i])
+        axes[i].axis('off')
 
     plt.tight_layout()
 
@@ -265,9 +265,9 @@ def plot_breakout_charts(codes: list, prices: pd.DataFrame) -> str:
         ax.set_xticklabels(tick_labels, rotation=45, fontsize=9)
         ax.tick_params(axis='y', labelsize=9)
 
-    # 移除多餘的子圖
+    # 隱藏多餘的子圖（但不移除，保持固定大小）
     for i in range(n_stocks, 6):
-        fig.delaxes(axes[i])
+        axes[i].axis('off')
 
     plt.tight_layout()
 
