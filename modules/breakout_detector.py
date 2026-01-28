@@ -45,20 +45,20 @@ def detect_consolidation(
     df: pd.DataFrame,
     window: int = 10,
     range_pct: float = 0.08,
-    atr_pct: float = 0.025
+    atr_pct: float = 0.05
 ) -> pd.DataFrame:
     """
     偵測多日盤整狀態
 
     盤整定義：
     1. box_range_pct = (box_high - box_low) / Close < range_pct (預設 8%)
-    2. ATR14 / Close < atr_pct (預設 2.5%)
+    2. ATR14 / Close < atr_pct (預設 5%)
 
     Args:
         df: 包含 High, Low, Close, ATR14 欄位的 DataFrame
         window: rolling window 大小（預設 10）
         range_pct: 箱型區間佔比上限（預設 0.08）
-        atr_pct: ATR 佔比上限（預設 0.025）
+        atr_pct: ATR 佔比上限（預設 0.05）
 
     Returns:
         DataFrame: 原始 df 加上 box_high, box_low, box_range_pct, is_consolidating 欄位
@@ -178,7 +178,7 @@ def detect_c_pattern(
     atr_period: int = 14,
     consolidation_window: int = 10,
     consolidation_range_pct: float = 0.08,
-    consolidation_atr_pct: float = 0.025,
+    consolidation_atr_pct: float = 0.05,
     breakdown_k_atr: float = 0.5,
     reclaim_max_lag: int = 2
 ) -> pd.DataFrame:
@@ -196,7 +196,7 @@ def detect_c_pattern(
         atr_period: ATR 週期
         consolidation_window: 盤整判斷的 rolling window（預設 10 日）
         consolidation_range_pct: 盤整區間佔比上限
-        consolidation_atr_pct: ATR 佔比上限
+        consolidation_atr_pct: ATR 佔比上限（預設 5%）
         breakdown_k_atr: 跌破閾值的 ATR 倍數
         reclaim_max_lag: 收回檢查的最大天數
 
