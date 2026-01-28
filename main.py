@@ -27,6 +27,7 @@ from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts
 from modules.image_upload import upload_image
 from modules.html_generator import generate_daily_html, generate_index_html
+from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
 
 # 初始化日誌
 setup_logger()
@@ -152,6 +153,49 @@ def main():
         logger.info(f"📈 有機會噴 - 前100大交易量能（斜率 < 0.7）：{len(group2a)} 支")
         logger.info(f"📊 有機會噴 - 其餘（斜率 < 0.7）：{len(group2b)} 支")
 
+        # ===== 步驟 6.3: 破底翻偵測 =====
+        logger.info("\n📌 步驟 6.3: 偵測破底翻型態（C型）")
+        breakout_stocks = []
+
+        # 對所有股票進行破底翻偵測
+        stock_codes = hist['code'].unique()
+        logger.info(f"掃描 {len(stock_codes)} 支股票尋找破底翻型態...")
+
+        for code in stock_codes:
+            stock_df = hist[hist['code'] == code].copy()
+
+            # 確保資料量足夠
+            if len(stock_df) < 40:
+                continue
+
+            try:
+                # 執行破底翻偵測
+                result_df = detect_c_pattern(stock_df)
+                events = summarize_c_pattern_events(result_df)
+
+                # 只保留五日內收回的事件
+                if not events.empty:
+                    # 計算五日前的日期
+                    five_days_ago = today_tpe - timedelta(days=5)
+                    recent_events = events[events['reclaim_date'].dt.date >= five_days_ago]
+                    if not recent_events.empty:
+                        breakout_stocks.append(recent_events)
+                        for _, evt in recent_events.iterrows():
+                            logger.info(f"  ✅ {code} 發現破底翻事件（收回日期: {evt['reclaim_date'].date()}）")
+            except Exception as e:
+                logger.debug(f"  ⚠️  {code} 偵測失敗: {e}")
+
+        # 彙整破底翻股票
+        if breakout_stocks:
+            import pandas as pd
+            breakout_df = pd.concat(breakout_stocks, ignore_index=True)
+            # 按收回日期排序（最新的在前）
+            breakout_df = breakout_df.sort_values('reclaim_date', ascending=False)
+            logger.info(f"🔥 五日內破底翻股票：{len(breakout_df)} 支")
+        else:
+            breakout_df = None
+            logger.info("ℹ️  五日內無破底翻事件")
+
         # ===== 步驟 6.5: 生成 K 線圖並複製到 docs 資料夾 =====
         logger.info("\n📌 步驟 6.5: 生成 K 線圖並準備 GitHub Pages 資料")
         date_str = str(today_tpe)
@@ -166,10 +210,16 @@ def main():
         if not group2b.empty:
             generate_and_save_charts(group2b, "有機會噴-其餘", today_tpe, hist, images_output_dir)
 
+        # 生成並保存破底翻股票圖片
+        if breakout_df is not None and not breakout_df.empty:
+            logger.info(f"生成破底翻股票 K 線圖...")
+            breakout_codes = breakout_df['code'].unique().tolist()
+            generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir)
+
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            generate_daily_html(date_str, group2a, group2b, output_dir="docs")
+            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df)
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:
@@ -261,6 +311,42 @@ def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
     group_codes = group_df["code"].tolist()
     for batch_num in range(0, len(group_codes), 6):
         batch_codes = group_codes[batch_num:batch_num + 6]
+        batch_display = ", ".join(batch_codes)
+        logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
+
+        chart_path = plot_stock_charts(batch_codes, hist)
+        if chart_path:
+            # 保存圖表到 docs/images/{date}/ 資料夾
+            # 加入時間戳記避免瀏覽器快取問題
+            from datetime import datetime
+            timestamp = datetime.now().strftime("%H%M%S")
+            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}_{timestamp}.png"
+            saved_chart_path = os.path.join(output_dir, chart_filename)
+            shutil.copy(chart_path, saved_chart_path)
+            logger.info(f"  ✅ K 線圖已保存: {saved_chart_path}")
+
+            # 刪除臨時檔案
+            os.unlink(chart_path)
+        else:
+            logger.warning(f"  ❌ K 線圖生成失敗")
+
+
+def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist, output_dir):
+    """
+    從股票代碼列表生成 K 線圖並保存到指定目錄
+
+    Args:
+        codes_list: 股票代碼列表
+        group_name: 群組名稱
+        today_tpe: 今日日期
+        hist: 歷史股價數據
+        output_dir: 輸出目錄
+    """
+    import shutil
+    logger.info(f"生成「{group_name}」組 K 線圖...")
+
+    for batch_num in range(0, len(codes_list), 6):
+        batch_codes = codes_list[batch_num:batch_num + 6]
         batch_display = ", ".join(batch_codes)
         logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
 

@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 KEEP_DAYS = 7
 
 
-def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None):
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -22,6 +22,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
         group2b_df: 有機會噴 - 其餘組 DataFrame
         output_dir: 輸出目錄（預設 'docs' 給 GitHub Pages）
         images_dir: 圖片資料夾路徑（相對於 output_dir）
+        breakout_df: 破底翻股票 DataFrame（可選）
 
     Returns:
         生成的 HTML 檔案路徑
@@ -281,6 +282,63 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
 """
 
     html_content += """
+            </div>
+"""
+
+    # 添加破底翻組別（如果有）
+    if breakout_df is not None and not breakout_df.empty:
+        html_content += """
+            <div class="section">
+                <div class="section-title" style="color: #e74c3c; border-bottom-color: #e74c3c;">
+                    <span>🔥</span>
+                    <span>破底翻型態 (五日內)</span>
+                </div>
+"""
+        html_content += """
+                <div class="stock-grid">
+"""
+        for idx, row in breakout_df.iterrows():
+            code = row['code']
+            name = get_stock_name(code)
+            reclaim_pct = row.get('reclaim_pct', 0)
+            reclaim_date = row.get('reclaim_date')
+
+            # 格式化收回日期
+            if hasattr(reclaim_date, 'strftime'):
+                reclaim_date_str = reclaim_date.strftime('%m/%d')
+            else:
+                reclaim_date_str = str(reclaim_date)[:10] if reclaim_date else ''
+
+            html_content += f"""
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">{code}</div>
+                        <div class="stock-name">{name}</div>
+                        <div class="stock-info">收回: {reclaim_date_str} ({reclaim_pct:.2f}%)</div>
+                    </div>
+"""
+        html_content += """
+                </div>
+"""
+
+        # 添加 K 線圖（如果有圖片）
+        images_path = os.path.join(output_dir, images_dir)
+        if os.path.exists(images_path):
+            # 查找該組的圖片
+            breakout_images = [f for f in os.listdir(images_path) if '破底翻' in f and f.endswith('.png')]
+            if breakout_images:
+                html_content += """
+                <div class="chart-container">
+"""
+                for img_file in sorted(breakout_images):
+                    img_path = f"{images_dir}/{img_file}"
+                    html_content += f"""
+                    <img src="{img_path}" alt="破底翻K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
+"""
+                html_content += """
+                </div>
+"""
+
+        html_content += """
             </div>
 """
 
