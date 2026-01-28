@@ -2,10 +2,10 @@ name: daily-picks
 
 on:
   schedule:
-    # 週一到週五 18:00 Asia/Taipei = 10:00 UTC (週一到週五)
+    # 週一到週五 16:00 Asia/Taipei = 08:00 UTC (週一到週五)
     # 0 = Sunday, 1 = Monday, ..., 6 = Saturday
-    # UTC 10:00 對應台北時間 18:00，週末不執行
-    - cron: "0 10 * * 1-5"
+    # UTC 08:00 對應台北時間 16:00，週末不執行
+    - cron: "0 8 * * 1-5"
   workflow_dispatch:
 
 jobs:

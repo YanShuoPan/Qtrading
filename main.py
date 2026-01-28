@@ -189,9 +189,38 @@ def main():
         if breakout_stocks:
             import pandas as pd
             breakout_df = pd.concat(breakout_stocks, ignore_index=True)
-            # 按收回日期排序（最新的在前）
-            breakout_df = breakout_df.sort_values('reclaim_date', ascending=False)
-            logger.info(f"🔥 五日內破底翻股票：{len(breakout_df)} 支")
+
+            # 額外篩選：今日股價需在十日線之上
+            logger.info("🔍 篩選條件：今日股價需在十日線之上")
+            filtered_breakout = []
+            for idx, row in breakout_df.iterrows():
+                code = row['code']
+                stock_df = hist[hist['code'] == code].copy()
+
+                # 計算十日均線
+                stock_df = stock_df.sort_values('date')
+                stock_df['MA10'] = stock_df['close'].rolling(window=10).mean()
+
+                # 取得今日資料（最新一筆）
+                today_data = stock_df.iloc[-1]
+                close_price = today_data['close']
+                ma10 = today_data['MA10']
+
+                # 判斷今日收盤是否在十日線之上
+                if pd.notna(ma10) and close_price > ma10:
+                    filtered_breakout.append(row)
+                    logger.info(f"  ✅ {code} 通過篩選（收盤: {close_price:.2f}, MA10: {ma10:.2f}）")
+                else:
+                    logger.info(f"  ❌ {code} 未通過篩選（收盤: {close_price:.2f}, MA10: {ma10:.2f if pd.notna(ma10) else 'N/A'}）")
+
+            if filtered_breakout:
+                breakout_df = pd.DataFrame(filtered_breakout)
+                # 按收回日期排序（最新的在前）
+                breakout_df = breakout_df.sort_values('reclaim_date', ascending=False)
+                logger.info(f"🔥 五日內破底翻股票（篩選後）：{len(breakout_df)} 支")
+            else:
+                breakout_df = None
+                logger.info("ℹ️  五日內無符合條件的破底翻事件（今日股價需在十日線之上）")
         else:
             breakout_df = None
             logger.info("ℹ️  五日內無破底翻事件")

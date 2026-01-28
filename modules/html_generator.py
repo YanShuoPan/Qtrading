@@ -285,7 +285,62 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             </div>
 """
 
-    # 添加破底翻組別（如果有）
+    # 添加 Group 2B: 有機會噴 - 其餘
+    html_content += """
+            <div class="section">
+                <div class="section-title potential">
+                    <span>👀</span>
+                    <span>有機會噴 - 其餘</span>
+                </div>
+"""
+
+    if group2b_df.empty:
+        html_content += """
+                <div class="empty-message">今日無符合條件的股票</div>
+"""
+    else:
+        html_content += """
+                <div class="stock-grid">
+"""
+        for idx, row in group2b_df.iterrows():
+            code = row['code']
+            name = get_stock_name(code)
+            slope = row.get('ma20_slope', 0)
+
+            html_content += f"""
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">{code}</div>
+                        <div class="stock-name">{name}</div>
+                        <div class="stock-info">斜率: {slope:.3f}</div>
+                    </div>
+"""
+        html_content += """
+                </div>
+"""
+
+        # 添加 K 線圖（如果有圖片）
+        images_path = os.path.join(output_dir, images_dir)
+        if os.path.exists(images_path):
+            # 查找該組的圖片
+            group2b_images = [f for f in os.listdir(images_path) if '有機會噴-其餘' in f and f.endswith('.png')]
+            if group2b_images:
+                html_content += """
+                <div class="chart-container">
+"""
+                for img_file in sorted(group2b_images):
+                    img_path = f"{images_dir}/{img_file}"
+                    html_content += f"""
+                    <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
+"""
+                html_content += """
+                </div>
+"""
+
+    html_content += """
+            </div>
+"""
+
+    # 添加破底翻組別（如果有）- 放在最下面
     if breakout_df is not None and not breakout_df.empty:
         html_content += """
             <div class="section">
@@ -342,60 +397,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             </div>
 """
 
-    # 添加 Group 2B: 有機會噴 - 其餘
     html_content += """
-            <div class="section">
-                <div class="section-title potential">
-                    <span>👀</span>
-                    <span>有機會噴 - 其餘</span>
-                </div>
-"""
-
-    if group2b_df.empty:
-        html_content += """
-                <div class="empty-message">今日無符合條件的股票</div>
-"""
-    else:
-        html_content += """
-                <div class="stock-grid">
-"""
-        for idx, row in group2b_df.iterrows():
-            code = row['code']
-            name = get_stock_name(code)
-            slope = row.get('ma20_slope', 0)
-
-            html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
-                        <div class="stock-code">{code}</div>
-                        <div class="stock-name">{name}</div>
-                        <div class="stock-info">斜率: {slope:.3f}</div>
-                    </div>
-"""
-        html_content += """
-                </div>
-"""
-
-        # 添加 K 線圖（如果有圖片）
-        images_path = os.path.join(output_dir, images_dir)
-        if os.path.exists(images_path):
-            # 查找該組的圖片
-            group2b_images = [f for f in os.listdir(images_path) if '有機會噴-其餘' in f and f.endswith('.png')]
-            if group2b_images:
-                html_content += """
-                <div class="chart-container">
-"""
-                for img_file in sorted(group2b_images):
-                    img_path = f"{images_dir}/{img_file}"
-                    html_content += f"""
-                    <img src="{img_path}" alt="K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
-"""
-                html_content += """
-                </div>
-"""
-
-    html_content += """
-            </div>
-
             <div class="nav-buttons">
                 <a href="index.html" class="btn">📅 回到首頁</a>
             </div>
