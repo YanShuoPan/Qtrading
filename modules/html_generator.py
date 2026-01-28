@@ -346,7 +346,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             <div class="section">
                 <div class="section-title" style="color: #e74c3c; border-bottom-color: #e74c3c;">
                     <span>🔥</span>
-                    <span>破底翻型態 (五日內)</span>
+                    <span>破底翻型態 (五日內) - 至少等三天站穩十日線</span>
                 </div>
 """
         html_content += """
