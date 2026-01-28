@@ -211,7 +211,8 @@ def main():
                     filtered_breakout.append(row)
                     logger.info(f"  ✅ {code} 通過篩選（收盤: {close_price:.2f}, MA10: {ma10:.2f}）")
                 else:
-                    logger.info(f"  ❌ {code} 未通過篩選（收盤: {close_price:.2f}, MA10: {ma10:.2f if pd.notna(ma10) else 'N/A'}）")
+                    ma10_str = f"{ma10:.2f}" if pd.notna(ma10) else "N/A"
+                    logger.info(f"  ❌ {code} 未通過篩選（收盤: {close_price:.2f}, MA10: {ma10_str}）")
 
             if filtered_breakout:
                 breakout_df = pd.DataFrame(filtered_breakout)
