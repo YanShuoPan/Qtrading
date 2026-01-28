@@ -24,7 +24,7 @@ from modules.google_drive import (
 from modules.line_messaging import broadcast_text, broadcast_image, broadcast_button_message, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
-from modules.visualization import plot_stock_charts
+from modules.visualization import plot_stock_charts, plot_breakout_charts
 from modules.image_upload import upload_image
 from modules.html_generator import generate_daily_html, generate_index_html
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
@@ -240,11 +240,11 @@ def main():
         if not group2b.empty:
             generate_and_save_charts(group2b, "有機會噴-其餘", today_tpe, hist, images_output_dir)
 
-        # 生成並保存破底翻股票圖片
+        # 生成並保存破底翻股票圖片（使用 MA10）
         if breakout_df is not None and not breakout_df.empty:
-            logger.info(f"生成破底翻股票 K 線圖...")
+            logger.info(f"生成破底翻股票 K 線圖（MA10）...")
             breakout_codes = breakout_df['code'].unique().tolist()
-            generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir)
+            generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir, use_ma10=True)
 
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
@@ -361,7 +361,7 @@ def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
             logger.warning(f"  ❌ K 線圖生成失敗")
 
 
-def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist, output_dir):
+def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist, output_dir, use_ma10=False):
     """
     從股票代碼列表生成 K 線圖並保存到指定目錄
 
@@ -371,6 +371,7 @@ def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist,
         today_tpe: 今日日期
         hist: 歷史股價數據
         output_dir: 輸出目錄
+        use_ma10: 是否使用 MA10（破底翻專用），預設為 False（使用 MA20）
     """
     import shutil
     logger.info(f"生成「{group_name}」組 K 線圖...")
@@ -380,7 +381,12 @@ def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist,
         batch_display = ", ".join(batch_codes)
         logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
 
-        chart_path = plot_stock_charts(batch_codes, hist)
+        # 根據參數選擇繪圖函數
+        if use_ma10:
+            chart_path = plot_breakout_charts(batch_codes, hist)
+        else:
+            chart_path = plot_stock_charts(batch_codes, hist)
+
         if chart_path:
             # 保存圖表到 docs/images/{date}/ 資料夾
             # 加入時間戳記避免瀏覽器快取問題

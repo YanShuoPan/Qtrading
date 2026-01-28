@@ -168,3 +168,113 @@ def plot_stock_charts(codes: list, prices: pd.DataFrame) -> str:
 
     logger.info(f"✅ 圖表已生成: {temp_file.name}")
     return temp_file.name
+
+
+def plot_breakout_charts(codes: list, prices: pd.DataFrame) -> str:
+    """
+    繪製破底翻股票的 K 棒圖（顯示 MA10）
+
+    Args:
+        codes: 股票代碼列表
+        prices: 股價數據 DataFrame
+
+    Returns:
+        str: 圖表檔案路徑
+    """
+    logger.info(f'開始繪製破底翻圖表，股票代碼: {codes}')
+    logger.info(f'價格數據總筆數: {len(prices)}')
+
+    # 診斷：檢查資料範圍
+    if not prices.empty and 'date' in prices.columns:
+        logger.info(f'價格數據日期範圍: {prices["date"].min()} ~ {prices["date"].max()}')
+        logger.info(f'價格數據唯一日期數: {prices["date"].nunique()}')
+
+    codes = codes[:6]
+    n_stocks = len(codes)
+    if n_stocks == 0:
+        logger.warning("沒有股票代碼需要繪製")
+        return None
+
+    # 設定字體優先級：Windows字體 -> Linux字體 -> 通用字體
+    fonts = ['Microsoft JhengHei', 'SimHei', 'WenQuanYi Zen Hei', 'WenQuanYi Micro Hei', 'DejaVu Sans', 'Arial']
+    plt.rcParams['font.sans-serif'] = fonts
+    plt.rcParams['axes.unicode_minus'] = False
+
+    # 在 CI 環境中清除字體快取以確保使用新安裝的字體
+    import os
+    if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
+        try:
+            import matplotlib.font_manager
+            matplotlib.font_manager._load_fontmanager(try_read_cache=False)
+            logger.debug("CI 環境：已重新載入字體管理器")
+        except Exception as e:
+            logger.warning(f"重新載入字體管理器失敗: {e}")
+
+    if DEBUG_MODE:
+        logger.debug(f"matplotlib 後端: {matplotlib.get_backend()}")
+        logger.debug(f"設定字體順序: {fonts}")
+
+    fig, axes = plt.subplots(2, 3, figsize=(18, 12))
+    axes = axes.flatten()
+
+    for i, code in enumerate(codes):
+        stock_data = prices[prices["code"] == code].sort_values("date").tail(90)
+
+        logger.info(f'股票 {code}: 原始資料筆數 = {len(prices[prices["code"] == code])}, tail(90) 後筆數 = {len(stock_data)}')
+        if not stock_data.empty and 'date' in stock_data.columns:
+            logger.info(f'股票 {code}: 日期範圍 = {stock_data["date"].min()} ~ {stock_data["date"].max()}')
+            logger.info(f'股票 {code}: 唯一日期數 = {stock_data["date"].nunique()}')
+
+        if stock_data.empty or len(stock_data) < 10:
+            stock_name = get_stock_name(code)
+            axes[i].text(0.5, 0.5, f"{code} {stock_name}\n數據不足",
+                        ha='center', va='center', fontsize=14)
+            axes[i].set_xticks([])
+            axes[i].set_yticks([])
+            continue
+
+        stock_data = stock_data.copy().reset_index(drop=True)
+        logger.info(f'股票 {code}: reset_index() 後索引範圍 = {stock_data.index.min()}-{stock_data.index.max()}')
+
+        # 計算 MA10（十日均線）
+        stock_data["ma10"] = stock_data["close"].rolling(10, min_periods=10).mean()
+
+        ax = axes[i]
+        plot_candlestick(ax, stock_data)
+
+        # 繪製 MA10
+        valid_ma10 = stock_data[stock_data["ma10"].notna()]
+        if not valid_ma10.empty:
+            logger.info(f'股票 {code}: valid_ma10 索引範圍 = {valid_ma10.index.min()}-{valid_ma10.index.max()}')
+            ma10_indices = valid_ma10.index - stock_data.index[0]
+            logger.info(f'股票 {code}: ma10_indices 範圍 = {ma10_indices.min()}-{ma10_indices.max()}')
+            ax.plot(ma10_indices, valid_ma10["ma10"], label="MA10",
+                   linewidth=2, linestyle="--", alpha=0.7, color='#E67E22')
+
+        stock_name = get_stock_name(code)
+        ax.set_title(f"{code} {stock_name}", fontsize=14, fontweight='bold', pad=10)
+        ax.legend(fontsize=9, loc='upper left')
+        ax.grid(True, alpha=0.3, linestyle='--')
+
+        # 設定 X 軸日期標籤
+        date_labels = stock_data["date"].dt.strftime('%m/%d').tolist()
+        step = max(1, len(date_labels) // 6)
+        tick_positions = list(range(0, len(date_labels), step))
+        tick_labels = [date_labels[i] for i in tick_positions]
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels, rotation=45, fontsize=9)
+        ax.tick_params(axis='y', labelsize=9)
+
+    # 移除多餘的子圖
+    for i in range(n_stocks, 6):
+        fig.delaxes(axes[i])
+
+    plt.tight_layout()
+
+    # 儲存圖表到暫存檔案
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".png")
+    plt.savefig(temp_file.name, dpi=100, bbox_inches='tight')
+    plt.close()
+
+    logger.info(f"✅ 破底翻圖表已生成: {temp_file.name}")
+    return temp_file.name
