@@ -353,8 +353,7 @@ jobs:
           # 移除不該存在的資料庫檔案（如果存在）
           if [ -f "taiex.sqlite" ]; then
             echo "⚠️  發現 taiex.sqlite 在 gh-pages 分支中，移除中..."
-            rm -f taiex.sqlite
-            git add taiex.sqlite
+            git rm -f taiex.sqlite
             git commit -m "🧹 移除錯誤上傳的 taiex.sqlite 資料庫檔案" || echo "已經移除"
           fi
 
