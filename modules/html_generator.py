@@ -597,15 +597,10 @@ def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "do
         for _, row in tag_df.iterrows():
             code = row['code']
             name = get_stock_name(code)
-            # 若名稱就是代碼本身（表示查不到），標示為灰色
-            if name == code:
-                name_html = f'<span style="color:#aaa">{code}</span>'
-            else:
-                name_html = name
             html_content += f"""
                     <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
-                        <div class="stock-name">{name_html}</div>
+                        <div class="stock-name">{name}</div>
                     </div>
 """
         html_content += """

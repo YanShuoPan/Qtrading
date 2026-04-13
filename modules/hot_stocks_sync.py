@@ -7,6 +7,8 @@ import logging
 
 import pandas as pd
 
+from .stock_codes import STOCK_NAMES
+
 logger = logging.getLogger(__name__)
 
 
@@ -102,7 +104,7 @@ def build_hot_stocks_df(
 
     rows = []
     for code, info in hot_stocks.items():
-        if code in available_codes:
+        if code in available_codes and code in STOCK_NAMES:
             rows.append({
                 "code": code,
                 "tag_name": info["tag_name"],
