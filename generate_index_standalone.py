@@ -22,9 +22,17 @@ def generate_index_html(output_dir='.'):
         scan_dir = output_dir
         print(f"掃描 {scan_dir} 資料夾中的 HTML 檔案...")
 
-    html_files = [f for f in os.listdir(scan_dir)
-                  if f.endswith('.html') and f != 'index.html']
-    dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
+    dates = []
+    for f in os.listdir(scan_dir):
+        if not f.endswith('.html') or f == 'index.html':
+            continue
+        date_str = f.replace('.html', '')
+        try:
+            datetime.strptime(date_str, '%Y-%m-%d')
+            dates.append(date_str)
+        except ValueError:
+            pass
+    dates = sorted(dates, reverse=True)
 
     print(f"找到 {len(dates)} 個日期: {dates}")
 

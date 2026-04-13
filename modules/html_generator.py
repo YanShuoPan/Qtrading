@@ -669,9 +669,18 @@ def generate_index_html(output_dir: str = "docs"):
     """
     os.makedirs(output_dir, exist_ok=True)
 
-    # 掃描所有已生成的日期頁面
-    html_files = [f for f in os.listdir(output_dir) if f.endswith('.html') and f != 'index.html']
-    dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
+    # 掃描所有已生成的日期頁面（只取 YYYY-MM-DD.html，排除 _hot.html 等）
+    dates = []
+    for f in os.listdir(output_dir):
+        if not f.endswith('.html') or f == 'index.html':
+            continue
+        date_str = f.replace('.html', '')
+        try:
+            datetime.strptime(date_str, '%Y-%m-%d')
+            dates.append(date_str)
+        except ValueError:
+            pass
+    dates = sorted(dates, reverse=True)
 
     html_content = """<!DOCTYPE html>
 <html lang="zh-TW">
