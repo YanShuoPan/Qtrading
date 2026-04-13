@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 KEEP_DAYS = 7
 
 
-def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None):
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None, stock_tags: dict = None):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -142,6 +142,23 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             color: #333;
         }}
 
+        .stock-tags {{
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }}
+
+        .stock-tag {{
+            background: rgba(102, 126, 234, 0.12);
+            color: #5a6fd6;
+            font-size: 0.72em;
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.25);
+            white-space: nowrap;
+        }}
+
         .stock-info {{
             margin-top: 10px;
             font-size: 0.9em;
@@ -261,11 +278,14 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             code = row['code']
             name = get_stock_name(code)
             slope = row.get('ma20_slope', 0)
+            tags = (stock_tags or {}).get(code, [])
+            tags_html = "".join(f'<span class="stock-tag">{t}</span>' for t in tags)
 
             html_content += f"""
                     <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
+                        {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
                         <div class="stock-info">斜率: {slope:.3f}</div>
                     </div>
 """
@@ -316,11 +336,14 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             code = row['code']
             name = get_stock_name(code)
             slope = row.get('ma20_slope', 0)
+            tags = (stock_tags or {}).get(code, [])
+            tags_html = "".join(f'<span class="stock-tag">{t}</span>' for t in tags)
 
             html_content += f"""
                     <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
+                        {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
                         <div class="stock-info">斜率: {slope:.3f}</div>
                     </div>
 """

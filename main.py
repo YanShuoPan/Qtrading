@@ -28,7 +28,7 @@ from modules.visualization import plot_stock_charts, plot_breakout_charts
 from modules.image_upload import upload_image
 from modules.html_generator import generate_daily_html, generate_index_html, generate_hot_stocks_html
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
-from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df
+from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df, load_stock_tags
 from modules.hot_stocks_generator import generate_hot_stocks_csv
 
 # 初始化日誌
@@ -92,6 +92,9 @@ def main():
             logger.info(f"🔥 熱門題材股：{len(hot_codes)} 支 → {', '.join(hot_codes[:10])}{'...' if len(hot_codes) > 10 else ''}")
         else:
             logger.warning("⚠️ 未能載入熱門題材股（請確認 HOT_STOCKS_CSV_PATH 設定）")
+
+        stock_tags = load_stock_tags()
+        logger.info(f"📋 股票標籤已載入：{len(stock_tags)} 支有標籤資料")
 
         # ===== 步驟 4: 下載股價數據 =====
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
@@ -302,7 +305,7 @@ def main():
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df, hot_stocks_df=group_hot)
+            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df, hot_stocks_df=group_hot, stock_tags=stock_tags)
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:

@@ -132,3 +132,51 @@ def build_hot_stocks_df(
         f"（每主題最多 {max_per_tag} 支，依交易量能排序）"
     )
     return df
+
+
+def load_stock_tags(
+    stock_tag_map_path: str | None = None,
+    tag_master_path: str | None = None,
+    max_tags: int = 2,
+) -> dict[str, list[str]]:
+    """
+    從 stock_tag_map.csv + tag_master.csv 建立股票標籤對照表。
+
+    Returns:
+        {股票代碼(str): [標籤中文名1, 標籤中文名2]}  (最多 max_tags 個，core 優先)
+    """
+    if stock_tag_map_path is None:
+        from .config import STOCK_TAG_MAP_CSV
+        stock_tag_map_path = STOCK_TAG_MAP_CSV
+    if tag_master_path is None:
+        from .config import TAG_MASTER_CSV
+        tag_master_path = TAG_MASTER_CSV
+
+    try:
+        stm = pd.read_csv(stock_tag_map_path, encoding="utf-8-sig")
+        tm = pd.read_csv(tag_master_path, encoding="utf-8-sig")
+    except Exception as e:
+        logger.warning(f"載入 stock_tags 失敗: {e}")
+        return {}
+
+    # tag_id → 中文名稱
+    tag_name_map: dict[str, str] = dict(zip(tm["tag_id"], tm["tag_name"]))
+
+    # core 優先排序
+    score_order = {"core": 0, "related": 1}
+    stm = stm.copy()
+    stm["_sort"] = stm["score_level"].map(score_order).fillna(2)
+    stm = stm.sort_values(["stock_id", "_sort"])
+
+    result: dict[str, list[str]] = {}
+    for _, row in stm.iterrows():
+        code = str(int(row["stock_id"]))
+        tag_name = tag_name_map.get(row["tag_id"], "")
+        if not tag_name:
+            continue
+        tags = result.setdefault(code, [])
+        if len(tags) < max_tags:
+            tags.append(tag_name)
+
+    logger.info(f"載入股票標籤：{len(result)} 支股票有標籤資料")
+    return result
