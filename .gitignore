@@ -6,8 +6,12 @@
 *.json
 !.github/**/*.json
 
-# Data directory
-data/
+# Data directory (runtime data, not tracked)
+data/*
+# 靜態設定檔例外（這些檔案需要追蹤到 git）
+!data/theme_keywords.yaml
+!data/stock_tag_map.csv
+!data/tag_master.csv
 *.db
 *.sqlite
 *.sqlite3

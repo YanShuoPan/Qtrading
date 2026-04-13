@@ -26,8 +26,10 @@ from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts, plot_breakout_charts
 from modules.image_upload import upload_image
-from modules.html_generator import generate_daily_html, generate_index_html
+from modules.html_generator import generate_daily_html, generate_index_html, generate_hot_stocks_html
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
+from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df
+from modules.hot_stocks_generator import generate_hot_stocks_csv
 
 # 初始化日誌
 setup_logger()
@@ -72,6 +74,25 @@ def main():
                 else:
                     logger.info(f"  - {sub}")
 
+        # ===== 步驟 3.5: 生成並載入熱門題材股清單 =====
+        logger.info("\n📌 步驟 3.5a: 生成每日熱門題材股清單（Google News RSS）")
+        try:
+            ok = generate_hot_stocks_csv()
+            if ok:
+                logger.info("✅ hot_stocks.csv 生成成功")
+            else:
+                logger.warning("⚠️  hot_stocks.csv 生成失敗，將嘗試使用舊檔案")
+        except Exception as e:
+            logger.warning(f"⚠️  生成 hot_stocks.csv 發生例外: {e}，將嘗試使用舊檔案")
+
+        logger.info("\n📌 步驟 3.5b: 載入熱門題材股清單")
+        hot_stocks_info = load_hot_stocks()
+        hot_codes = list(hot_stocks_info.keys())
+        if hot_codes:
+            logger.info(f"🔥 熱門題材股：{len(hot_codes)} 支 → {', '.join(hot_codes[:10])}{'...' if len(hot_codes) > 10 else ''}")
+        else:
+            logger.warning("⚠️ 未能載入熱門題材股（請確認 HOT_STOCKS_CSV_PATH 設定）")
+
         # ===== 步驟 4: 下載股價數據 =====
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
 
@@ -86,7 +107,12 @@ def main():
             logger.info(f"🗓️  今日為{weekday_names[today_weekday]} ({today_tpe})，股市休市，跳過更新股價數據")
             logger.info("ℹ️  使用資料庫中的現有數據")
         else:
-            codes = get_stock_codes()
+            base_codes = get_stock_codes()
+            # 合併熱門股代碼（避免重複）
+            codes = list(dict.fromkeys(base_codes + [c for c in hot_codes if c not in base_codes]))
+            if len(codes) > len(base_codes):
+                new_hot = [c for c in hot_codes if c not in base_codes]
+                logger.info(f"   新增 {len(new_hot)} 支熱門股至下載清單: {new_hot}")
             df_new = fetch_prices_yf(codes, lookback_days=120)
             if not df_new.empty:
                 upsert_prices(df_new)
@@ -114,6 +140,16 @@ def main():
         top_k = get_picks_top_k()
         picks = pick_stocks(hist, top_k=top_k)
         logger.info(f"📊 篩選出 {len(picks)} 支符合條件的股票")
+
+        # ===== 步驟 5.5: 建立熱門題材股群組 =====
+        logger.info("\n📌 步驟 5.5: 建立熱門題材股群組")
+        group_hot = build_hot_stocks_df(hot_stocks_info, hist)
+        if not group_hot.empty:
+            logger.info(f"🔥 熱門題材股（有資料）：{len(group_hot)} 支")
+            for _, r in group_hot.iterrows():
+                logger.info(f"   #{r['rank']} {r['code']} [{r['tag_name']}] mention={r['mention_count']}")
+        else:
+            logger.info("ℹ️  無熱門題材股資料")
 
         # ===== 步驟 6: 股票分組（依交易量能分組）=====
         logger.info("\n📌 步驟 6: 將股票分組（依交易量能）")
@@ -252,14 +288,34 @@ def main():
             breakout_codes = breakout_df['code'].unique().tolist()
             generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir, use_ma10=True)
 
+        # 生成並保存熱門題材股圖片（依主題分批，各自命名）
+        if not group_hot.empty:
+            logger.info(f"生成熱門題材股 K 線圖（依主題）...")
+            for tag_name, tag_df in group_hot.groupby('tag_name', sort=False):
+                safe_tag = tag_name.replace('/', '-').replace(' ', '_')
+                generate_and_save_charts_from_codes(
+                    tag_df['code'].tolist(),
+                    f"熱門題材_{safe_tag}",
+                    today_tpe, hist, images_output_dir,
+                )
+
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df)
+            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df, hot_stocks_df=group_hot)
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:
             logger.error(f"❌ 生成 HTML 失敗: {e}")
+
+        # ===== 步驟 6.7: 生成熱門股獨立頁面 =====
+        logger.info("\n📌 步驟 6.7: 生成熱門股獨立 HTML")
+        try:
+            hot_html = generate_hot_stocks_html(date_str, group_hot, output_dir="docs")
+            if hot_html:
+                logger.info(f"✅ 熱門股頁面已生成: {hot_html}")
+        except Exception as e:
+            logger.error(f"❌ 生成熱門股 HTML 失敗: {e}")
 
         # ===== 步驟 7: 發送 LINE 訊息 =====
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")
@@ -299,6 +355,8 @@ def main():
             save_stock_list(group2a, "有機會噴-前100大交易量能", "👀", today_tpe)
         if not group2b.empty:
             save_stock_list(group2b, "有機會噴-其餘", "👀", today_tpe)
+        if not group_hot.empty:
+            save_stock_list(group_hot, "熱門題材", "🔥", today_tpe)
 
         # ===== 步驟 8: 同步資料庫到 Google Drive =====
         if IN_GITHUB_ACTIONS:

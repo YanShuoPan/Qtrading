@@ -56,5 +56,26 @@ OAUTH_CREDENTIALS = os.environ.get("OAUTH")  # OAuth 2.0 認證
 GDRIVE_SERVICE_ACCOUNT = os.environ.get("GDRIVE_SERVICE_ACCOUNT")  # Service Account 認證
 GDRIVE_SCOPES = ['https://www.googleapis.com/auth/drive']
 
+# ===== 熱門題材股設定 =====
+# 每日自動生成的 hot_stocks.csv 儲存路徑（Qtrading 自己產生）
+HOT_STOCKS_CSV_PATH = os.environ.get(
+    "HOT_STOCKS_CSV_PATH",
+    "data/hot_stocks.csv",
+)
+
+# TW_stock_tagging_system 的 config 路徑（用於生成 hot_stocks）
+THEME_KEYWORDS_YAML = os.environ.get(
+    "THEME_KEYWORDS_YAML",
+    "data/theme_keywords.yaml",
+)
+STOCK_TAG_MAP_CSV = os.environ.get(
+    "STOCK_TAG_MAP_CSV",
+    "data/stock_tag_map.csv",
+)
+TAG_MASTER_CSV = os.environ.get(
+    "TAG_MASTER_CSV",
+    "data/tag_master.csv",
+)
+
 # ===== 環境檢測 =====
 IN_GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS") == "true"

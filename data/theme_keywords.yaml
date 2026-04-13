@@ -1,0 +1,834 @@
+# 台股標籤系統 — 關鍵字字典
+# 每個 tag_id 對應一組匹配規則
+# business_keywords: 匹配 business_summary（高信心）
+# news_keywords: 匹配新聞標題（低信心）
+
+# ===== Industry tags =====
+wafer_foundry:
+  tag_type: industry
+  business_keywords:
+    - 晶圓代工
+    - 晶圓製造
+    - foundry
+    - 磊晶代工
+    - 磊晶片
+  news_keywords:
+    - 晶圓代工
+
+ic_design:
+  tag_type: industry
+  business_keywords:
+    - IC設計
+    - 積體電路設計
+    - 積體電路之設計
+    - fabless
+    - 晶片設計
+    - IC之設計
+    - 微控制器IC
+    - MCU設計
+    - 類比IC
+    - 混合信號IC
+    - 電源管理IC
+    - SoC晶片
+    - 控制IC設計
+    - 訊號處理IC
+    - 積體電路之研發
+    - 積體電路開發設計
+    - 積體電路產品
+    - 控制晶片
+    - 電腦IC
+    - 微電子積體電路
+    - 類比積體
+    - IC韌體
+    - 多媒體晶片
+    - 視訊轉換控制晶片
+    - 高速傳輸介面
+    - 各種積體電路
+    - 積體電路研究
+    - 類比混合IC
+    - 特殊應用IC
+    - 晶片之設計
+    - 半導體裝置
+    - 數位類比晶片
+    - 積體電路之研究
+    - 積體電路晶片
+    - 積體電路
+  news_keywords:
+    - IC設計
+
+osat:
+  tag_type: industry
+  business_keywords:
+    - 封裝測試
+    - 封測
+    - OSAT
+    - 半導體封裝
+    - IC封裝
+    - 晶圓測試
+    - IC測試
+    - 成品測試
+    - 晶片測試
+    - 封裝及測試
+    - 封裝代工
+    - 導線架封裝
+    - 覆晶封裝
+    - 晶圓級封裝
+    - 委託封裝
+    - 積體電路之封裝
+  news_keywords:
+    - 封測
+
+dram:
+  tag_type: industry
+  business_keywords:
+    - DRAM
+    - 動態隨機存取記憶體
+    - 記憶體IC
+    - SRAM
+    - 利基型記憶體
+    - 記憶體擴充
+    - 記憶體模組
+  news_keywords:
+    - DRAM
+
+nand:
+  tag_type: industry
+  business_keywords:
+    - NAND
+    - Flash
+    - 快閃記憶體
+  news_keywords:
+    - NAND
+
+pcb:
+  tag_type: industry
+  business_keywords:
+    - PCB
+    - 印刷電路板
+    - 電路板
+    - 印刷電路基層板
+    - 印刷電路基板
+    - 電路基板
+    - 玻璃布
+    - 陶瓷基板
+  news_keywords:
+    - PCB
+
+substrate:
+  tag_type: industry
+  business_keywords:
+    - 載板
+    - IC載板
+    - ABF載板
+    - ABF
+    - substrate
+  news_keywords:
+    - 載板
+    - ABF
+
+ccl:
+  tag_type: industry
+  business_keywords:
+    - CCL
+    - 銅箔基板
+    - 軟性銅箔基板
+    - FCCL
+    - 銅箔積層板
+    - 銅箔基層板
+    - 覆蓋膜
+    - 電解銅箔
+    - 黏合膠片
+    - 軟板材料
+    - PI薄膜
+    - 保護膠片
+    - 玻璃纖維
+  news_keywords:
+    - CCL
+    - 銅箔基板
+
+heat_dissipation:
+  tag_type: industry
+  business_keywords:
+    - 散熱
+    - 熱管
+    - 均熱片
+    - 液冷
+    - 水冷
+    - 散熱模組
+    - 冷卻風扇
+    - 冷卻
+  news_keywords:
+    - 散熱
+    - 液冷
+
+power_supply:
+  tag_type: industry
+  business_keywords:
+    - 電源供應器
+    - 電源
+    - power supply
+    - PSU
+  news_keywords:
+    - 電源供應
+
+server_odm:
+  tag_type: industry
+  business_keywords:
+    - 伺服器
+    - server
+    - ODM
+    - 伺服器代工
+    - 主機板
+    - 顯示卡
+    - 筆記型電腦
+    - 桌上型電腦
+    - 筆電
+    - NB
+    - 個人電腦
+  news_keywords:
+    - 伺服器
+
+optical_module:
+  tag_type: industry
+  business_keywords:
+    - 光模組
+    - 光收發
+    - 光通訊模組
+    - transceiver
+    - 光通訊元件
+    - 光纖模組
+    - 光學鏡頭
+    - 光學元件
+    - 光學鏡片
+    - 光學儀器
+    - 投影機光學
+    - 光纖連合器
+    - 光纖電纜
+    - 鏡頭
+    - 數位相機
+    - 攝影機
+    - 監控系統
+    - 安全監控
+    - 光學膜
+    - 光電玻璃
+    - 鍍膜
+    - 電子監視
+    - 安防
+    - 視訊監控
+    - 行車記錄器
+    - 投影機
+  news_keywords:
+    - 光模組
+    - 光通訊
+
+networking:
+  tag_type: industry
+  business_keywords:
+    - 網通
+    - 網路設備
+    - 交換器
+    - 路由器
+    - switch
+    - router
+    - 網通設備
+    - 網路通訊
+    - 光纖網路
+    - 網路安全
+  news_keywords:
+    - 網通
+
+# --- 網通子標籤 ---
+switch:
+  tag_type: industry
+  business_keywords:
+    - 交換器
+    - 網路交換
+    - 乙太網路
+    - PoE
+  news_keywords:
+    - 交換器
+
+wifi:
+  tag_type: industry
+  business_keywords:
+    - WiFi
+    - Wi-Fi
+    - 無線區域網路
+    - WLAN
+    - 無線通訊模組
+    - 無線網路通訊
+    - 無線網路產品
+  news_keywords:
+    - WiFi
+    - Wi-Fi
+
+rf_component:
+  tag_type: industry
+  business_keywords:
+    - 砷化鎵
+    - GaAs
+    - PA
+    - 功率放大器
+    - 射頻
+    - RF
+    - LNA
+    - 射頻晶片
+    - RF晶片
+    - 射頻積體
+    - 微波半導體
+    - 微波通訊
+  news_keywords:
+    - 砷化鎵
+    - RF
+    - 射頻
+
+telecom:
+  tag_type: industry
+  business_keywords:
+    - 電信
+    - 行動通信
+    - 固網
+    - 寬頻
+    - ISP
+    - 行動電話
+    - 通訊產品
+    - 通訊設備
+    - 天線
+    - 衛星通訊
+    - 衛星導航
+    - 基地台
+    - 衛星電視
+    - 衛星影像
+    - 衛星定位
+    - 智慧手機
+    - 視訊會議
+  news_keywords:
+    - 電信
+    - 5G
+
+passive_component:
+  tag_type: industry
+  business_keywords:
+    - 被動元件
+    - 石英振盪器
+    - 頻率元件
+    - 電容器
+    - 熱敏電阻
+    - 保護元件
+    - 繼電器
+    - 陶瓷共振器
+    - 鐵氧磁
+    - 磁粉
+    - 蜂鳴器
+    - 揚聲器
+    - Chip inductor
+    - Chip bead
+    - 化成鋁箔
+    - 電蝕鋁箔
+  news_keywords:
+    - 被動元件
+
+# --- 被動元件子標籤 ---
+mlcc:
+  tag_type: industry
+  business_keywords:
+    - MLCC
+    - 積層陶瓷電容
+    - 陶瓷電容
+    - 積層電容
+  news_keywords:
+    - MLCC
+    - 積層陶瓷電容
+
+chip_resistor:
+  tag_type: industry
+  business_keywords:
+    - 晶片電阻
+    - 電阻器
+    - 排列電阻
+    - 厚膜電阻
+    - 薄膜電阻
+    - 精密電阻
+  news_keywords:
+    - 晶片電阻
+    - 電阻
+
+inductor_component:
+  tag_type: industry
+  business_keywords:
+    - 電感
+    - 功率電感
+    - 磁性元件
+    - 共模濾波器
+    - 變壓器
+  news_keywords:
+    - 電感
+
+aluminum_cap:
+  tag_type: industry
+  business_keywords:
+    - 鋁質電容
+    - 鋁電解電容
+    - 固態電容
+  news_keywords:
+    - 鋁質電容
+
+ceramic_filter:
+  tag_type: industry
+  business_keywords:
+    - 陶瓷濾波器
+    - LTCC
+    - 射頻濾波器
+    - 雙工器
+    - SAW
+    - BAW
+  news_keywords:
+    - LTCC
+    - 陶瓷濾波器
+
+connector:
+  tag_type: industry
+  business_keywords:
+    - 連接器
+    - connector
+    - 端子
+    - 排線
+    - 接頭
+    - USB
+    - Type-C
+    - 連接線
+    - 電子線材
+    - 電纜
+  news_keywords:
+    - 連接器
+
+# --- 連接器子標籤 ---
+high_speed_connector:
+  tag_type: industry
+  business_keywords:
+    - 高速連接器
+    - 伺服器連接器
+    - 背板連接器
+    - 高頻連接器
+    - 800G
+  news_keywords:
+    - 高速連接器
+
+wire_harness:
+  tag_type: industry
+  business_keywords:
+    - 線束
+    - 線纜組裝
+    - cable assembly
+    - 連接線組
+  news_keywords:
+    - 線束
+
+panel:
+  tag_type: industry
+  business_keywords:
+    - 面板
+    - 顯示器
+    - 偏光板
+    - 彩色濾光片
+    - 擴散片
+    - 背光模組
+    - 導光板
+    - 數位顯示
+  news_keywords:
+    - 面板
+
+# --- 面板子標籤 ---
+tft_lcd:
+  tag_type: industry
+  business_keywords:
+    - TFT-LCD
+    - TFT
+    - 液晶面板
+    - 液晶顯示
+    - LCD
+  news_keywords:
+    - TFT-LCD
+    - 液晶
+
+oled_panel:
+  tag_type: industry
+  business_keywords:
+    - OLED
+    - 有機發光
+    - AMOLED
+  news_keywords:
+    - OLED
+    - AMOLED
+
+e_paper:
+  tag_type: industry
+  business_keywords:
+    - 電子紙
+    - 電子墨水
+    - E Ink
+    - e-paper
+  news_keywords:
+    - 電子紙
+    - E Ink
+
+touch_panel:
+  tag_type: industry
+  business_keywords:
+    - 觸控面板
+    - 觸控IC
+    - 觸控感測
+    - touch panel
+    - 指紋辨識
+    - 觸控感應器
+    - 觸控模組
+    - 觸控螢幕
+    - 觸控開關
+    - 觸控及顯示
+  news_keywords:
+    - 觸控
+    - 指紋辨識
+
+solar:
+  tag_type: industry
+  business_keywords:
+    - 太陽能電池
+    - 太陽能模組
+    - 太陽能電廠
+    - 太陽能
+    - 導電銲帶
+    - solar
+  news_keywords:
+    - 太陽能
+
+led:
+  tag_type: industry
+  business_keywords:
+    - 發光二極體
+    - LED
+    - 照明
+    - LED封裝
+    - LED模組
+  news_keywords:
+    - LED
+
+# --- LED子標籤 ---
+led_chip:
+  tag_type: industry
+  business_keywords:
+    - LED磊晶
+    - LED晶粒
+    - LED chip
+    - 磊晶片
+    - 發光二極體晶粒
+  news_keywords:
+    - LED磊晶
+    - LED晶粒
+
+led_backlight:
+  tag_type: industry
+  business_keywords:
+    - LED背光
+    - 背光模組
+    - backlight
+  news_keywords:
+    - LED背光
+    - 背光
+
+mini_micro_led:
+  tag_type: industry
+  business_keywords:
+    - Mini LED
+    - Micro LED
+    - MiniLED
+    - MicroLED
+  news_keywords:
+    - Mini LED
+    - Micro LED
+    - MiniLED
+
+driver_ic:
+  tag_type: industry
+  business_keywords:
+    - 驅動IC
+    - TDDI
+    - DDI
+    - 面板驅動
+    - 驅動晶片
+    - 顯示器驅動
+    - 時序控制IC
+  news_keywords:
+    - 驅動IC
+
+mosfet:
+  tag_type: industry
+  business_keywords:
+    - MOSFET
+    - 功率半導體
+    - power MOSFET
+    - IGBT
+    - 整流二極體
+    - 二極體
+    - 整流器
+    - 碳化矽
+    - SiC
+    - 功率元件
+    - 功率分離式元件
+    - 電晶體
+  news_keywords:
+    - MOSFET
+    - 功率半導體
+    - SiC
+
+cis:
+  tag_type: industry
+  business_keywords:
+    - CIS
+    - 影像感測
+    - CMOS感測
+    - image sensor
+    - 感測器積體電路
+    - 感測器IC
+  news_keywords:
+    - CIS
+    - 影像感測
+
+ems:
+  tag_type: industry
+  business_keywords:
+    - EMS
+    - 電子代工
+    - 組裝代工
+    - 電子製造服務
+    - 代工製造
+    - OEM
+  news_keywords:
+    - EMS
+
+semiconductor_equipment:
+  tag_type: industry
+  business_keywords:
+    - 半導體設備
+    - 製程設備
+    - 檢測設備
+    - 探針卡
+    - 測試治具
+    - 測試介面
+    - 半導體儀器
+    - 真空設備
+    - 電漿設備
+    - 自動光學檢
+    - ATE
+    - 半導體測試
+    - 半導體零組件
+  news_keywords:
+    - 半導體設備
+
+semiconductor_material:
+  tag_type: industry
+  business_keywords:
+    - 光阻
+    - 靶材
+    - 特用化學
+    - 半導體材料
+    - 矽晶圓
+    - 光罩
+    - 導線架
+    - 矽智財
+    - IP授權
+    - 晶圓再生
+    - 晶圓薄化
+    - COF基板
+    - 覆晶薄膜
+    - 電子材料
+    - 錫膏
+    - 銲錫
+    - 半導體製程化學
+    - 製程化學品
+  news_keywords:
+    - 半導體材料
+
+ipc:
+  tag_type: industry
+  business_keywords:
+    - 工業電腦
+    - IPC
+    - 嵌入式系統
+    - 嵌入式電腦
+    - 單板電腦
+    - 產業電腦
+    - 工業用主機
+    - 工業系統
+    - 嵌入式板卡
+    - 工控
+    - POS
+    - 智能物聯網
+    - 物聯網產品
+    - 交易終端機
+  news_keywords:
+    - 工業電腦
+
+# ===== Theme tags =====
+ai_server:
+  tag_type: theme
+  business_keywords:
+    - AI伺服器
+    - GPU伺服器
+    - AI server
+  news_keywords:
+    - AI伺服器
+    - AI server
+    - GPU伺服器
+    - AI算力
+
+cpo:
+  tag_type: theme
+  business_keywords:
+    - CPO
+    - 共封裝光學
+    - Co-Packaged Optics
+  news_keywords:
+    - CPO
+    - 共封裝光學
+
+silicon_photonics:
+  tag_type: theme
+  business_keywords:
+    - 矽光子
+    - silicon photonics
+  news_keywords:
+    - 矽光子
+
+cowos:
+  tag_type: theme
+  business_keywords:
+    - CoWoS
+    - 2.5D封裝
+  news_keywords:
+    - CoWoS
+
+hbm:
+  tag_type: theme
+  business_keywords:
+    - HBM
+    - 高頻寬記憶體
+    - High Bandwidth Memory
+  news_keywords:
+    - HBM
+    - 高頻寬記憶體
+
+edge_ai:
+  tag_type: theme
+  business_keywords:
+    - 邊緣AI
+    - edge AI
+    - 邊緣運算
+  news_keywords:
+    - 邊緣AI
+    - edge AI
+
+ai_pc:
+  tag_type: theme
+  business_keywords:
+    - AI PC
+    - AIPC
+  news_keywords:
+    - AI PC
+    - AIPC
+
+robot:
+  tag_type: theme
+  business_keywords:
+    - 機器人
+    - robot
+    - 人形機器人
+    - 協作機器人
+  news_keywords:
+    - 機器人
+    - 人形機器人
+
+energy_storage:
+  tag_type: theme
+  business_keywords:
+    - 儲能
+    - ESS
+    - 儲能系統
+    - 電池儲能
+  news_keywords:
+    - 儲能
+
+heavy_electric:
+  tag_type: theme
+  business_keywords:
+    - 重電
+    - 變壓器
+    - 配電盤
+    - 電力設備
+  news_keywords:
+    - 重電
+    - 變壓器
+
+cybersecurity:
+  tag_type: theme
+  business_keywords:
+    - 資安
+    - 資訊安全
+    - cybersecurity
+    - 防火牆
+    - 網路安全
+    - VPN
+    - 連線安全
+    - 網路流量
+  news_keywords:
+    - 資安
+    - 資訊安全
+
+leo_satellite:
+  tag_type: theme
+  business_keywords:
+    - 低軌衛星
+    - LEO
+    - 衛星通訊
+  news_keywords:
+    - 低軌衛星
+    - 衛星通訊
+
+ev:
+  tag_type: theme
+  business_keywords:
+    - 電動車
+    - EV
+    - 電動汽車
+    - 新能源車
+  news_keywords:
+    - 電動車
+    - EV
+
+advanced_packaging:
+  tag_type: theme
+  business_keywords:
+    - 先進封裝
+    - 2.5D封裝
+    - 3D封裝
+    - Fan-Out
+  news_keywords:
+    - 先進封裝
+
+gb200:
+  tag_type: theme
+  business_keywords:
+    - GB200
+    - Blackwell
+  news_keywords:
+    - GB200
+    - Blackwell
+
+military:
+  tag_type: theme
+  business_keywords:
+    - 軍工
+    - 國防
+    - 軍用
+  news_keywords:
+    - 軍工
+    - 國防

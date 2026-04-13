@@ -12,7 +12,7 @@ logger = get_logger(__name__)
 KEEP_DAYS = 7
 
 
-def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None):
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -230,6 +230,16 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
         <div class="content">
 """
 
+    # 熱門股按鈕（放在選股策略上方）
+    if hot_stocks_df is not None and not hot_stocks_df.empty:
+        html_content += f"""
+            <div style="text-align: center; margin-bottom: 35px;">
+                <a href="{date_str}_hot.html" class="btn" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); font-size: 1.1em; padding: 14px 36px;">
+                    🔥 每日熱門股 ({date_str})
+                </a>
+            </div>
+"""
+
     # 添加 Group 2A: 有機會噴 - 前100大交易量能
     html_content += """
             <div class="section">
@@ -416,6 +426,237 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
         f.write(html_content)
 
     logger.info(f"✅ 已生成 HTML: {html_file}")
+    return html_file
+
+
+def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "docs", images_dir: str = None):
+    """
+    生成每日熱門題材股獨立 HTML 頁面（{date_str}_hot.html）
+
+    Args:
+        date_str: 日期字串 (YYYY-MM-DD)
+        hot_stocks_df: 熱門股 DataFrame（code, tag_name, mention_count, rank）
+        output_dir: 輸出目錄
+        images_dir: 圖片資料夾路徑（相對於 output_dir）
+
+    Returns:
+        生成的 HTML 檔案路徑，若 DataFrame 為空則回傳 None
+    """
+    if hot_stocks_df is None or hot_stocks_df.empty:
+        logger.info("熱門股 DataFrame 為空，跳過生成熱門股 HTML")
+        return None
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    if images_dir is None:
+        images_dir = f"images/{date_str}"
+
+    html_file = os.path.join(output_dir, f"{date_str}_hot.html")
+
+    html_content = f"""<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{date_str} 每日熱門股</title>
+    <style>
+        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }}
+        .container {{
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }}
+        .header {{
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }}
+        .header h1 {{ font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }}
+        .header .date {{ font-size: 1.2em; opacity: 0.95; }}
+        .content {{ padding: 40px 30px; }}
+        .section {{ margin-bottom: 50px; }}
+        .section-title {{
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e67e22;
+            color: #e67e22;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        .stock-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }}
+        .stock-card {{
+            background: linear-gradient(135deg, #fff8f0 0%, #ffe5cc 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }}
+        .stock-card:hover {{ transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }}
+        .stock-code {{ font-size: 1.5em; font-weight: bold; color: #e67e22; margin-bottom: 8px; }}
+        .stock-name {{ font-size: 1.1em; color: #333; }}
+        .stock-info {{ margin-top: 10px; font-size: 0.9em; color: #666; }}
+        .tag-badge {{
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 6px;
+        }}
+        .chart-container {{ margin-top: 30px; display: grid; gap: 20px; }}
+        .chart-image {{
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }}
+        .chart-image:hover {{ transform: scale(1.02); cursor: pointer; }}
+        .nav-buttons {{
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }}
+        .btn {{
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }}
+        .btn:hover {{ transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230,126,34,0.4); }}
+        .btn.secondary {{
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }}
+        .footer {{
+            text-align: center;
+            padding: 30px;
+            background: #f5f7fa;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }}
+        @media (max-width: 768px) {{
+            .header h1 {{ font-size: 1.8em; }}
+            .stock-grid {{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }}
+            .content {{ padding: 20px 15px; }}
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 每日熱門股</h1>
+            <div class="date">{date_str}</div>
+        </div>
+        <div class="content">
+"""
+
+    # 按題材分組顯示
+    tags_seen = []
+    for _, row in hot_stocks_df.iterrows():
+        tag_name = row.get('tag_name', '')
+        if tag_name not in tags_seen:
+            tags_seen.append(tag_name)
+
+    for tag_name in tags_seen:
+        tag_df = hot_stocks_df[hot_stocks_df['tag_name'] == tag_name]
+        mention_count = int(tag_df.iloc[0].get('mention_count', 0))
+
+        html_content += f"""
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>{tag_name}</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 {mention_count} 次</span>
+                </div>
+                <div class="stock-grid">
+"""
+        for _, row in tag_df.iterrows():
+            code = row['code']
+            name = get_stock_name(code)
+            # 若名稱就是代碼本身（表示查不到），標示為灰色
+            if name == code:
+                name_html = f'<span style="color:#aaa">{code}</span>'
+            else:
+                name_html = name
+            html_content += f"""
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">{code}</div>
+                        <div class="stock-name">{name_html}</div>
+                    </div>
+"""
+        html_content += """
+                </div>
+"""
+
+        # K 線圖（每個主題各自的圖）
+        images_path = os.path.join(output_dir, images_dir)
+        if os.path.exists(images_path):
+            safe_tag = tag_name.replace('/', '-').replace(' ', '_')
+            tag_images = sorted([
+                f for f in os.listdir(images_path)
+                if f'熱門題材_{safe_tag}' in f and f.endswith('.png')
+            ])
+            if tag_images:
+                html_content += """
+                <div class="chart-container">
+"""
+                for img_file in tag_images:
+                    img_path = f"{images_dir}/{img_file}"
+                    html_content += f"""
+                    <img src="{img_path}" alt="{tag_name} K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
+"""
+                html_content += """
+                </div>
+"""
+
+        html_content += """
+            </div>
+"""
+
+    html_content += f"""
+            <div class="nav-buttons">
+                <a href="{date_str}.html" class="btn secondary">← 回到選股策略</a>
+                <a href="index.html" class="btn secondary">📅 回到首頁</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
+            <p>投資有風險，請謹慎評估</p>
+        </div>
+    </div>
+</body>
+</html>
+"""
+
+    with open(html_file, 'w', encoding='utf-8') as f:
+        f.write(html_content)
+
+    logger.info(f"✅ 已生成熱門股 HTML: {html_file}")
     return html_file
 
 

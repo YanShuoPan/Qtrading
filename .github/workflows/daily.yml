@@ -156,8 +156,8 @@ jobs:
           fi
 
           # 同步 data 資料夾 (日期子資料夾)
-          # 使用 --timeout 和 --contimeout 避免卡住
-          rclone sync "gdrive:data" "./data" \
+          # 使用 copy 而非 sync，避免刪除本地靜態設定檔（theme_keywords.yaml 等）
+          rclone copy "gdrive:data" "./data" \
             -vv \
             --log-file rclone.log \
             --timeout 30s \

@@ -1,0 +1,117 @@
+﻿tag_id,tag_name,tag_type,parent_tag_id,description,status,created_at,updated_at
+apple_supply_chain,蘋果供應鏈,event,,Apple 供應鏈概念,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+capex_beneficiary,資本支出受惠,event,,客戶資本支出增加受惠,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+china_plus_one,中國+1,event,,中國+1 分散供應鏈策略受惠,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+inventory_restocking,庫存回補,event,,庫存回補週期受惠,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+nvidia_supply_chain,輝達供應鏈,event,,NVIDIA 供應鏈概念,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+order_transfer,轉單受惠,event,,地緣政治或產能轉單受惠,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+price_hike,漲價概念,event,,產品漲價受惠,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+tsmc_expansion,台積電擴產受惠,event,,台積電資本支出擴產受惠股,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+aluminum_cap,鋁質電容,industry,passive_component,鋁質電解電容,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+auto_parts,汽車零組件,industry,,汽車及零組件製造,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+battery,電池,industry,,電池芯 / 電池模組,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+biotech,生技醫療,industry,,生物技術、製藥、醫療器材,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+cable,線材,industry,,電線電纜 / 高速傳輸線,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+ccl,CCL,industry,pcb,銅箔基板,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cement,水泥,industry,,水泥及預拌混凝土,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+ceramic_filter,陶瓷濾波器,industry,passive_component,LTCC陶瓷濾波器 / 射頻元件,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+chemical,化學,industry,,化學工業及特用化學品,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+chip_resistor,晶片電阻,industry,passive_component,晶片電阻器,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+cis,CIS,industry,semiconductor,CMOS 影像感測器,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cloud_digital,數位雲端,industry,,雲端服務、數位轉型、電商,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+computer_peripheral,電腦週邊,industry,,電腦及週邊設備（含伺服器、工業電腦等）,active,2026-04-12 17:04:20,2026-04-12 17:04:20
+connector,連接器,industry,electronic_component,電子連接器,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+construction,營建,industry,,建築營造、建材,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+cultural_creative,文創,industry,,文化創意、影視、遊戲,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+dram,DRAM,industry,semiconductor,動態隨機存取記憶體,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+driver_ic,驅動IC,industry,ic_design,面板驅動IC,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+e_paper,電子紙,industry,panel,電子紙顯示器,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+electrical_cable,電器電纜,industry,,電線電纜及電器製造,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+electronic_component,電子零組件,industry,,電子零組件產業（含被動元件、連接器等）,active,2026-04-12 17:04:20,2026-04-12 17:04:20
+ems,EMS,industry,electronic_component,電子代工服務,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+financial,金融,industry,,銀行、保險、證券、金控,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+food_industry,食品,industry,,食品飲料製造,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+glass_ceramic,玻璃陶瓷,industry,,玻璃及陶瓷製品,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+green_energy,綠能環保,industry,,再生能源、環保、廢棄物處理,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+heat_dissipation,散熱,industry,electronic_component,散熱模組與解決方案,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+high_speed_connector,高速連接器,industry,connector,高速傳輸連接器 / 伺服器連接器,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+home_living,居家生活,industry,,居家用品、家具、家電,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+ic_design,IC設計,industry,semiconductor,積體電路設計,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+inductor_component,電感元件,industry,passive_component,電感器 / 功率電感,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+ipc,工業電腦,industry,computer_peripheral,工業電腦與嵌入式系統,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+led,LED,industry,optoelectronic,發光二極體,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+led_backlight,LED背光,industry,led,LED背光模組,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+led_chip,LED磊晶,industry,led,LED磊晶片 / 晶粒,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+mini_micro_led,Mini/Micro LED,industry,led,Mini LED / Micro LED 顯示,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+mlcc,MLCC,industry,passive_component,積層陶瓷電容,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+mosfet,MOSFET,industry,semiconductor,金屬氧化物半導體場效電晶體,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+motor,馬達,industry,,電動馬達 / 伺服馬達,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+nand,NAND Flash,industry,semiconductor,NAND 快閃記憶體,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+networking,網通,industry,,網路通訊設備,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+oil_gas,油電燃氣,industry,,石油、天然氣、電力,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+oled_panel,OLED,industry,panel,有機發光二極體面板,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+optical_fiber,光纖,industry,,光纖通訊元件,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+optical_module,光模組,industry,optoelectronic,光收發模組,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+optoelectronic,光電,industry,,光電產業（含面板、LED、光學模組等）,active,2026-04-12 17:04:20,2026-04-12 17:04:20
+osat,封測,industry,semiconductor,半導體封裝與測試,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+panel,面板,industry,optoelectronic,液晶面板 / OLED,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+paper,造紙,industry,,紙漿、造紙、包裝,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+passive_component,被動元件,industry,electronic_component,電阻、電容、電感,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+pcb,PCB,industry,electronic_component,印刷電路板,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+plastics,塑膠,industry,,塑膠原料及加工,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+power_supply,電源,industry,electronic_component,電源供應器,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+reducer,減速機,industry,,減速機 / 齒輪箱,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+retail_trade,貿易百貨,industry,,百貨零售、貿易通路,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+rf_component,RF射頻,industry,networking,射頻元件 / PA / LNA,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+rubber,橡膠,industry,,橡膠製品、輪胎,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+semiconductor,半導體,industry,,半導體產業（含 IC 設計、晶圓代工、封測、記憶體等）,active,2026-04-12 17:04:20,2026-04-12 17:04:20
+semiconductor_equipment,半導體設備,industry,semiconductor,半導體製程設備,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+semiconductor_material,半導體材料,industry,semiconductor,光阻、靶材、化學品等,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+server_odm,伺服器ODM,industry,computer_peripheral,伺服器代工設計製造,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+shipping,航運,industry,,海運、空運、物流,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+solar,太陽能,industry,optoelectronic,,active,2026-04-13T01:18:24.270846,2026-04-13T01:18:24.270846
+sports_leisure,運動休閒,industry,,運動用品、休閒娛樂,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+steel,鋼鐵,industry,,鋼鐵冶煉及加工,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+substrate,載板,industry,pcb,IC載板 / ABF載板,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+switch,交換器,industry,networking,網路交換器,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+telecom,電信,industry,networking,電信服務業者,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+textile,紡織,industry,,紡織纖維及成衣,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+tft_lcd,TFT-LCD,industry,panel,薄膜電晶體液晶面板,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+touch_panel,觸控面板,industry,panel,觸控面板模組,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+tourism_hospitality,觀光餐旅,industry,,觀光飯店、餐飲、旅遊,active,2026-04-12 17:00:42,2026-04-12 17:00:42
+wafer_foundry,晶圓代工,industry,semiconductor,半導體晶圓製造代工,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+wifi,WiFi,industry,networking,WiFi無線通訊模組,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+wire_harness,線束,industry,connector,線束組裝 / 連接線組,active,2026-04-12 15:10:46,2026-04-12 15:10:46
+china_exposure,中國曝險高,risk,,中國營收占比高,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+commodity_sensitive,原物料敏感,risk,,原物料價格影響毛利,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+customer_concentration,單一客戶集中,risk,,營收高度集中於少數客戶,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+eps_volatile,EPS波動大,risk,,獲利波動性大,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+fx_sensitive,匯率敏感,risk,,受匯率波動影響大,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+high_capex,CAPEX高,risk,,資本支出占營收比重高,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cyclical,景氣循環,style,,景氣循環型股票,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+defensive,防禦股,style,,防禦性產業,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+etf_component,ETF成份股,style,,重要 ETF 成份股,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+growth,成長股,style,,營收或獲利持續成長,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+high_dividend,高殖利率,style,,殖利率高於市場平均,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+high_volatility,高波動,style,,股價波動度高,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+large_cap,權值股,style,,大型權值股,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+small_mid_cap,中小型股,style,,中小型市值股票,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+advanced_packaging,先進封裝,theme,,2.5D/3D 先進封裝技術,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+ai_pc,AI PC,theme,,AI 個人電腦,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+ai_server,AI伺服器,theme,,AI伺服器供應鏈相關,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cowos,CoWoS,theme,,台積電 CoWoS 先進封裝,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cpo,CPO,theme,,共封裝光學 (Co-Packaged Optics),active,2026-04-12 14:26:27,2026-04-12 14:26:27
+cybersecurity,資安,theme,,資訊安全,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+edge_ai,邊緣AI,theme,,邊緣運算 AI,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+energy_storage,儲能,theme,,儲能系統,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+ev,電動車,theme,,電動車供應鏈,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+gb200,GB200,theme,,NVIDIA GB200 供應鏈,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+hbm,HBM,theme,,高頻寬記憶體,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+heavy_electric,重電,theme,,重電設備（變壓器、配電盤等）,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+leo_satellite,低軌衛星,theme,,低軌道衛星通訊,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+memory_pricing_surge,記憶體漲價潮,theme,,庫存短缺及需求增長導致記憶體價格再次上漲，對多家企業產生重大影響。,candidate,2026-04-12T23:43:37.378853,2026-04-12T23:43:37.378853
+micro_led,Micro LED,theme,,Micro LED跨多家公司和多個應用領域，本週討論熱度顯著增加，顯示其潛在成長機會。,candidate,2026-04-12T23:35:07.874700,2026-04-12T23:35:07.874700
+military,軍工,theme,,軍工國防概念,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+robot,機器人,theme,,機器人與自動化,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+silicon_photonics,矽光子,theme,,矽光子技術,active,2026-04-12 14:26:27,2026-04-12 14:26:27
+silicon_photonics_integrated_circuits,矽光子積體電路,theme,,矽光子技術開始在各大科技公司與市場中受關注，尤其是在CPO相關題材中被大量提及，顯示其有潛力成為新趨勢。,candidate,2026-04-13T00:18:37.159703,2026-04-13T00:18:37.159703
