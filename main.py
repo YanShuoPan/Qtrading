@@ -277,6 +277,12 @@ def main():
         images_output_dir = os.path.join("docs", "images", date_str)
         os.makedirs(images_output_dir, exist_ok=True)
 
+        # 清除當天舊圖（避免重複執行時同一天出現多份圖）
+        for old_png in os.listdir(images_output_dir):
+            if old_png.endswith(".png"):
+                os.remove(os.path.join(images_output_dir, old_png))
+        logger.info(f"🗑️  已清除 {images_output_dir} 舊圖")
+
         # 生成並保存 Group2A 圖片（前100大交易量能）
         if not group2a.empty:
             generate_and_save_charts(group2a, "有機會噴-前100大交易量能", today_tpe, hist, images_output_dir)
