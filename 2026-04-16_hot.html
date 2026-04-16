@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-04-16 每日熱門股</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+        .header .date { font-size: 1.2em; opacity: 0.95; }
+        .content { padding: 40px 30px; }
+        .section { margin-bottom: 50px; }
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #e67e22;
+            color: #e67e22;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .stock-card {
+            background: linear-gradient(135deg, #fff8f0 0%, #ffe5cc 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+        .stock-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
+        .stock-code { font-size: 1.5em; font-weight: bold; color: #e67e22; margin-bottom: 8px; }
+        .stock-name { font-size: 1.1em; color: #333; }
+        .stock-info { margin-top: 10px; font-size: 0.9em; color: #666; }
+        .tag-badge {
+            display: inline-block;
+            background: #e67e22;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            margin-top: 6px;
+        }
+        .chart-container { margin-top: 30px; display: grid; gap: 20px; }
+        .chart-image {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+        .chart-image:hover { transform: scale(1.02); cursor: pointer; }
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230,126,34,0.4); }
+        .btn.secondary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f5f7fa;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8em; }
+            .stock-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .content { padding: 20px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 每日熱門股</h1>
+            <div class="date">2026-04-16</div>
+        </div>
+        <div class="content">
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>CPO</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 84 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6531.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6531</div>
+                        <div class="stock-name">愛普*</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6451.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6451</div>
+                        <div class="stock-name">訊芯-KY</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_CPO_batch_1_2026-04-16_091216.png" alt="CPO K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_CPO_batch_1_2026-04-16_091216.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>資安</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 61 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3062.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3062</div>
+                        <div class="stock-name">建漢</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6214.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6214</div>
+                        <div class="stock-name">精誠</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3704.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3704</div>
+                        <div class="stock-name">合勤控</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3029.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3029</div>
+                        <div class="stock-name">零壹</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6768.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6768</div>
+                        <div class="stock-name">志強-KY</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2453.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2453</div>
+                        <div class="stock-name">凌群</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_資安_batch_1_2026-04-16_091217.png" alt="資安 K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_資安_batch_1_2026-04-16_091217.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>低軌衛星</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 59 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6285.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6285</div>
+                        <div class="stock-name">啟碁</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4968.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">4968</div>
+                        <div class="stock-name">立積</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3025.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3025</div>
+                        <div class="stock-name">星通</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_低軌衛星_batch_1_2026-04-16_091218.png" alt="低軌衛星 K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_低軌衛星_batch_1_2026-04-16_091218.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>PCB</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 57 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2313.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2313</div>
+                        <div class="stock-name">華通</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1303.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">1303</div>
+                        <div class="stock-name">南亞</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4958.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">4958</div>
+                        <div class="stock-name">臻鼎-KY</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2368.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2368</div>
+                        <div class="stock-name">金像電</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3037.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3037</div>
+                        <div class="stock-name">欣興</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2402.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2402</div>
+                        <div class="stock-name">毅嘉</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_PCB_batch_1_2026-04-16_091220.png" alt="PCB K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_PCB_batch_1_2026-04-16_091220.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>機器人</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 55 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2049.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2049</div>
+                        <div class="stock-name">上銀</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2359.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2359</div>
+                        <div class="stock-name">所羅門</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4585.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">4585</div>
+                        <div class="stock-name">達明</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4571.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">4571</div>
+                        <div class="stock-name">鈞興-KY</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_機器人_batch_1_2026-04-16_091221.png" alt="機器人 K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_機器人_batch_1_2026-04-16_091221.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>光模組</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 41 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3450.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3450</div>
+                        <div class="stock-name">聯鈞</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3008.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3008</div>
+                        <div class="stock-name">大立光</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6442.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6442</div>
+                        <div class="stock-name">光聖</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3406.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3406</div>
+                        <div class="stock-name">玉晶光</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6176.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6176</div>
+                        <div class="stock-name">瑞儀</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3019.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3019</div>
+                        <div class="stock-name">亞光</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_光模組_batch_1_2026-04-16_091222.png" alt="光模組 K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_光模組_batch_1_2026-04-16_091222.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>伺服器ODM</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 40 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2308.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2308</div>
+                        <div class="stock-name">台達電</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6213.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6213</div>
+                        <div class="stock-name">聯茂</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3017.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3017</div>
+                        <div class="stock-name">奇鋐</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2383.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2383</div>
+                        <div class="stock-name">台光電</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2317.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2317</div>
+                        <div class="stock-name">鴻海</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3653.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3653</div>
+                        <div class="stock-name">健策</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_伺服器ODM_batch_1_2026-04-16_091224.png" alt="伺服器ODM K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_伺服器ODM_batch_1_2026-04-16_091224.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>被動元件</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 39 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2327.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2327</div>
+                        <div class="stock-name">國巨*</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2492.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2492</div>
+                        <div class="stock-name">華新科</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3042.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3042</div>
+                        <div class="stock-name">晶技</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3026.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3026</div>
+                        <div class="stock-name">禾伸堂</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2375.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2375</div>
+                        <div class="stock-name">凱美</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2484.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2484</div>
+                        <div class="stock-name">希華</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_被動元件_batch_1_2026-04-16_091225.png" alt="被動元件 K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_被動元件_batch_1_2026-04-16_091225.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title">
+                    <span>📌</span>
+                    <span>LED</span>
+                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 37 次</span>
+                </div>
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3714.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3714</div>
+                        <div class="stock-name">富采</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2409.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2409</div>
+                        <div class="stock-name">友達</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6278.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6278</div>
+                        <div class="stock-name">台表科</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6415.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6415</div>
+                        <div class="stock-name">矽力*-KY</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/6706.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">6706</div>
+                        <div class="stock-name">惠特</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3034.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3034</div>
+                        <div class="stock-name">聯詠</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-04-16/熱門題材_LED_batch_1_2026-04-16_091227.png" alt="LED K線圖" class="chart-image" onclick="window.open('images/2026-04-16/熱門題材_LED_batch_1_2026-04-16_091227.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="nav-buttons">
+                <a href="2026-04-16.html" class="btn secondary">← 回到選股策略</a>
+                <a href="index.html" class="btn secondary">📅 回到首頁</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
+            <p>投資有風險，請謹慎評估</p>
+        </div>
+    </div>
+</body>
+</html>
