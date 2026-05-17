@@ -30,6 +30,11 @@ from modules.html_generator import generate_daily_html, generate_index_html, gen
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
 from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df, load_stock_tags
 from modules.hot_stocks_generator import generate_hot_stocks_csv
+from modules.fundamentals import fetch_fundamentals, filter_by_fundamentals
+from modules.finmind_data import fetch_institutional, fetch_margin
+from modules.sentiment import analyze_theme_sentiments
+from modules.strategies import compute_ensemble_for_picks
+import pandas as pd
 
 # 初始化日誌
 setup_logger()
@@ -144,6 +149,34 @@ def main():
         picks = pick_stocks(hist, top_k=top_k)
         logger.info(f"📊 篩選出 {len(picks)} 支符合條件的股票")
 
+        # ===== 步驟 5.1: 基本面數據 =====
+        logger.info("\n📌 步驟 5.1: 取得 TWSE 基本面數據")
+        fundamentals_df = pd.DataFrame()
+        try:
+            fundamentals_df = fetch_fundamentals()
+
+            # 用基本面過濾選股結果
+            if not picks.empty and not fundamentals_df.empty:
+                before_count = len(picks)
+                picks = filter_by_fundamentals(picks, fundamentals_df)
+                logger.info(f"📊 基本面過濾後：{len(picks)} 支股票（過濾前 {before_count} 支）")
+            else:
+                fundamentals_df = pd.DataFrame()
+        except Exception as e:
+            logger.warning(f"基本面數據取得失敗: {e}")
+            fundamentals_df = pd.DataFrame()
+
+        # ===== 步驟 5.2: 多策略 Ensemble 評分 =====
+        logger.info("\n📌 步驟 5.2: 計算多策略 Ensemble 分數")
+        try:
+            if not picks.empty:
+                picks = compute_ensemble_for_picks(picks, hist)
+                for _, row in picks.iterrows():
+                    name = get_stock_name(row['code'])
+                    logger.info(f"  {row['code']} {name} → {row['ensemble_label']} 策略看好")
+        except Exception as e:
+            logger.warning(f"Ensemble 評分失敗: {e}")
+
         # ===== 步驟 5.5: 建立熱門題材股群組 =====
         logger.info("\n📌 步驟 5.5: 建立熱門題材股群組")
         group_hot = build_hot_stocks_df(hot_stocks_info, hist)
@@ -191,6 +224,35 @@ def main():
 
         logger.info(f"📈 有機會噴 - 前100大交易量能（斜率 < 0.7）：{len(group2a)} 支")
         logger.info(f"📊 有機會噴 - 其餘（斜率 < 0.7）：{len(group2b)} 支")
+
+        # ===== 步驟 6.1: 法人籌碼數據 =====
+        logger.info("\n📌 步驟 6.1: 取得法人籌碼數據")
+        all_picked_codes = list(set(
+            group2a["code"].tolist() + group2b["code"].tolist()
+        ))
+        institutional_df = pd.DataFrame()
+        margin_df = pd.DataFrame()
+
+        if all_picked_codes:
+            try:
+                institutional_df = fetch_institutional(all_picked_codes)
+                if not institutional_df.empty:
+                    for _, row in institutional_df.iterrows():
+                        buy_info = f"連買{row['consecutive_buy_days']}日" if row['consecutive_buy_days'] > 0 else "無連買"
+                        logger.info(f"  {row['code']} 法人: 外資{row['foreign_net']:+d} 投信{row['trust_net']:+d} ({buy_info})")
+            except Exception as e:
+                logger.warning(f"法人籌碼取得失敗: {e}")
+
+            # ===== 步驟 6.2: 融資融券數據 =====
+            logger.info("\n📌 步驟 6.2: 取得融資融券數據")
+            try:
+                margin_df = fetch_margin(all_picked_codes)
+                if not margin_df.empty:
+                    for _, row in margin_df.iterrows():
+                        signal = f"融資連減{row['margin_decreasing_days']}日" if row['margin_decreasing_days'] >= 3 else ""
+                        logger.info(f"  {row['code']} 融資變化: {row['margin_change']:+d} ({row['margin_change_pct']:+.1f}%) {signal}")
+            except Exception as e:
+                logger.warning(f"融資融券取得失敗: {e}")
 
         # ===== 步驟 6.3: 破底翻偵測 =====
         logger.info("\n📌 步驟 6.3: 偵測破底翻型態（C型）")
@@ -271,6 +333,14 @@ def main():
             breakout_df = None
             logger.info("ℹ️  五日內無破底翻事件")
 
+        # ===== 步驟 6.4: AI 情緒分析 =====
+        logger.info("\n📌 步驟 6.4: AI 主題情緒分析")
+        theme_sentiments = {}
+        try:
+            theme_sentiments = analyze_theme_sentiments(hot_stocks_info)
+        except Exception as e:
+            logger.warning(f"情緒分析失敗: {e}")
+
         # ===== 步驟 6.5: 生成 K 線圖並複製到 docs 資料夾 =====
         logger.info("\n📌 步驟 6.5: 生成 K 線圖並準備 GitHub Pages 資料")
         date_str = str(today_tpe)
@@ -311,7 +381,17 @@ def main():
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
-            generate_daily_html(date_str, group2a, group2b, output_dir="docs", breakout_df=breakout_df, hot_stocks_df=group_hot, stock_tags=stock_tags)
+            generate_daily_html(
+                date_str, group2a, group2b,
+                output_dir="docs",
+                breakout_df=breakout_df,
+                hot_stocks_df=group_hot,
+                stock_tags=stock_tags,
+                fundamentals_df=fundamentals_df,
+                institutional_df=institutional_df,
+                margin_df=margin_df,
+                theme_sentiments=theme_sentiments,
+            )
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")
         except Exception as e:
