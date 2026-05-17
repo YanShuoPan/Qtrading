@@ -112,6 +112,13 @@ jobs:
           echo "- TOKEN_JSON length: ${#GDRIVE_TOKEN_JSON}" >> $GITHUB_STEP_SUMMARY
           echo "- TOKEN starts with: ${GDRIVE_TOKEN_JSON:0:20}..." >> $GITHUB_STEP_SUMMARY
 
+      # 執行測試
+      - name: Run tests
+        run: |
+          pip install pytest
+          python -m pytest tests/ -v --tb=short
+        continue-on-error: true
+
       # 測試 rclone 配置是否正常
       - name: Test rclone connection
         timeout-minutes: 2
@@ -179,6 +186,8 @@ jobs:
         env:
           LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
           LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          FINMIND_API_TOKEN: ${{ secrets.FINMIND_API_TOKEN }}
           # 可選參數（如有需要就在 Secrets 或 Variables 設定）
           # EXTRA_USER_IDS: ${{ secrets.EXTRA_USER_IDS }}
           # TWSE_CODES: "2330,2317,2303,2454,2603,2615,2881,2882,2886,1101"
