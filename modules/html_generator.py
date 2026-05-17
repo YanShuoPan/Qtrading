@@ -2,6 +2,7 @@
 HTML 網頁生成模組 - 為 GitHub Pages 生成每日股票推薦網頁
 """
 import os
+import pandas as pd
 from datetime import datetime
 from .logger import get_logger
 from .stock_codes import get_stock_name
@@ -12,7 +13,78 @@ logger = get_logger(__name__)
 KEEP_DAYS = 7
 
 
-def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None, stock_tags: dict = None):
+def _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_df):
+    """生成包含多維數據的股票 badge HTML"""
+    badges = ""
+
+    # 基本面 badges (P/E, 殖利率, P/B)
+    if fundamentals_df is not None and not fundamentals_df.empty:
+        fund_row = fundamentals_df[fundamentals_df["code"] == code]
+        if not fund_row.empty:
+            fr = fund_row.iloc[0]
+            pe = f"{fr['pe_ratio']:.1f}" if pd.notna(fr.get('pe_ratio')) else "-"
+            dy = f"{fr['dividend_yield']:.2f}%" if pd.notna(fr.get('dividend_yield')) else "-"
+            pb = f"{fr['pb_ratio']:.2f}" if pd.notna(fr.get('pb_ratio')) else "-"
+            badges += f'''
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E {pe}</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 {dy}</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B {pb}</span>
+                        </div>'''
+
+    # 法人 badges
+    if institutional_df is not None and not institutional_df.empty:
+        inst_row = institutional_df[institutional_df["code"] == code]
+        if not inst_row.empty:
+            ir = inst_row.iloc[0]
+            cons = ir.get("consecutive_buy_days", 0)
+            foreign = ir.get("foreign_net", 0)
+            trust = ir.get("trust_net", 0)
+            f_bg = "#dcfce7" if foreign > 0 else "#fee2e2"
+            f_color = "#166534" if foreign > 0 else "#991b1b"
+            t_bg = "#dcfce7" if trust > 0 else "#fee2e2"
+            t_color = "#166534" if trust > 0 else "#991b1b"
+            badges += f'''
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: {f_bg}; color: {f_color}; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 {foreign:+,}</span>
+                            <span style="background: {t_bg}; color: {t_color}; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 {trust:+,}</span>'''
+            if cons >= 3:
+                badges += f'''
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買{cons}日</span>'''
+            badges += '''
+                        </div>'''
+
+    # 融資洗盤信號
+    if margin_df is not None and not margin_df.empty:
+        margin_row = margin_df[margin_df["code"] == code]
+        if not margin_row.empty:
+            mr = margin_row.iloc[0]
+            dec_days = mr.get("margin_decreasing_days", 0)
+            if dec_days >= 3:
+                badges += f'''
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減{dec_days}日</span>
+                        </div>'''
+
+    # Ensemble 分數
+    if "ensemble_label" in row.index:
+        label = row.get("ensemble_label", "")
+        bc = row.get("ensemble_bullish", 0)
+        if bc >= 3:
+            e_color, e_bg = "#059669", "#dcfce7"
+        elif bc >= 2:
+            e_color, e_bg = "#2563eb", "#dbeafe"
+        else:
+            e_color, e_bg = "#6b7280", "#f3f4f6"
+        badges += f'''
+                        <div style="margin-top: 4px;">
+                            <span style="background: {e_bg}; color: {e_color}; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">{label} 策略看好</span>
+                        </div>'''
+
+    return badges
+
+
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None, stock_tags: dict = None, fundamentals_df=None, institutional_df=None, margin_df=None, theme_sentiments: dict = None):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -280,13 +352,14 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             slope = row.get('ma20_slope', 0)
             tags = (stock_tags or {}).get(code, [])
             tags_html = "".join(f'<span class="stock-tag">{t}</span>' for t in tags)
+            enriched = _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_df)
 
             html_content += f"""
                     <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
-                        <div class="stock-info">斜率: {slope:.3f}</div>
+                        <div class="stock-info">斜率: {slope:.3f}</div>{enriched}
                     </div>
 """
         html_content += """
@@ -338,13 +411,14 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             slope = row.get('ma20_slope', 0)
             tags = (stock_tags or {}).get(code, [])
             tags_html = "".join(f'<span class="stock-tag">{t}</span>' for t in tags)
+            enriched = _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_df)
 
             html_content += f"""
                     <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
-                        <div class="stock-info">斜率: {slope:.3f}</div>
+                        <div class="stock-info">斜率: {slope:.3f}</div>{enriched}
                     </div>
 """
         html_content += """
@@ -452,7 +526,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
     return html_file
 
 
-def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "docs", images_dir: str = None):
+def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "docs", images_dir: str = None, theme_sentiments: dict = None):
     """
     生成每日熱門題材股獨立 HTML 頁面（{date_str}_hot.html）
 
@@ -608,11 +682,25 @@ def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "do
         tag_df = hot_stocks_df[hot_stocks_df['tag_name'] == tag_name]
         mention_count = int(tag_df.iloc[0].get('mention_count', 0))
 
+        # 情緒標籤
+        sentiment_badge = ""
+        if theme_sentiments and tag_name in theme_sentiments:
+            s = theme_sentiments[tag_name]
+            sent = s.get("sentiment", "neutral")
+            score = s.get("score", 5)
+            if sent == "bullish":
+                sentiment_badge = f'<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">📈 看多 ({score}/10)</span>'
+            elif sent == "bearish":
+                sentiment_badge = f'<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">📉 看空 ({score}/10)</span>'
+            else:
+                sentiment_badge = f'<span style="background: #f3f4f6; color: #6b7280; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">➖ 中性 ({score}/10)</span>'
+
         html_content += f"""
             <div class="section">
                 <div class="section-title">
                     <span>📌</span>
                     <span>{tag_name}</span>
+                    {sentiment_badge}
                     <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 {mention_count} 次</span>
                 </div>
                 <div class="stock-grid">

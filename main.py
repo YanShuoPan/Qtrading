@@ -400,7 +400,7 @@ def main():
         # ===== 步驟 6.7: 生成熱門股獨立頁面 =====
         logger.info("\n📌 步驟 6.7: 生成熱門股獨立 HTML")
         try:
-            hot_html = generate_hot_stocks_html(date_str, group_hot, output_dir="docs")
+            hot_html = generate_hot_stocks_html(date_str, group_hot, output_dir="docs", theme_sentiments=theme_sentiments)
             if hot_html:
                 logger.info(f"✅ 熱門股頁面已生成: {hot_html}")
         except Exception as e:
