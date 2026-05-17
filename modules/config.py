@@ -77,5 +77,11 @@ TAG_MASTER_CSV = os.environ.get(
     "data/tag_master.csv",
 )
 
+# ===== Groq AI 設定 =====
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+
+# ===== FinMind 設定 =====
+FINMIND_API_TOKEN = os.environ.get("FINMIND_API_TOKEN", "")  # 選填，有 token 600 req/hr，無則 300 req/hr
+
 # ===== 環境檢測 =====
 IN_GITHUB_ACTIONS = os.environ.get("GITHUB_ACTIONS") == "true"
