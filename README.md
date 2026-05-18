@@ -9,21 +9,45 @@
 
 📊 **[查看線上展示頁面](https://yanshuopan.github.io/Qtrading/)** (範例)
 
-⭐ **最新特色**：GitHub Pages 展示頁面、智能歷史資料歸檔(保留7天)、智能週末檢測、支援 OAuth 2.0 認證與 LINE 通知開關。
+⭐ **最新特色**：多維度選股系統（基本面 + 法人籌碼 + AI 情緒 + 多策略 Ensemble）、GitHub Pages 展示頁面、智能歷史資料歸檔、LINE 通知。
 
 ## 🎯 核心功能
 
 ### 📊 智能選股系統
-- **技術指標分析**：20日移動平均線 (MA20) 斜率計算
+- **動能選股策略**：20日移動平均線 (MA20) 斜率計算
 - **多重過濾條件**：
+  - 近 10 日均量 > 1000 張（排除冷門股）
   - 連續5日開盤價與收盤價均高於MA20
   - MA20斜率 < 1（避免過熱股票）
-  - 波動率 < 3%（降低風險）
+  - 波動率 < 5%（降低風險）
+  - 近 10 日振幅均值 > 1 元（確保操作空間）
   - 與MA20距離控制（動態調整）
 
+### 📈 多策略 Ensemble 評分
+4 個技術指標投票，判斷個股多空強弱：
+- **RSI(14)**：40-70 區間為看多（健康上升）
+- **MACD**：Histogram > 0 為看多（正向動能）
+- **布林通道**：收盤價 > 中軌為看多
+- **量能**：5 日均量 > 20 日均量為看多（量增）
+- 結果顯示 `X/4 策略看好`，3/4 以上視為強勢
+
+### 🏦 基本面篩選（TWSE OpenAPI）
+- **本益比 (P/E)**：過濾 P/E > 50（高估）與 P/E ≤ 0（虧損）
+- **殖利率 / 股價淨值比**：顯示於報告 badge 供參考
+
+### 💰 法人籌碼分析（FinMind API）
+- **外資 / 投信**：近 10 日淨買賣超張數
+- **連續買超**：法人連買 ≥ 3 日特別標示
+- **融資融券**：融資餘額連減 ≥ 3 日標示（洗盤信號）
+
+### 🤖 AI 情緒分析（Groq API）
+- 使用 `llama-3.3-70b-versatile` 模型分析 Google News 新聞標題
+- 判斷每個熱門題材的市場情緒：bullish / bearish / neutral
+- 顯示於熱門題材股報告中
+
 ### 🏷️ 雙組分類推薦
-- **💪 好像蠻強的**：MA20斜率 0.5-1（強勢上升趨勢）
-- **👀 有機會噴 觀察一下**：MA20斜率 < 0.5（潛力標的）
+- **前100大交易量能**：高流動性標的
+- **其餘**：中小型潛力股
 
 ### 📈 視覺化圖表
 - **K線圖生成**：2×3 網格佈局，每組最多6支股票
@@ -70,12 +94,16 @@ graph TD
     B --> C[從 Google Drive 同步<br/>taiex.sqlite & line_id.txt]
     C --> D[檢查本地資料庫<br/>保留90天歷史資料]
     D --> E[下載最新台股數據<br/>yfinance API - 1033支股票]
-    E --> F[技術分析篩選<br/>MA20 斜率演算法]
-    F --> G[週末檢測<br/>股市休市時跳過]
+    E --> F[技術分析篩選<br/>MA20 動能選股]
+    F --> F2[基本面過濾<br/>TWSE P/E 篩選]
+    F2 --> F3[Ensemble 評分<br/>RSI+MACD+BB+量能]
+    F3 --> G[週末檢測<br/>股市休市時跳過]
     G --> H{是否為週末?}
     H -->|週末| I[記錄休市日誌<br/>跳過推播與網頁生成]
     H -->|平日| J[股票分組分類]
-    J --> K[生成 K線圖表<br/>中文字體支援]
+    J --> J2[法人籌碼+融資融券<br/>FinMind API]
+    J2 --> J3[AI 情緒分析<br/>Groq LLM]
+    J3 --> K[生成 K線圖表<br/>中文字體支援]
     K --> L{line_id.txt<br/>是否存在?}
     L -->|存在| M[LINE 推播訊息+圖片]
     L -->|不存在| N[跳過 LINE 推播]
@@ -134,6 +162,8 @@ graph TD
 | `GDRIVE_TOKEN_JSON` | Google OAuth 2.0 Token JSON（含 refresh_token） | Secret | ✅ |
 | `GDRIVE_ROOT_FOLDER_ID` | Google Drive 同步目標資料夾 ID | Secret | 🔶 推薦 |
 | `EXTRA_USER_IDS` | 額外的訂閱者 LINE User IDs（逗號分隔） | Secret | 🔷 可選 |
+| `GROQ_API_KEY` | Groq AI API Key（用於情緒分析，`gsk_` 開頭） | Secret | 🔷 可選 |
+| `FINMIND_API_TOKEN` | FinMind API Token（用於法人籌碼/融資融券） | Secret | 🔷 可選 |
 | `DEBUG_MODE` | 啟用詳細除錯日誌 (`true`/`false`) | Variable | 🔷 可選 |
 
 #### 如何取得 rclone OAuth Token：
@@ -192,10 +222,17 @@ stocks-autobot/
 │   ├── google_drive.py          # Google Drive 整合
 │   ├── line_messaging.py        # LINE 訊息推送
 │   ├── stock_codes.py           # 股票代碼管理（1033支股票）
-│   ├── stock_data.py            # 股價資料處理與選股策略
+│   ├── stock_data.py            # 股價資料處理與動能選股策略
+│   ├── fundamentals.py          # TWSE 基本面篩選（P/E、殖利率、P/B）
+│   ├── finmind_data.py          # FinMind 法人籌碼 / 融資融券
+│   ├── sentiment.py             # Groq AI 情緒分析
+│   ├── strategies.py            # 多策略 Ensemble（RSI/MACD/BB/量能）
 │   ├── visualization.py         # K線圖表生成
 │   ├── image_upload.py          # 圖床上傳服務（Telegraph/Catbox）
-│   └── html_generator.py        # GitHub Pages HTML 生成器
+│   └── html_generator.py        # GitHub Pages HTML 生成器（含多維 badge）
+├── tests/                        # 單元測試
+│   ├── __init__.py
+│   └── test_strategies.py       # Ensemble 策略測試（24 tests）
 ├── requirements.txt              # Python 套件依賴
 ├── taiex.sqlite                  # 股價歷史資料（與 Google Drive 同步）
 ├── line_id.txt                   # LINE 通知開關（存在=開啟，不存在=關閉）
@@ -209,7 +246,8 @@ stocks-autobot/
 
 ### 核心技術棧
 - **程式語言**：Python 3.11+
-- **資料來源**：Yahoo Finance API (yfinance)
+- **資料來源**：Yahoo Finance API (yfinance)、TWSE OpenAPI、FinMind API
+- **AI 分析**：Groq API（llama-3.3-70b-versatile 情緒分析）
 - **資料庫**：SQLite（本地快取，避免重複下載）
 - **圖表生成**：matplotlib + 自製 K線圖函數
 - **圖床服務**：Telegraph、Catbox（無需API key）
@@ -228,26 +266,46 @@ stocks-autobot/
 - **line_messaging.py**：LINE 訊息廣播與多用戶推送
 - **stock_codes.py**：1033支股票代碼與名稱管理
 - **stock_data.py**：股價下載與動能選股策略
+- **fundamentals.py**：TWSE 基本面數據擷取與篩選
+- **finmind_data.py**：FinMind 法人籌碼與融資融券數據
+- **sentiment.py**：Groq AI 新聞情緒分析
+- **strategies.py**：多策略 Ensemble 投票系統（RSI/MACD/BB/量能）
 - **visualization.py**：K線圖表繪製
 - **image_upload.py**：多重圖床上傳備援
 - **html_generator.py**：GitHub Pages HTML 頁面生成（每日推薦頁、索引頁、歸檔頁）
 
 ## 📈 演算法說明
 
-### 篩選條件
-1. **趨勢檢查**：連續5日開盤價與收盤價均高於MA20
-2. **斜率控制**：MA20斜率 < 1（避免過熱）
-3. **波動率限制**：5日收盤價標準差 < 3%
-4. **距離控制**：與MA20距離在合理範圍內
+### 第一關：動能選股
+1. 近 10 日均量 > 1000 張（排除冷門股）
+2. 連續5日開收均價高於MA20（多頭趨勢）
+3. MA20斜率 < 1（避免過熱）
+4. 波動率 < 5%（降低風險）
+5. 近 10 日 high-low 均值 > 1 元（確保振幅）
+6. 與MA20距離在合理範圍內
+
+### 第二關：基本面過濾
+- 排除 P/E > 50（過度高估）或 P/E ≤ 0（虧損公司）
+- 無 P/E 資料者放行（不因缺資料誤殺）
+
+### 第三關：Ensemble 評分
+4 策略投票，每個看多得 1 票：
+| 信號 | 看多條件 |
+|------|---------|
+| RSI(14) | 40 ≤ RSI ≤ 70 |
+| MACD | Histogram > 0 |
+| 布林通道 | 收盤價 > 中軌 |
+| 量能 | 5 日均量 > 20 日均量 |
 
 ### 分組邏輯
-- **好像蠻強的組**：斜率 ∈ [0.5, 1)，代表穩健上升趨勢
-- **有機會噴 觀察一下組**：斜率 < 0.5，代表潛力標的
+- **前100大交易量能**：MA20 斜率 < 0.7 的高流動性股
+- **其餘**：MA20 斜率 < 0.7 的中小型潛力股
+- 每組最多 6 支
 
-### 優化機制
-當某組股票 > 6支時：
-1. 優先排除5日最低收盤價股票
-2. 選擇與MA20距離最近的6支股票
+### 輔助資訊（不影響篩選）
+- **法人籌碼**：外資/投信淨買賣、連續買超天數
+- **融資融券**：融資連減天數（洗盤信號）
+- **AI 情緒**：Groq LLM 分析新聞標題判斷題材多空
 
 ## 🛠️ 本地開發
 
@@ -317,6 +375,16 @@ python webhook_app.py
 - 需要公開 HTTPS 端點才能接收 LINE 的 Webhook
 
 ## 📝 更新日誌
+
+### v4.0.0 (2025-05-18)
+- 🧠 **多策略 Ensemble 系統**：RSI + MACD + 布林通道 + 量能 4 策略投票評分
+- 🏦 **基本面篩選**：整合 TWSE OpenAPI，自動取得 P/E、殖利率、P/B 並過濾
+- 💰 **法人籌碼分析**：整合 FinMind API，顯示外資/投信淨買賣、連續買超
+- 📊 **融資融券信號**：融資餘額連減偵測（洗盤信號）
+- 🤖 **AI 情緒分析**：整合 Groq API（llama-3.3-70b），分析新聞標題判斷題材多空
+- 🏷️ **HTML 多維 badge**：股票卡片顯示基本面、籌碼、Ensemble 評分
+- 🧪 **單元測試**：新增 24 個 Ensemble 策略測試
+- ⚙️ **CI 更新**：GitHub Actions 加入測試步驟與新 Secrets 支援
 
 ### v3.2.0 (2025-01-17)
 - 🌐 **GitHub Pages 展示功能**：自動生成精美的推薦展示頁面

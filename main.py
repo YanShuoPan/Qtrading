@@ -288,7 +288,6 @@ def main():
 
         # 彙整破底翻股票
         if breakout_stocks:
-            import pandas as pd
             breakout_df = pd.concat(breakout_stocks, ignore_index=True)
 
             # 額外篩選：今日股價需在十日線之上 + 交易量超過2000張

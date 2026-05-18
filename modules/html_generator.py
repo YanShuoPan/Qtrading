@@ -38,12 +38,12 @@ def _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_
         if not inst_row.empty:
             ir = inst_row.iloc[0]
             cons = ir.get("consecutive_buy_days", 0)
-            foreign = ir.get("foreign_net", 0)
-            trust = ir.get("trust_net", 0)
-            f_bg = "#dcfce7" if foreign > 0 else "#fee2e2"
-            f_color = "#166534" if foreign > 0 else "#991b1b"
-            t_bg = "#dcfce7" if trust > 0 else "#fee2e2"
-            t_color = "#166534" if trust > 0 else "#991b1b"
+            foreign = int(ir.get("foreign_net", 0))
+            trust = int(ir.get("trust_net", 0))
+            f_bg = "#dcfce7" if foreign > 0 else ("#f3f4f6" if foreign == 0 else "#fee2e2")
+            f_color = "#166534" if foreign > 0 else ("#6b7280" if foreign == 0 else "#991b1b")
+            t_bg = "#dcfce7" if trust > 0 else ("#f3f4f6" if trust == 0 else "#fee2e2")
+            t_color = "#166534" if trust > 0 else ("#6b7280" if trust == 0 else "#991b1b")
             badges += f'''
                         <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
                             <span style="background: {f_bg}; color: {f_color}; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 {foreign:+,}</span>
