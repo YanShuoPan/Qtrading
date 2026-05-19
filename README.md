@@ -9,7 +9,7 @@
 
 📊 **[查看線上展示頁面](https://yanshuopan.github.io/Qtrading/)** (範例)
 
-⭐ **最新特色**：多維度選股系統（基本面 + 法人籌碼 + AI 情緒 + 多策略 Ensemble）、GitHub Pages 展示頁面、智能歷史資料歸檔、LINE 通知。
+⭐ **最新特色**：多維度選股系統（基本面 + 法人籌碼 + AI 情緒 + 多策略 Ensemble）、**延續觀察追蹤**、GitHub Pages 展示頁面、智能歷史資料歸檔、LINE 通知。
 
 ## 🎯 核心功能
 
@@ -44,6 +44,14 @@
 - 使用 `llama-3.3-70b-versatile` 模型分析 Google News 新聞標題
 - 判斷每個熱門題材的市場情緒：bullish / bearish / neutral
 - 顯示於熱門題材股報告中
+
+### 🔄 延續觀察追蹤
+- **昨日延續觀察**：前一交易日推薦股票的今日狀態評估
+- **前日延續觀察**：前兩個交易日推薦股票的狀態追蹤
+- **MA20 檢查**：近 5 日開收均價是否仍在 MA20 之上
+- **Ensemble 重新評分**：即時重新計算 4 策略投票結果
+- **狀態標示**：「仍符合」（持續多頭）/「已轉弱」（跌破 MA20）
+- **去重機制**：今日已選中的股票不重複出現在延續觀察中
 
 ### 🏷️ 雙組分類推薦
 - **前100大交易量能**：高流動性標的
@@ -103,7 +111,8 @@ graph TD
     H -->|平日| J[股票分組分類]
     J --> J2[法人籌碼+融資融券<br/>FinMind API]
     J2 --> J3[AI 情緒分析<br/>Groq LLM]
-    J3 --> K[生成 K線圖表<br/>中文字體支援]
+    J3 --> J4[延續觀察追蹤<br/>前1-2日推薦股重新評估]
+    J4 --> K[生成 K線圖表<br/>中文字體支援]
     K --> L{line_id.txt<br/>是否存在?}
     L -->|存在| M[LINE 推播訊息+圖片]
     L -->|不存在| N[跳過 LINE 推播]
@@ -227,6 +236,7 @@ stocks-autobot/
 │   ├── finmind_data.py          # FinMind 法人籌碼 / 融資融券
 │   ├── sentiment.py             # Groq AI 情緒分析
 │   ├── strategies.py            # 多策略 Ensemble（RSI/MACD/BB/量能）
+│   ├── continuation.py          # 延續觀察追蹤（前日推薦股重新評估）
 │   ├── visualization.py         # K線圖表生成
 │   ├── image_upload.py          # 圖床上傳服務（Telegraph/Catbox）
 │   └── html_generator.py        # GitHub Pages HTML 生成器（含多維 badge）
@@ -272,6 +282,7 @@ stocks-autobot/
 - **strategies.py**：多策略 Ensemble 投票系統（RSI/MACD/BB/量能）
 - **visualization.py**：K線圖表繪製
 - **image_upload.py**：多重圖床上傳備援
+- **continuation.py**：延續觀察追蹤（解析前日推薦、重新評估 MA20 + Ensemble）
 - **html_generator.py**：GitHub Pages HTML 頁面生成（每日推薦頁、索引頁、歸檔頁）
 
 ## 📈 演算法說明
@@ -375,6 +386,14 @@ python webhook_app.py
 - 需要公開 HTTPS 端點才能接收 LINE 的 Webhook
 
 ## 📝 更新日誌
+
+### v4.1.0 (2025-05-19)
+- 🔄 **延續觀察追蹤**：自動追蹤前 1-2 個交易日推薦股票的最新狀態
+  - 重新評估 MA20 位置與 Ensemble 4 策略投票
+  - 「仍符合」/「已轉弱」狀態標示，一目了然
+  - 自動排除今日已選中的股票，避免重複
+  - 含完整法人籌碼、融資融券等多維 badge
+- 🧹 **專案清理**：移除多餘開發文件，精簡倉庫結構
 
 ### v4.0.0 (2025-05-18)
 - 🧠 **多策略 Ensemble 系統**：RSI + MACD + 布林通道 + 量能 4 策略投票評分

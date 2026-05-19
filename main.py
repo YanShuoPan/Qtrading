@@ -34,6 +34,7 @@ from modules.fundamentals import fetch_fundamentals, filter_by_fundamentals
 from modules.finmind_data import fetch_institutional, fetch_margin
 from modules.sentiment import analyze_theme_sentiments
 from modules.strategies import compute_ensemble_for_picks
+from modules.continuation import get_previous_trading_days, parse_picks_from_txt, evaluate_continuation
 import pandas as pd
 
 # 初始化日誌
@@ -254,6 +255,52 @@ def main():
             except Exception as e:
                 logger.warning(f"融資融券取得失敗: {e}")
 
+        # ===== 步驟 6.25: 延續觀察（前1~2個交易日推薦股）=====
+        logger.info("\n📌 步驟 6.25: 載入前兩個交易日推薦股並重新評估")
+        yesterday_continuation_df = pd.DataFrame()
+        day_before_continuation_df = pd.DataFrame()
+        yesterday_date_str = ""
+        day_before_date_str = ""
+
+        try:
+            today_codes_set = set(group2a["code"].tolist() + group2b["code"].tolist())
+            prev_days = get_previous_trading_days("data", today_tpe, n=2)
+
+            if len(prev_days) >= 1:
+                yesterday_date_str = prev_days[0]
+                prev1_codes = parse_picks_from_txt(prev_days[0], "data")
+                yesterday_continuation_df = evaluate_continuation(prev1_codes, hist, today_codes_set)
+                logger.info(f"  昨日延續觀察（{prev_days[0]}）：{len(yesterday_continuation_df)} 支")
+                for _, r in yesterday_continuation_df.iterrows():
+                    logger.info(f"    {r['code']} {get_stock_name(r['code'])} → {r['status']} ({r['ensemble_label']} 策略看好)")
+
+            if len(prev_days) >= 2:
+                day_before_date_str = prev_days[1]
+                prev2_codes = parse_picks_from_txt(prev_days[1], "data")
+                prev1_codes_set = set(prev1_codes) if len(prev_days) >= 1 else set()
+                day_before_continuation_df = evaluate_continuation(prev2_codes, hist, today_codes_set | prev1_codes_set)
+                logger.info(f"  前日延續觀察（{prev_days[1]}）：{len(day_before_continuation_df)} 支")
+                for _, r in day_before_continuation_df.iterrows():
+                    logger.info(f"    {r['code']} {get_stock_name(r['code'])} → {r['status']} ({r['ensemble_label']} 策略看好)")
+
+            # 補充延續觀察股的法人籌碼數據
+            continuation_extra_codes = []
+            for df_ in [yesterday_continuation_df, day_before_continuation_df]:
+                if not df_.empty:
+                    continuation_extra_codes.extend([c for c in df_["code"].tolist() if c not in all_picked_codes])
+            if continuation_extra_codes:
+                try:
+                    extra_inst = fetch_institutional(continuation_extra_codes)
+                    extra_margin = fetch_margin(continuation_extra_codes)
+                    if not extra_inst.empty:
+                        institutional_df = pd.concat([institutional_df, extra_inst], ignore_index=True).drop_duplicates("code")
+                    if not extra_margin.empty:
+                        margin_df = pd.concat([margin_df, extra_margin], ignore_index=True).drop_duplicates("code")
+                except Exception as e:
+                    logger.warning(f"延續觀察股法人數據取得失敗: {e}")
+        except Exception as e:
+            logger.warning(f"延續觀察載入失敗（不影響主流程）: {e}")
+
         # ===== 步驟 6.3: 破底翻偵測 =====
         logger.info("\n📌 步驟 6.3: 偵測破底翻型態（C型）")
         breakout_stocks = []
@@ -390,6 +437,10 @@ def main():
                 institutional_df=institutional_df,
                 margin_df=margin_df,
                 theme_sentiments=theme_sentiments,
+                yesterday_continuation_df=yesterday_continuation_df,
+                yesterday_date_str=yesterday_date_str,
+                day_before_continuation_df=day_before_continuation_df,
+                day_before_date_str=day_before_date_str,
             )
             # 注意：index.html 將由 workflow 統一生成（合併歷史資料後）
             logger.info("✅ GitHub Pages 每日 HTML 已生成")

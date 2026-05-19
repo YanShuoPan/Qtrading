@@ -84,7 +84,60 @@ def _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_
     return badges
 
 
-def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None, stock_tags: dict = None, fundamentals_df=None, institutional_df=None, margin_df=None, theme_sentiments: dict = None):
+def _build_continuation_section(section_title, icon, title_css_class, continuation_df,
+                                prev_date_str, fundamentals_df, institutional_df,
+                                margin_df, stock_tags):
+    """生成延續觀察 section HTML"""
+    if continuation_df is None or continuation_df.empty:
+        return ""
+
+    html = f"""
+            <div class="section">
+                <div class="section-title {title_css_class}">
+                    <span>{icon}</span>
+                    <span>{section_title}（{prev_date_str} 推薦）</span>
+                </div>
+
+                <div class="stock-grid">
+"""
+    for _, row in continuation_df.iterrows():
+        code = row["code"]
+        name = get_stock_name(code)
+        ma20_ok = row.get("ma20_ok", False)
+        status = row.get("status", "已轉弱")
+
+        card_class = "stock-card still-valid" if ma20_ok else "stock-card no-longer-valid"
+        if ma20_ok:
+            badge_html = f'<span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">{status}</span>'
+        else:
+            badge_html = f'<span style="display:inline-block;background:#92400e;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">{status}</span>'
+
+        tags = (stock_tags or {}).get(code, [])
+        tags_html = "".join(f'<span class="stock-tag">{t}</span>' for t in tags)
+
+        # 建立 ensemble badge 用的 row
+        badge_row = pd.Series({
+            "ensemble_label": row.get("ensemble_label", ""),
+            "ensemble_bullish": row.get("ensemble_bullish", 0),
+        })
+        enriched = _build_enriched_badges(code, badge_row, fundamentals_df, institutional_df, margin_df)
+
+        html += f"""
+                    <div class="{card_class}" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                        {badge_html}
+                        <div class="stock-code">{code}</div>
+                        <div class="stock-name">{name}</div>
+                        {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}{enriched}
+                    </div>
+"""
+    html += """
+                </div>
+            </div>
+"""
+    return html
+
+
+def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str = "docs", images_dir: str = None, breakout_df=None, hot_stocks_df=None, stock_tags: dict = None, fundamentals_df=None, institutional_df=None, margin_df=None, theme_sentiments: dict = None, yesterday_continuation_df=None, yesterday_date_str: str = "", day_before_continuation_df=None, day_before_date_str: str = ""):
     """
     生成每日股票推薦 HTML 頁面
 
@@ -179,6 +232,25 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
 
         .section-title.potential {{
             color: #764ba2;
+        }}
+
+        .section-title.continuation-yesterday {{
+            color: #0f766e;
+            border-bottom-color: #0f766e;
+        }}
+
+        .section-title.continuation-daybefore {{
+            color: #b45309;
+            border-bottom-color: #b45309;
+        }}
+
+        .stock-card.still-valid {{
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+        }}
+
+        .stock-card.no-longer-valid {{
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+            opacity: 0.75;
         }}
 
         .stock-grid {{
@@ -446,6 +518,18 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
     html_content += """
             </div>
 """
+
+    # 添加延續觀察 sections
+    html_content += _build_continuation_section(
+        "昨日延續觀察", "🔄", "continuation-yesterday",
+        yesterday_continuation_df, yesterday_date_str,
+        fundamentals_df, institutional_df, margin_df, stock_tags,
+    )
+    html_content += _build_continuation_section(
+        "前日延續觀察", "📋", "continuation-daybefore",
+        day_before_continuation_df, day_before_date_str,
+        fundamentals_df, institutional_df, margin_df, stock_tags,
+    )
 
     # 添加破底翻組別（如果有）- 放在最下面
     if breakout_df is not None and not breakout_df.empty:
