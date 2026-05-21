@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-05-21 台股推薦</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .date {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title.strong {
+            color: #667eea;
+        }
+
+        .section-title.potential {
+            color: #764ba2;
+        }
+
+        .section-title.continuation-yesterday {
+            color: #0f766e;
+            border-bottom-color: #0f766e;
+        }
+
+        .section-title.continuation-daybefore {
+            color: #b45309;
+            border-bottom-color: #b45309;
+        }
+
+        .stock-card.still-valid {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+        }
+
+        .stock-card.no-longer-valid {
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+            opacity: 0.75;
+        }
+
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stock-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .stock-code {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stock-name {
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .stock-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .stock-tag {
+            background: rgba(102, 126, 234, 0.12);
+            color: #5a6fd6;
+            font-size: 0.72em;
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.25);
+            white-space: nowrap;
+        }
+
+        .stock-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .chart-image {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .chart-image:hover {
+            transform: scale(1.02);
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f5f7fa;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stock-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 台股推薦</h1>
+            <div class="date">2026-05-21</div>
+        </div>
+
+        <div class="content">
+
+            <div style="text-align: center; margin-bottom: 35px;">
+                <a href="2026-05-21_hot.html" class="btn" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); font-size: 1.1em; padding: 14px 36px;">
+                    🔥 每日熱門股 (2026-05-21)
+                </a>
+            </div>
+
+            <div class="section">
+                <div class="section-title strong">
+                    <span>👀</span>
+                    <span>有機會噴 - 前100大交易量能</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2882.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2882</div>
+                        <div class="stock-name">國泰金</div>
+                        <div class="stock-tags"><span class="stock-tag">金融</span></div>
+                        <div class="stock-info">斜率: 0.128</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 11.8</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 4.49%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.36</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +89,657,452</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -88,995,975</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-05-21/有機會噴-前100大交易量能_batch_1_2026-05-21_110151.png" alt="K線圖" class="chart-image" onclick="window.open('images/2026-05-21/有機會噴-前100大交易量能_batch_1_2026-05-21_110151.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title potential">
+                    <span>👀</span>
+                    <span>有機會噴 - 其餘</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3528.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3528</div>
+                        <div class="stock-name">安馳</div>
+                        <div class="stock-tags"><span class="stock-tag">半導體材料</span></div>
+                        <div class="stock-info">斜率: 0.500</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 26.7</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 1.66%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 2.65</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +81,581</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3014.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3014</div>
+                        <div class="stock-name">聯陽</div>
+                        <div class="stock-tags"><span class="stock-tag">連接器</span><span class="stock-tag">IC設計</span></div>
+                        <div class="stock-info">斜率: 0.656</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 14.9</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 6.16%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 3.69</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +4,152,923</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -62,932</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2458.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2458</div>
+                        <div class="stock-name">義隆</div>
+                        <div class="stock-tags"><span class="stock-tag">IC設計</span><span class="stock-tag">觸控面板</span></div>
+                        <div class="stock-info">斜率: 0.669</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 16.9</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 4.62%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 4.53</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +8,096,968</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -1,465,304</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買4日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3592.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">3592</div>
+                        <div class="stock-name">瑞鼎</div>
+                        <div class="stock-tags"><span class="stock-tag">驅動IC</span><span class="stock-tag">IC設計</span></div>
+                        <div class="stock-info">斜率: 0.612</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 16.0</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 5.70%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.81</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +552,027</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +286,275</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買4日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減3日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2108.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2108</div>
+                        <div class="stock-name">南帝</div>
+                        <div class="stock-tags"><span class="stock-tag">橡膠</span></div>
+                        <div class="stock-info">斜率: 0.084</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 31.7</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 3.63%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 0.95</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +1,701,926</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2440.TW/technical-analysis', '_blank')">
+                        <div class="stock-code">2440</div>
+                        <div class="stock-name">太空梭</div>
+                        <div class="stock-tags"><span class="stock-tag">CCL</span><span class="stock-tag">電子零組件</span></div>
+                        <div class="stock-info">斜率: 0.079</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 -</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.20</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +334,540</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-05-21/有機會噴-其餘_batch_1_2026-05-21_110152.png" alt="K線圖" class="chart-image" onclick="window.open('images/2026-05-21/有機會噴-其餘_batch_1_2026-05-21_110152.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title continuation-yesterday">
+                    <span>🔄</span>
+                    <span>昨日延續觀察（2026-05-20 推薦）</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card still-valid" onclick="window.open('https://tw.stock.yahoo.com/quote/2426.TW/technical-analysis', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">2426</div>
+                        <div class="stock-name">鼎元</div>
+                        <div class="stock-tags"><span class="stock-tag">LED</span><span class="stock-tag">MOSFET</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 0.15%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 5.51</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -428,550</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減10日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('https://tw.stock.yahoo.com/quote/4540.TW/technical-analysis', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">4540</div>
+                        <div class="stock-name">全球傳動</div>
+                        <div class="stock-tags"><span class="stock-tag">重電</span><span class="stock-tag">馬達</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 -</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 2.27</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -2,956,773</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('https://tw.stock.yahoo.com/quote/1609.TW/technical-analysis', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">1609</div>
+                        <div class="stock-name">大亞</div>
+                        <div class="stock-tags"><span class="stock-tag">半導體材料</span><span class="stock-tag">電信</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 14.1</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 2.07%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.51</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -3,618,339</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -1,105,000</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title continuation-daybefore">
+                    <span>📋</span>
+                    <span>前日延續觀察（2026-05-19 推薦）</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card still-valid" onclick="window.open('https://tw.stock.yahoo.com/quote/2891.TW/technical-analysis', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">2891</div>
+                        <div class="stock-name">中信金</div>
+                        <div class="stock-tags"><span class="stock-tag">金融</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 14.4</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 4.33%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 2.25</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +128,750,680</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -86,083,114</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買5日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減6日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('https://tw.stock.yahoo.com/quote/9933.TW/technical-analysis', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">9933</div>
+                        <div class="stock-name">中鼎</div>
+                        
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 9.2</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 2.58%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.68</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +6,882,640</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +485,000</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買3日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減8日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title" style="color: #e74c3c; border-bottom-color: #e74c3c;">
+                    <span>🔥</span>
+                    <span>破底翻型態 (五日內) - 至少等三天站穩十日線</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2102.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2102</div>
+                        <div class="stock-name">泰豐</div>
+                        <div class="stock-info">收回: 05/21 (3.39%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1341.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1341</div>
+                        <div class="stock-name">富林-KY</div>
+                        <div class="stock-info">收回: 05/21 (4.48%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4108.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">4108</div>
+                        <div class="stock-name">懷特</div>
+                        <div class="stock-info">收回: 05/20 (5.26%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1612.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1612</div>
+                        <div class="stock-name">宏泰</div>
+                        <div class="stock-info">收回: 05/20 (1.42%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1102.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1102</div>
+                        <div class="stock-name">亞泥</div>
+                        <div class="stock-info">收回: 05/19 (2.05%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2617.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2617</div>
+                        <div class="stock-name">台航</div>
+                        <div class="stock-info">收回: 05/19 (1.94%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4104.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">4104</div>
+                        <div class="stock-name">佳醫</div>
+                        <div class="stock-info">收回: 05/19 (2.08%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/3015.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">3015</div>
+                        <div class="stock-name">全漢</div>
+                        <div class="stock-info">收回: 05/19 (4.11%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2897.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2897</div>
+                        <div class="stock-name">王道銀行</div>
+                        <div class="stock-info">收回: 05/19 (1.31%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2820.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2820</div>
+                        <div class="stock-name">華票</div>
+                        <div class="stock-info">收回: 05/19 (1.51%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2646.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2646</div>
+                        <div class="stock-name">星宇航空</div>
+                        <div class="stock-info">收回: 05/19 (2.02%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2609.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2609</div>
+                        <div class="stock-name">陽明</div>
+                        <div class="stock-info">收回: 05/19 (4.54%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2607.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2607</div>
+                        <div class="stock-name">榮運</div>
+                        <div class="stock-info">收回: 05/19 (3.26%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2033.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2033</div>
+                        <div class="stock-name">佳大</div>
+                        <div class="stock-info">收回: 05/19 (3.09%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2028.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2028</div>
+                        <div class="stock-name">威致</div>
+                        <div class="stock-info">收回: 05/19 (5.61%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1527.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1527</div>
+                        <div class="stock-name">鑽全</div>
+                        <div class="stock-info">收回: 05/19 (2.04%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1465.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1465</div>
+                        <div class="stock-name">偉全</div>
+                        <div class="stock-info">收回: 05/19 (1.27%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/2905.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2905</div>
+                        <div class="stock-name">三商</div>
+                        <div class="stock-info">收回: 05/18 (1.53%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/1455.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1455</div>
+                        <div class="stock-name">集盛</div>
+                        <div class="stock-info">收回: 05/18 (2.81%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/4142.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">4142</div>
+                        <div class="stock-name">國光生</div>
+                        <div class="stock-info">收回: 05/18 (2.33%)</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-05-21/破底翻_batch_1_2026-05-21_110154.png" alt="破底翻K線圖" class="chart-image" onclick="window.open('images/2026-05-21/破底翻_batch_1_2026-05-21_110154.png', '_blank')">
+
+                    <img src="images/2026-05-21/破底翻_batch_2_2026-05-21_110156.png" alt="破底翻K線圖" class="chart-image" onclick="window.open('images/2026-05-21/破底翻_batch_2_2026-05-21_110156.png', '_blank')">
+
+                    <img src="images/2026-05-21/破底翻_batch_3_2026-05-21_110157.png" alt="破底翻K線圖" class="chart-image" onclick="window.open('images/2026-05-21/破底翻_batch_3_2026-05-21_110157.png', '_blank')">
+
+                    <img src="images/2026-05-21/破底翻_batch_4_2026-05-21_110158.png" alt="破底翻K線圖" class="chart-image" onclick="window.open('images/2026-05-21/破底翻_batch_4_2026-05-21_110158.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="nav-buttons">
+                <a href="index.html" class="btn">📅 回到首頁</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
+            <p>投資有風險，請謹慎評估</p>
+        </div>
+    </div>
+</body>
+</html>
