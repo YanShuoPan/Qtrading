@@ -180,25 +180,6 @@ jobs:
             echo "⚠️  Google Drive 中未找到 line_id.txt"
           fi
 
-      # 列出 data/ 資料夾內容（debug 用）
-      - name: Debug - list data directory
-        run: |
-          echo "=== data/ 資料夾內容 ==="
-          if [ -d "data" ]; then
-            echo "日期資料夾:"
-            ls -la data/ | grep "^d" || echo "無子資料夾"
-            echo ""
-            echo "各日期資料夾內容:"
-            for d in data/20*/; do
-              if [ -d "$d" ]; then
-                echo "--- $d ---"
-                ls -la "$d"
-              fi
-            done
-          else
-            echo "⚠️ data/ 資料夾不存在！"
-          fi
-
       # 執行你的主程式（會讀寫 ./data）
       - name: Run Taiwan stock recommendation bot
         env:
