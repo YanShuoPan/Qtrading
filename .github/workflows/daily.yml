@@ -15,7 +15,7 @@ jobs:
       contents: write  # 允許推送到 gh-pages 分支
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -301,7 +301,7 @@ jobs:
       # 失敗或成功都上傳 rclone 日誌，方便除錯
       - name: Upload rclone logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: rclone-logs
           path: rclone.log
@@ -330,7 +330,7 @@ jobs:
 
       # 部署到 GitHub Pages（使用 keep_files 保留舊檔案）
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./docs
