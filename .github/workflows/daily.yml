@@ -180,6 +180,33 @@ jobs:
             echo "⚠️  Google Drive 中未找到 line_id.txt"
           fi
 
+      # 診斷：檢查 taiex.sqlite 中的數據日期範圍（主程式執行前）
+      - name: Diagnose DB before main.py
+        run: |
+          echo "### DB Diagnosis (Before main.py)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "taiex.sqlite" ]; then
+            echo "taiex.sqlite exists, size: $(wc -c < taiex.sqlite) bytes" >> $GITHUB_STEP_SUMMARY
+            python -c "
+          import sqlite3
+          conn = sqlite3.connect('taiex.sqlite')
+          try:
+              row = conn.execute('SELECT MIN(date), MAX(date), COUNT(*), COUNT(DISTINCT code) FROM prices').fetchone()
+              print(f'Date range: {row[0]} ~ {row[1]}')
+              print(f'Total rows: {row[2]}, Unique codes: {row[3]}')
+              # 顯示最近 5 個交易日的資料數
+              rows = conn.execute('SELECT date, COUNT(*) FROM prices GROUP BY date ORDER BY date DESC LIMIT 5').fetchall()
+              print('Recent dates:')
+              for r in rows:
+                  print(f'  {r[0]}: {r[1]} stocks')
+          except Exception as e:
+              print(f'Error: {e}')
+          finally:
+              conn.close()
+          " >> $GITHUB_STEP_SUMMARY 2>&1
+          else
+            echo "taiex.sqlite NOT FOUND" >> $GITHUB_STEP_SUMMARY
+          fi
+
       # 執行你的主程式（會讀寫 ./data）
       - name: Run Taiwan stock recommendation bot
         env:
@@ -192,6 +219,33 @@ jobs:
           # TWSE_CODES: "2330,2317,2303,2454,2603,2615,2881,2882,2886,1101"
           # TOP_K: "10"
         run: python main.py
+
+      # 診斷：檢查 taiex.sqlite 中的數據日期範圍（主程式執行後）
+      - name: Diagnose DB after main.py
+        if: always()
+        run: |
+          echo "### DB Diagnosis (After main.py)" >> $GITHUB_STEP_SUMMARY
+          if [ -f "taiex.sqlite" ]; then
+            echo "taiex.sqlite size: $(wc -c < taiex.sqlite) bytes" >> $GITHUB_STEP_SUMMARY
+            python -c "
+          import sqlite3
+          conn = sqlite3.connect('taiex.sqlite')
+          try:
+              row = conn.execute('SELECT MIN(date), MAX(date), COUNT(*), COUNT(DISTINCT code) FROM prices').fetchone()
+              print(f'Date range: {row[0]} ~ {row[1]}')
+              print(f'Total rows: {row[2]}, Unique codes: {row[3]}')
+              rows = conn.execute('SELECT date, COUNT(*) FROM prices GROUP BY date ORDER BY date DESC LIMIT 5').fetchall()
+              print('Recent dates:')
+              for r in rows:
+                  print(f'  {r[0]}: {r[1]} stocks')
+          except Exception as e:
+              print(f'Error: {e}')
+          finally:
+              conn.close()
+          " >> $GITHUB_STEP_SUMMARY 2>&1
+          else
+            echo "taiex.sqlite NOT FOUND after main.py!" >> $GITHUB_STEP_SUMMARY
+          fi
 
       # 從 gh-pages 拉取舊的 HTML 檔案，讓 index.html 可以列出所有歷史資料
       - name: Fetch historical HTML files from gh-pages
@@ -265,17 +319,20 @@ jobs:
         run: |
           echo "開始上傳資料到 Google Drive..."
 
-          # 上傳 taiex.sqlite 到根目錄
+          # 上傳 taiex.sqlite 到根目錄（不使用 --update，確保每次都覆蓋）
           if [ -f "./taiex.sqlite" ]; then
-            echo "上傳 taiex.sqlite 到根目錄..."
+            DB_SIZE=$(wc -c < "./taiex.sqlite")
+            echo "上傳 taiex.sqlite ($DB_SIZE bytes) 到根目錄..."
+            echo "### taiex.sqlite Upload" >> $GITHUB_STEP_SUMMARY
+            echo "Local file size: $DB_SIZE bytes" >> $GITHUB_STEP_SUMMARY
             rclone copy "./taiex.sqlite" "gdrive:" \
               -vv \
               --log-file rclone.log \
-              --timeout 30s \
+              --timeout 60s \
               --contimeout 60s \
               --retries 3 \
-              --update \
-              --checksum || echo "::warning::taiex.sqlite 上傳失敗"
+              --checksum && echo "taiex.sqlite upload: OK" >> $GITHUB_STEP_SUMMARY \
+              || echo "::warning::taiex.sqlite 上傳失敗"
           else
             echo "⚠️  找不到 taiex.sqlite"
           fi

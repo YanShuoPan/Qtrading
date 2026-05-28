@@ -85,7 +85,19 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
             if df is None or (isinstance(df, pd.DataFrame) and df.empty):
                 logger.warning(f"   ⚠️  批次 {batch_num} 返回空資料")
             else:
+                # 診斷：顯示 DataFrame 結構
+                if hasattr(df.columns, 'nlevels'):
+                    logger.info(f"   DataFrame columns nlevels={df.columns.nlevels}")
+                    if df.columns.nlevels > 1:
+                        level0 = list(df.columns.get_level_values(0).unique())[:5]
+                        level1 = list(df.columns.get_level_values(1).unique())[:5]
+                        logger.info(f"   Level 0 (前5): {level0}")
+                        logger.info(f"   Level 1 (前5): {level1}")
+                if not df.empty and hasattr(df.index, 'max'):
+                    logger.info(f"   DataFrame 日期範圍: {df.index.min()} ~ {df.index.max()}")
+
                 batch_results = []
+                missing_count = 0
                 for c in batch_codes:
                     t = f"{c}.TW"
                     if isinstance(df, pd.DataFrame) and t in df:
@@ -93,9 +105,16 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                         if "date" in tmp.columns:
                             tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
                         tmp["code"] = c
-                        batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
+                        # 移除全為 NaN 的行（yfinance 有時會回傳空行）
+                        tmp = tmp.dropna(subset=["close"])
+                        if not tmp.empty:
+                            batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
+                        else:
+                            missing_count += 1
                     else:
-                        logger.debug(f"   股票 {c}: 批次中無資料")
+                        missing_count += 1
+                if missing_count > 0:
+                    logger.warning(f"   ⚠️  批次 {batch_num}: {missing_count}/{len(batch_codes)} 支股票無資料")
 
                 if batch_results:
                     all_results.extend(batch_results)

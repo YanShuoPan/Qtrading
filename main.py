@@ -145,6 +145,14 @@ def main():
             logger.info(f"✅ 載入 {len(hist)} 筆歷史資料")
             logger.info(f"   涵蓋 {hist['code'].nunique()} 支股票")
             logger.info(f"   日期範圍: {hist['date'].min()} ~ {hist['date'].max()}")
+            # 顯示最近 5 個交易日（診斷用）
+            recent_dates = sorted(hist['date'].unique())[-5:]
+            logger.info(f"   最近 5 個交易日: {[str(d)[:10] for d in recent_dates]}")
+            # 警告：如果最新交易日不是今天或昨天
+            latest_date = hist['date'].max()
+            days_behind = (pd.Timestamp(today_tpe) - latest_date).days
+            if days_behind > 2:
+                logger.warning(f"   ⚠️  數據可能過舊！最新交易日距今 {days_behind} 天")
 
         top_k = get_picks_top_k()
         picks = pick_stocks(hist, top_k=top_k)
