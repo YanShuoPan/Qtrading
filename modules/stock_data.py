@@ -102,12 +102,26 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                     t = f"{c}.TW"
                     if isinstance(df, pd.DataFrame) and t in df:
                         tmp = df[t].reset_index().rename(columns=str.lower)
+                        # yfinance 不同版本的 index 名稱可能不同（Date/Price/等）
+                        # 找到 datetime 欄位並重命名為 date
+                        if "date" not in tmp.columns:
+                            for col in tmp.columns:
+                                if pd.api.types.is_datetime64_any_dtype(tmp[col]):
+                                    tmp = tmp.rename(columns={col: "date"})
+                                    break
                         if "date" in tmp.columns:
                             tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
+                        else:
+                            logger.warning(f"   ⚠️  {c}: 找不到日期欄位，欄位列表: {list(tmp.columns)}")
+                            missing_count += 1
+                            continue
                         tmp["code"] = c
                         # 移除全為 NaN 的行（yfinance 有時會回傳空行）
                         tmp = tmp.dropna(subset=["close"])
                         if not tmp.empty:
+                            # 確保 volume 欄位存在（某些 yfinance 版本可能缺少）
+                            if "volume" not in tmp.columns:
+                                tmp["volume"] = 0
                             batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
                         else:
                             missing_count += 1
