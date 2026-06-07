@@ -422,32 +422,13 @@ jobs:
             git commit -m "🧹 移除錯誤上傳的 taiex.sqlite 資料庫檔案" || echo "已經移除"
           fi
 
-          # 清理根目錄中的舊 HTML 檔案（舊結構遺留）
-          echo "清理根目錄中的舊 HTML 檔案..."
-          OLD_HTML_FILES=$(find . -maxdepth 1 -name "20*.html" -type f)
-          if [ -n "$OLD_HTML_FILES" ]; then
-            echo "發現根目錄中的舊 HTML 檔案，準備移除："
-            echo "$OLD_HTML_FILES"
-            rm -f 20*.html
+          # 清理 gh-pages 上殘留的 docs/ 資料夾（舊結構遺留）
+          if [ -d "docs" ]; then
+            echo "發現舊的 docs/ 資料夾，準備移除..."
+            rm -rf docs
             git add -A
-            git commit -m "🧹 清理根目錄中的舊 HTML 檔案（已遷移至 docs/ 資料夾）" || echo "無需提交"
-            echo "✅ 已清理根目錄中的舊 HTML 檔案"
-          else
-            echo "✅ 根目錄中沒有舊 HTML 檔案需要清理"
-          fi
-
-          # 清理根目錄中的舊圖片資料夾（舊結構遺留）
-          if [ -d "images" ]; then
-            echo "發現根目錄中的舊 images 資料夾，準備移除..."
-            # 只移除日期格式的資料夾（避免誤刪）
-            find images -maxdepth 1 -type d -name "20*" -exec rm -rf {} + 2>/dev/null || true
-            # 如果 images 資料夾為空，也移除
-            if [ -z "$(ls -A images 2>/dev/null)" ]; then
-              rm -rf images
-              git add -A
-              git commit -m "🧹 清理根目錄中的舊 images 資料夾（已遷移至 docs/images/）" || echo "無需提交"
-              echo "✅ 已清理根目錄中的舊 images 資料夾"
-            fi
+            git commit -m "🧹 清理 gh-pages 上殘留的 docs/ 資料夾" || echo "無需提交"
+            echo "✅ 已清理 docs/ 資料夾"
           fi
 
           # 從最新的 main 分支複製獨立的 index 生成腳本
@@ -457,8 +438,8 @@ jobs:
           echo "檢查 generate_index_standalone.py 是否包含星期幾邏輯:"
           grep -A 2 "weekday" generate_index_standalone.py | head -5 || echo "⚠️ 未找到 weekday 相關代碼"
 
-          # 執行歸檔腳本（將超過 7 天的檔案移到 archive 資料夾）
-          python - <<EOF
+          # 執行歸檔腳本（將根目錄中超過 7 天的檔案移到 archive 資料夾）
+          python - <<'ARCHIVAL_EOF'
           import os
           from datetime import datetime
           import shutil
@@ -466,14 +447,10 @@ jobs:
           # 設定保留天數（與 index.html 使用相同參數）
           KEEP_DAYS = 7
 
-          # 取得所有 HTML 檔案（從 docs/ 資料夾掃描，排除 index.html）
-          docs_dir = 'docs'
-          if not os.path.exists(docs_dir):
-              print(f"⚠️  {docs_dir} 資料夾不存在")
-              exit(0)
-
-          html_files = [f for f in os.listdir(docs_dir)
-                        if f.endswith('.html') and f != 'index.html']
+          # 掃描根目錄中的日期 HTML 檔案（deploy 後檔案在根目錄）
+          html_files = [f for f in os.listdir('.')
+                        if f.endswith('.html') and f != 'index.html'
+                        and not f.endswith('_hot.html')]
 
           # 解析日期並排序
           dates = []
@@ -483,39 +460,46 @@ jobs:
                   date = datetime.strptime(date_str, '%Y-%m-%d')
                   dates.append((date, date_str))
               except ValueError:
-                  print(f"無法解析日期: {f}")
+                  pass  # 跳過非日期格式的 HTML 檔案
 
           dates.sort(reverse=True)  # 最新的在前
+          print(f"找到 {len(dates)} 天的資料")
 
           # 保留最近 KEEP_DAYS 天，將其他的移到歸檔資料夾
           files_archived = False
           if len(dates) > KEEP_DAYS:
-              print(f"發現 {len(dates)} 天的資料，保留最近 {KEEP_DAYS} 天，歸檔其他資料")
+              print(f"保留最近 {KEEP_DAYS} 天，歸檔其他 {len(dates) - KEEP_DAYS} 天的資料")
 
-              # 建立歸檔資料夾
               os.makedirs('archive', exist_ok=True)
               os.makedirs('archive/images', exist_ok=True)
 
               for date, date_str in dates[KEEP_DAYS:]:
-                  # 移動 HTML 檔案到歸檔資料夾（從 docs/ 移到 archive/）
-                  html_file = os.path.join(docs_dir, f"{date_str}.html")
+                  # 移動日期 HTML 檔案
+                  html_file = f"{date_str}.html"
                   if os.path.exists(html_file):
-                      os.makedirs('archive', exist_ok=True)
-                      archive_path = os.path.join('archive', f"{date_str}.html")
+                      archive_path = os.path.join('archive', html_file)
                       shutil.move(html_file, archive_path)
                       print(f"已歸檔: {html_file} -> {archive_path}")
                       files_archived = True
 
-                  # 移動對應的圖片資料夾到歸檔（從 docs/images/ 移到 archive/images/）
-                  images_dir = os.path.join(docs_dir, "images", date_str)
-                  if os.path.exists(images_dir):
-                      os.makedirs(os.path.join('archive', 'images'), exist_ok=True)
-                      archive_images_path = os.path.join('archive', 'images', date_str)
-                      shutil.move(images_dir, archive_images_path)
-                      print(f"已歸檔: {images_dir} -> {archive_images_path}")
+                  # 移動對應的 _hot.html 檔案
+                  hot_file = f"{date_str}_hot.html"
+                  if os.path.exists(hot_file):
+                      archive_hot = os.path.join('archive', hot_file)
+                      shutil.move(hot_file, archive_hot)
+                      print(f"已歸檔: {hot_file} -> {archive_hot}")
                       files_archived = True
 
-              # 寫入標記檔案，告訴後續步驟是否需要 commit
+                  # 移動對應的圖片資料夾
+                  images_dir = os.path.join('images', date_str)
+                  if os.path.exists(images_dir):
+                      archive_images = os.path.join('archive', 'images', date_str)
+                      if os.path.exists(archive_images):
+                          shutil.rmtree(archive_images)
+                      shutil.move(images_dir, archive_images)
+                      print(f"已歸檔: {images_dir} -> {archive_images}")
+                      files_archived = True
+
               with open('/tmp/files_archived.txt', 'w') as f:
                   f.write('true' if files_archived else 'false')
 
@@ -524,7 +508,7 @@ jobs:
               print(f"目前有 {len(dates)} 天的資料（≤{KEEP_DAYS} 天），無需歸檔")
               with open('/tmp/files_archived.txt', 'w') as f:
                   f.write('false')
-          EOF
+          ARCHIVAL_EOF
 
           # 重新生成主頁 index.html（包含所有保留的日期）
           echo "重新生成主頁 index.html..."
@@ -555,7 +539,8 @@ jobs:
               exit(0)
 
           html_files = [f for f in os.listdir(archive_dir)
-                        if f.endswith('.html') and f != 'index.html']
+                        if f.endswith('.html') and f != 'index.html'
+                        and not f.endswith('_hot.html')]
           dates = sorted([f.replace('.html', '') for f in html_files], reverse=True)
 
           print(f"找到 {len(dates)} 個歸檔日期")
