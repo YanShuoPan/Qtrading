@@ -610,12 +610,81 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
     return html_file
 
 
+def _make_sparkline(prices: list, width: int = 150, height: int = 52) -> str:
+    """生成 inline SVG 折線圖（sparkline）"""
+    if not prices or len(prices) < 2:
+        return (f'<svg width="{width}" height="{height}">'
+                f'<text x="5" y="{height // 2 + 4}" fill="#9ca3af" font-size="10">無資料</text></svg>')
+    mn, mx = min(prices), max(prices)
+    rng = mx - mn or mn * 0.01 or 1
+    pad = 4
+    pw, ph = width - pad * 2, height - pad * 2
+    n = len(prices)
+    pts = " ".join(
+        f"{pad + i * pw / (n - 1):.1f},{pad + ph - (p - mn) / rng * ph:.1f}"
+        for i, p in enumerate(prices)
+    )
+    color = "#16a34a" if prices[-1] >= prices[0] else "#dc2626"
+    return (f'<svg width="{width}" height="{height}" style="display:block;overflow:visible">'
+            f'<polyline points="{pts}" fill="none" stroke="{color}" '
+            f'stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'
+            f'</svg>')
+
+
+def _build_sector_stocks_html(sec: dict, hist_df) -> str:
+    """為族群卡片生成展開後的個股清單（含 sparkline，最多量最大前六名）"""
+    codes = sec.get("codes", [])
+    if not codes or hist_df is None or (hasattr(hist_df, "empty") and hist_df.empty):
+        return '<p style="color:#9ca3af;font-size:0.9em;padding:8px 0;">無法取得個股明細</p>'
+
+    sec_hist = hist_df[hist_df["code"].isin(codes)].copy()
+    if sec_hist.empty:
+        return '<p style="color:#9ca3af;font-size:0.9em;padding:8px 0;">無法取得個股明細</p>'
+
+    sec_hist = sec_hist.sort_values("date")
+    latest = sec_hist.groupby("code").last().reset_index()
+    vol_col = "volume" if "volume" in latest.columns else None
+    top6_codes = (latest.nlargest(6, vol_col)["code"].tolist() if vol_col
+                  else latest["code"].head(6).tolist())
+
+    cards = []
+    for code in top6_codes:
+        code_hist = sec_hist[sec_hist["code"] == code].tail(20)
+        prices = code_hist["close"].tolist()
+        name = get_stock_name(code)
+        latest_close = prices[-1] if prices else None
+        pct_chg = ((prices[-1] - prices[-2]) / prices[-2]) if len(prices) >= 2 else None
+
+        close_str = f"{latest_close:.1f}" if latest_close is not None else "—"
+        chg_str = f"{pct_chg:+.1%}" if pct_chg is not None else ""
+        chg_color = ("#16a34a" if pct_chg and pct_chg > 0
+                     else ("#dc2626" if pct_chg and pct_chg < 0 else "#6b7280"))
+
+        cards.append(f"""
+                <div style="background:#f8fafc;border-radius:8px;padding:10px 12px;
+                            border:1px solid #e2e8f0;min-width:150px;flex:1;max-width:195px;">
+                    <div style="font-weight:bold;font-size:0.88em;">
+                        <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
+                           target="_blank" style="color:#2563eb;text-decoration:none;">{code}</a>
+                        <span style="color:#6b7280;font-size:0.85em;margin-left:4px;">{name}</span>
+                    </div>
+                    <div style="margin-top:2px;font-size:0.9em;">
+                        {close_str}
+                        <span style="color:{chg_color};margin-left:6px;font-size:0.85em;">{chg_str}</span>
+                    </div>
+                    <div style="margin-top:6px;">{_make_sparkline(prices)}</div>
+                </div>""")
+
+    return f'<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">{"".join(cards)}</div>'
+
+
 def generate_hot_stocks_html(
     date_str: str,
     pool_df,
     top_sectors: list,
     output_dir: str = "docs",
     theme_sentiments: dict = None,
+    hist=None,
 ):
     """
     生成每日 Pool 監控 + 熱門族群頁面（{date_str}_hot.html）
@@ -683,7 +752,7 @@ def generate_hot_stocks_html(
                         觀察池目前為空（明日起入選股票自動記錄）
                     </td></tr>"""
 
-    # ── Top sectors cards ────────────────────────────────────────────────────
+    # ── Top sectors cards (expandable) ───────────────────────────────────────
     sector_cards_html = ""
     medals = ["🥇", "🥈", "🥉"]
     for i, sec in enumerate(top_sectors or []):
@@ -693,17 +762,25 @@ def generate_hot_stocks_html(
         total = sec.get("total", 0)
         medal = medals[i] if i < len(medals) else f"#{i+1}"
         heat_color = "#16a34a" if heat >= 0.7 else ("#d97706" if heat >= 0.5 else "#6b7280")
+        stocks_html = _build_sector_stocks_html(sec, hist)
         sector_cards_html += f"""
-                <div style="background:white;border-radius:12px;padding:20px 24px;
-                            box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:16px;">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                <details style="background:white;border-radius:12px;
+                                box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:16px;overflow:hidden;">
+                    <summary style="padding:18px 22px;cursor:pointer;
+                                    display:flex;align-items:center;gap:12px;user-select:none;">
                         <span style="font-size:1.5em;">{medal}</span>
-                        <span style="font-size:1.2em;font-weight:bold;color:#1e293b;">{fine}</span>
+                        <span style="font-size:1.1em;font-weight:bold;color:#1e293b;">{fine}</span>
                         <span style="margin-left:auto;background:#f0fdf4;color:{heat_color};
                                font-weight:bold;padding:4px 14px;border-radius:20px;">{heat:.0%}</span>
+                        <span class="expand-arrow" style="color:#94a3b8;font-size:0.85em;transition:transform 0.2s;">▼</span>
+                    </summary>
+                    <div style="padding:0 20px 16px 20px;border-top:1px solid #f1f5f9;">
+                        <div style="color:#6b7280;font-size:0.88em;padding-top:10px;">
+                            {active} / {total} 支帶量上漲　｜　點選個股可查 K 線圖
+                        </div>
+                        {stocks_html}
                     </div>
-                    <div style="color:#6b7280;font-size:0.9em;">{active} / {total} 支帶量上漲</div>
-                </div>"""
+                </details>"""
 
     if not sector_cards_html:
         sector_cards_html = '<p style="color:#9ca3af;text-align:center;padding:20px 0;">今日無足夠資料</p>'
@@ -783,6 +860,9 @@ def generate_hot_stocks_html(
             font-size: 0.95em;
         }}
         .btn:hover {{ transform: translateY(-2px); }}
+        details > summary {{ list-style: none; }}
+        details > summary::-webkit-details-marker {{ display: none; }}
+        details[open] .expand-arrow {{ transform: rotate(180deg); }}
         .footer {{
             text-align:center; padding:24px; background:#f1f5f9;
             color:#94a3b8; font-size:0.85em; border-top:1px solid #e2e8f0;
@@ -809,9 +889,9 @@ def generate_hot_stocks_html(
                     <thead>
                         <tr>
                             <th style="text-align:left;">股票</th>
-                            <th>入場日</th>
-                            <th>入場價</th>
-                            <th>入場熱度</th>
+                            <th>選入日</th>
+                            <th>選入價</th>
+                            <th>選入熱度</th>
                             <th>目前熱度</th>
                             <th>Δ熱度</th>
                             <th>狀態</th>

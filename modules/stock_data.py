@@ -68,8 +68,11 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         if total_batches > 1:
             logger.info(f"\n📦 批次 {batch_num}/{total_batches}: 下載 {len(batch_codes)} 支股票")
 
-        tickers = [f"{c}.TW" for c in batch_codes]
+        batch_results = []
+        got_data = set()
 
+        # ── Pass 1: .TW（上市 + 部分上櫃）────────────────────────────────────
+        tickers = [f"{c}.TW" for c in batch_codes]
         try:
             df = yf.download(
                 tickers=" ".join(tickers),
@@ -79,12 +82,9 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                 auto_adjust=False,
                 progress=False,
             )
-            logger.info(f"   ✅ 批次 {batch_num} 下載完成，資料類型: {type(df)}, 形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
+            logger.info(f"   ✅ 批次 {batch_num} (.TW) 下載完成，形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
 
-            # 處理這批資料
-            if df is None or (isinstance(df, pd.DataFrame) and df.empty):
-                logger.warning(f"   ⚠️  批次 {batch_num} 返回空資料")
-            else:
+            if df is not None and isinstance(df, pd.DataFrame) and not df.empty:
                 # 診斷：顯示 DataFrame 結構
                 if hasattr(df.columns, 'nlevels'):
                     logger.info(f"   DataFrame columns nlevels={df.columns.nlevels}")
@@ -93,51 +93,82 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                         level1 = list(df.columns.get_level_values(1).unique())[:5]
                         logger.info(f"   Level 0 (前5): {level0}")
                         logger.info(f"   Level 1 (前5): {level1}")
-                if not df.empty and hasattr(df.index, 'max'):
+                if hasattr(df.index, 'max'):
                     logger.info(f"   DataFrame 日期範圍: {df.index.min()} ~ {df.index.max()}")
 
-                batch_results = []
-                missing_count = 0
                 for c in batch_codes:
                     t = f"{c}.TW"
                     if isinstance(df, pd.DataFrame) and t in df:
                         tmp = df[t].reset_index().rename(columns=str.lower)
-                        # yfinance 不同版本的 index 名稱可能不同（Date/Price/等）
-                        # 找到 datetime 欄位並重命名為 date
                         if "date" not in tmp.columns:
                             for col in tmp.columns:
                                 if pd.api.types.is_datetime64_any_dtype(tmp[col]):
                                     tmp = tmp.rename(columns={col: "date"})
                                     break
-                        if "date" in tmp.columns:
-                            tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
-                        else:
-                            logger.warning(f"   ⚠️  {c}: 找不到日期欄位，欄位列表: {list(tmp.columns)}")
-                            missing_count += 1
+                        if "date" not in tmp.columns:
                             continue
+                        tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
                         tmp["code"] = c
-                        # 移除全為 NaN 的行（yfinance 有時會回傳空行）
                         tmp = tmp.dropna(subset=["close"])
                         if not tmp.empty:
-                            # 確保 volume 欄位存在（某些 yfinance 版本可能缺少）
                             if "volume" not in tmp.columns:
                                 tmp["volume"] = 0
                             batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
-                        else:
-                            missing_count += 1
-                    else:
-                        missing_count += 1
-                if missing_count > 0:
-                    logger.warning(f"   ⚠️  批次 {batch_num}: {missing_count}/{len(batch_codes)} 支股票無資料")
-
-                if batch_results:
-                    all_results.extend(batch_results)
-                    logger.info(f"   ✅ 批次 {batch_num} 成功處理 {len(batch_results)} 支股票")
+                            got_data.add(c)
+            else:
+                logger.warning(f"   ⚠️  批次 {batch_num} (.TW) 返回空資料")
 
         except Exception as e:
-            logger.error(f"   ❌ 批次 {batch_num} 下載失敗: {e}")
-            logger.error(f"   可能原因：API 限流或網路問題")
-            # 繼續處理下一批，不中斷整個流程
+            logger.error(f"   ❌ 批次 {batch_num} (.TW) 下載失敗: {e}")
+
+        # ── Pass 2: .TWO（對 .TW 無資料的上櫃股票重試）────────────────────────
+        missing_codes = [c for c in batch_codes if c not in got_data]
+        if missing_codes:
+            logger.info(f"   🔄 {len(missing_codes)} 支改用 .TWO 重試（上櫃）")
+            tickers_two = [f"{c}.TWO" for c in missing_codes]
+            try:
+                df2 = yf.download(
+                    tickers=" ".join(tickers_two),
+                    start=target_start,
+                    interval="1d",
+                    group_by="ticker",
+                    auto_adjust=False,
+                    progress=False,
+                )
+                if df2 is not None and isinstance(df2, pd.DataFrame) and not df2.empty:
+                    recovered = 0
+                    for c in missing_codes:
+                        t2 = f"{c}.TWO"
+                        if t2 in df2:
+                            tmp2 = df2[t2].reset_index().rename(columns=str.lower)
+                            if "date" not in tmp2.columns:
+                                for col in tmp2.columns:
+                                    if pd.api.types.is_datetime64_any_dtype(tmp2[col]):
+                                        tmp2 = tmp2.rename(columns={col: "date"})
+                                        break
+                            if "date" not in tmp2.columns:
+                                continue
+                            tmp2["date"] = pd.to_datetime(tmp2["date"]).dt.tz_localize(None)
+                            tmp2["code"] = c
+                            tmp2 = tmp2.dropna(subset=["close"])
+                            if not tmp2.empty:
+                                if "volume" not in tmp2.columns:
+                                    tmp2["volume"] = 0
+                                batch_results.append(tmp2[["code", "date", "open", "high", "low", "close", "volume"]])
+                                got_data.add(c)
+                                recovered += 1
+                    if recovered:
+                        logger.info(f"   ✅ .TWO 補回 {recovered} 支上櫃股票")
+            except Exception as e:
+                logger.error(f"   ❌ 批次 {batch_num} (.TWO) 下載失敗: {e}")
+
+        still_missing = len(batch_codes) - len(got_data)
+        if still_missing > 0:
+            logger.warning(f"   ⚠️  批次 {batch_num}: {still_missing}/{len(batch_codes)} 支股票仍無資料（可能已下市）")
+
+        if batch_results:
+            all_results.extend(batch_results)
+            logger.info(f"   ✅ 批次 {batch_num} 成功處理 {len(batch_results)} 支股票")
 
         # 如果還有下一批，延遲一段時間避免限流
         if batch_idx + BATCH_SIZE < len(codes_to_fetch):

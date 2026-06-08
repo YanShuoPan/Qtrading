@@ -489,7 +489,7 @@ def main():
         # ===== 步驟 6.7: 生成熱門股獨立頁面 =====
         logger.info("\n📌 步驟 6.7: 生成熱門股獨立 HTML")
         try:
-            hot_html = generate_hot_stocks_html(date_str, pool_df_annotated, top_sectors, output_dir="docs")
+            hot_html = generate_hot_stocks_html(date_str, pool_df_annotated, top_sectors, output_dir="docs", hist=hist)
             if hot_html:
                 logger.info(f"✅ 觀察池頁面已生成: {hot_html}")
         except Exception as e:
