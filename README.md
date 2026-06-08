@@ -62,7 +62,7 @@
 - **技術指標疊加**：MA20移動平均線
 - **90日歷史資料**：保留3個月完整技術分析基礎
 - **跨平台中文字體**：支援 Windows/Linux 環境中文顯示
-- **圖片自動上傳**：Telegraph/Catbox 多重備援，無需API key
+- **自動儲存**：圖表自動暫存並內嵌至 HTML 報告
 
 ### 📱 LINE 整合
 - **多用戶訂閱系統**：支援多位用戶同時接收推播
@@ -237,12 +237,18 @@ stocks-autobot/
 │   ├── sentiment.py             # Groq AI 情緒分析
 │   ├── strategies.py            # 多策略 Ensemble（RSI/MACD/BB/量能）
 │   ├── continuation.py          # 延續觀察追蹤（前日推薦股重新評估）
+│   ├── breakout_detector.py     # 破底翻（C 型態）偵測
+│   ├── pool.py                  # 觀察池管理（14 日追蹤 + 族群熱度）
+│   ├── sector_heat.py           # 族群熱度計算
+│   ├── hot_stocks_sync.py       # 熱門題材股同步（讀取標籤系統資料）
+│   ├── hot_stocks_generator.py  # 熱門題材股生成（RSS/PTT/Anue 爬蟲）
 │   ├── visualization.py         # K線圖表生成
-│   ├── image_upload.py          # 圖床上傳服務（Telegraph/Catbox）
 │   └── html_generator.py        # GitHub Pages HTML 生成器（含多維 badge）
 ├── tests/                        # 單元測試
 │   ├── __init__.py
-│   └── test_strategies.py       # Ensemble 策略測試（24 tests）
+│   ├── test_strategies.py       # Ensemble 策略測試
+│   ├── test_stock_data.py       # 選股邏輯測試
+│   └── test_pool.py             # 觀察池模組測試
 ├── requirements.txt              # Python 套件依賴
 ├── taiex.sqlite                  # 股價歷史資料（與 Google Drive 同步）
 ├── line_id.txt                   # LINE 通知開關（存在=開啟，不存在=關閉）
@@ -260,7 +266,6 @@ stocks-autobot/
 - **AI 分析**：Groq API（llama-3.3-70b-versatile 情緒分析）
 - **資料庫**：SQLite（本地快取，避免重複下載）
 - **圖表生成**：matplotlib + 自製 K線圖函數
-- **圖床服務**：Telegraph、Catbox（無需API key）
 - **訊息推播**：LINE Messaging API
 - **雲端同步**：Google Drive API (rclone)
 - **網頁展示**：GitHub Pages (靜態 HTML)
@@ -280,9 +285,13 @@ stocks-autobot/
 - **finmind_data.py**：FinMind 法人籌碼與融資融券數據
 - **sentiment.py**：Groq AI 新聞情緒分析
 - **strategies.py**：多策略 Ensemble 投票系統（RSI/MACD/BB/量能）
-- **visualization.py**：K線圖表繪製
-- **image_upload.py**：多重圖床上傳備援
 - **continuation.py**：延續觀察追蹤（解析前日推薦、重新評估 MA20 + Ensemble）
+- **breakout_detector.py**：破底翻（C 型態）偵測
+- **pool.py**：觀察池管理（14 日追蹤 + 族群熱度變化）
+- **sector_heat.py**：族群熱度計算（細產業分類）
+- **hot_stocks_sync.py**：熱門題材股同步（讀取標籤系統 CSV）
+- **hot_stocks_generator.py**：熱門題材股生成（Google News RSS / PTT / Anue 爬蟲）
+- **visualization.py**：K線圖表繪製（MA10/MA20 可切換）
 - **html_generator.py**：GitHub Pages HTML 頁面生成（每日推薦頁、索引頁、歸檔頁）
 
 ## 📈 演算法說明
@@ -387,6 +396,17 @@ python webhook_app.py
 
 ## 📝 更新日誌
 
+### v4.2.0 (2026-06-09)
+- 🧹 **程式碼品質大掃除**：
+  - 移除死碼：刪除 `image_upload.py` 模組及 6 個未使用的 import
+  - 統一時區：所有時間操作改用 `TPE_TZ`（UTC+8），取代 `datetime.utcnow()` / `date.today()`
+  - 效能優化：5 處 `iterrows` 改為向量化操作（`str.contains`、`groupby`、`executemany`、`np.where`）
+  - 合併重複：`plot_stock_charts` + `plot_breakout_charts` → 統一 `plot_charts(ma_period=)`
+  - 統一 logger：全模組改用 `get_logger(__name__)`
+  - 修正比較：浮點數 `==` → `abs() < 1e-9`、`== False` → `~`
+  - CI 強化：測試步驟移除 `continue-on-error`，測試失敗即中止部署
+- 🧪 **新增測試**：`test_stock_data.py`（10 tests）、`test_pool.py`（7 tests），共 41 tests
+
 ### v4.1.0 (2025-05-19)
 - 🔄 **延續觀察追蹤**：自動追蹤前 1-2 個交易日推薦股票的最新狀態
   - 重新評估 MA20 位置與 Ensemble 4 策略投票
@@ -463,7 +483,7 @@ python webhook_app.py
 - 📊 K線圖表自動生成和推送
 - 🎯 升級為100支台股支援（現已擴展至1033支）
 - 🔍 導入 MA20 斜率技術分析
-- 🖼️ 多重圖床備援機制
+- 🖼️ K 線圖表自動生成
 
 ### v1.0.0
 - 🚀 基礎選股推薦功能

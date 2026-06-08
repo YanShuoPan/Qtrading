@@ -84,7 +84,7 @@ def detect_consolidation(
     return df
 
 
-def detect_breakdown(df: pd.DataFrame, k_atr: float = 0.5) -> pd.DataFrame:
+def detect_breakdown(df: pd.DataFrame, k_atr: float = 0.5, min_volume: int = 500) -> pd.DataFrame:
     """
     偵測假跌破事件（breakdown day）
 
@@ -94,8 +94,9 @@ def detect_breakdown(df: pd.DataFrame, k_atr: float = 0.5) -> pd.DataFrame:
     ⚠️ 避免 look-ahead bias：box_low_ref 使用前一日的 box_low
 
     Args:
-        df: 包含 Low, box_low, ATR14, is_consolidating 欄位的 DataFrame
+        df: 包含 Low, box_low, ATR14, is_consolidating, Volume 欄位的 DataFrame
         k_atr: ATR 倍數（預設 0.5）
+        min_volume: 跌破當天最低交易量（張），預設 500
 
     Returns:
         DataFrame: 原始 df 加上 box_low_ref, breakdown_event 欄位
@@ -108,10 +109,11 @@ def detect_breakdown(df: pd.DataFrame, k_atr: float = 0.5) -> pd.DataFrame:
     # 計算跌破閾值
     df['breakdown_threshold'] = df['box_low_ref'] - k_atr * df['ATR14']
 
-    # 判斷是否發生跌破：需要在盤整期間 且 最低價低於閾值
+    # 判斷是否發生跌破：需要在盤整期間 且 最低價低於閾值 且 交易量 > min_volume
     df['breakdown_event'] = (
         df['is_consolidating'] &
-        (df['Low'] < df['breakdown_threshold'])
+        (df['Low'] < df['breakdown_threshold']) &
+        (df['Volume'] > min_volume)
     )
 
     return df
@@ -180,6 +182,7 @@ def detect_c_pattern(
     consolidation_range_pct: float = 0.08,
     consolidation_atr_pct: float = 0.05,
     breakdown_k_atr: float = 0.5,
+    breakdown_min_volume: int = 500,
     reclaim_max_lag: int = 2
 ) -> pd.DataFrame:
     """
@@ -198,6 +201,7 @@ def detect_c_pattern(
         consolidation_range_pct: 盤整區間佔比上限
         consolidation_atr_pct: ATR 佔比上限（預設 5%）
         breakdown_k_atr: 跌破閾值的 ATR 倍數
+        breakdown_min_volume: 跌破當天最低交易量（張），預設 500
         reclaim_max_lag: 收回檢查的最大天數
 
     Returns:
@@ -228,7 +232,7 @@ def detect_c_pattern(
     )
 
     logger.info("Step 3: 偵測假跌破")
-    df = detect_breakdown(df, k_atr=breakdown_k_atr)
+    df = detect_breakdown(df, k_atr=breakdown_k_atr, min_volume=breakdown_min_volume)
 
     logger.info("Step 4: 偵測收回箱底")
     df = detect_reclaim(df, max_lag=reclaim_max_lag)
@@ -260,24 +264,22 @@ def summarize_c_pattern_events(df: pd.DataFrame) -> pd.DataFrame:
         logger.info("未發現任何破底翻事件")
         return pd.DataFrame()
 
-    # 構建事件清單
-    events = []
-    for idx, row in reclaim_df.iterrows():
-        bd_idx = int(row['breakdown_day_index'])
-        breakdown_date = df.loc[bd_idx, 'date']
-
-        event = {
-            'code': row.get('code', 'Unknown'),
-            'breakdown_date': breakdown_date,
-            'reclaim_date': row['date'],
-            'reclaim_lag': int(row['reclaim_lag']),
-            'close_at_reclaim': row['Close'],
-            'box_low_ref': row['box_low_ref'],
-            'reclaim_pct': ((row['Close'] - row['box_low_ref']) / row['box_low_ref'] * 100) if row['box_low_ref'] > 0 else np.nan
-        }
-        events.append(event)
-
-    events_df = pd.DataFrame(events)
+    # 向量化構建事件清單（全部用 .values 確保 index 對齊）
+    bd_indices = reclaim_df['breakdown_day_index'].astype(int)
+    code_values = reclaim_df['code'].values if 'code' in reclaim_df.columns else ['Unknown'] * len(reclaim_df)
+    events_df = pd.DataFrame({
+        'code': code_values,
+        'breakdown_date': df.loc[bd_indices.values, 'date'].values,
+        'reclaim_date': reclaim_df['date'].values,
+        'reclaim_lag': reclaim_df['reclaim_lag'].astype(int).values,
+        'close_at_reclaim': reclaim_df['Close'].values,
+        'box_low_ref': reclaim_df['box_low_ref'].values,
+    })
+    events_df['reclaim_pct'] = np.where(
+        events_df['box_low_ref'] > 0,
+        (events_df['close_at_reclaim'] - events_df['box_low_ref']) / events_df['box_low_ref'] * 100,
+        np.nan,
+    )
     logger.info(f"找到 {len(events_df)} 個破底翻事件")
 
     return events_df

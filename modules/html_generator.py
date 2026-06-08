@@ -631,6 +631,129 @@ def _make_sparkline(prices: list, width: int = 150, height: int = 52) -> str:
             f'</svg>')
 
 
+def _build_pool_cards_html(pool_df, industry_data, hist_df, date_str: str = "") -> str:
+    """
+    將 Pool DataFrame 依粗粒度（coarse）分組，生成可展開的卡片 HTML。
+
+    Summary 顯示：股數、今日新增（+N）、降溫數（❄️N）、各狀態 emoji 聚合。
+    展開後顯示個股 sparkline、細分類 badge、選入日/價。
+    """
+    import pandas as pd
+
+    if pool_df is None or (hasattr(pool_df, "empty") and pool_df.empty):
+        return '<p style="color:#9ca3af;text-align:center;padding:20px 0;">觀察池目前為空（明日起入選股票自動記錄）</p>'
+
+    today_str = date_str[:10] if date_str else ""
+
+    def _get_coarse(code):
+        if industry_data:
+            return industry_data.get(str(code), {}).get("coarse", "其他")
+        return "其他"
+
+    df = pool_df.copy()
+    df["coarse"] = df["code"].apply(_get_coarse)
+
+    # 同一 code 可能跨日重複入選，只保留最早那筆（以首次選入為準）
+    df = df.sort_values("entry_date").drop_duplicates("code", keep="first")
+
+    # 依 coarse 分組，每組按最新 entry_date 排序
+    coarse_order = df.groupby("coarse")["entry_date"].max().sort_values(ascending=False).index.tolist()
+
+    cards_html = []
+    for coarse in coarse_order:
+        group = df[df["coarse"] == coarse].sort_values("entry_date", ascending=False)
+        n = len(group)
+
+        # ── 統計新增 / 各狀態數量 ────────────────────────────────────────────
+        new_today = int((group["entry_date"].astype(str).str[:10] == today_str).sum()) if today_str else 0
+        status_counts = group.get("heat_status", pd.Series(dtype=str)).value_counts().to_dict() if "heat_status" in group.columns else {}
+        hot_n  = status_counts.get("hot", 0)
+        cold_n = status_counts.get("cold", 0)
+
+        # Summary 徽章列
+        badges = []
+        if new_today:
+            badges.append(f'<span style="background:#dcfce7;color:#16a34a;font-size:0.78em;'
+                          f'padding:2px 8px;border-radius:10px;font-weight:bold;">+{new_today} 今日</span>')
+        if cold_n:
+            badges.append(f'<span style="background:#fef2f2;color:#dc2626;font-size:0.78em;'
+                          f'padding:2px 8px;border-radius:10px;">❄️ {cold_n}</span>')
+        if hot_n:
+            badges.append(f'<span style="background:#f0fdf4;color:#16a34a;font-size:0.78em;'
+                          f'padding:2px 8px;border-radius:10px;">🔥 {hot_n}</span>')
+        badges_html = "".join(badges)
+
+        # ── 個股卡片（不重複顯示狀態 icon，已在 summary 聚合）────────────────
+        stock_items = []
+        for _, r in group.iterrows():
+            code = str(r["code"])
+            name = r.get("name") or get_stock_name(code)
+            fine = r.get("fine_group") or "—"
+            entry_date = str(r.get("entry_date", ""))[:10]
+            days_held = r.get("days_held", "—")
+            entry_price = r.get("entry_price")
+            status = r.get("heat_status", "unknown")
+            ep_str = f"{entry_price:.1f}" if pd.notna(entry_price) else "—"
+            days_str = f"({days_held}天)" if days_held != "—" else ""
+
+            # 新增 badge（個股卡片左上角）
+            is_new = (entry_date == today_str and bool(today_str))
+            new_dot = ('<span style="background:#16a34a;color:white;font-size:0.68em;'
+                       'padding:1px 5px;border-radius:6px;margin-left:4px;">NEW</span>'
+                       if is_new else "")
+
+            # 狀態色框
+            border_color = {"hot": "#86efac", "cold": "#fca5a5"}.get(status, "#e2e8f0")
+            bg_color = {"hot": "#f0fdf4", "cold": "#fef2f2"}.get(status, "#f8fafc")
+
+            # Sparkline
+            prices = []
+            if hist_df is not None and not (hasattr(hist_df, "empty") and hist_df.empty):
+                code_hist = hist_df[hist_df["code"] == code].sort_values("date").tail(20)
+                prices = code_hist["close"].dropna().tolist()
+
+            fine_badge = (f'<span style="background:#eff6ff;color:#2563eb;'
+                          f'font-size:0.75em;padding:2px 7px;border-radius:10px;'
+                          f'white-space:nowrap;">{fine}</span>')
+
+            stock_items.append(f"""
+                    <div style="background:{bg_color};border-radius:8px;padding:10px 12px;
+                                border:1px solid {border_color};min-width:150px;flex:1;max-width:210px;">
+                        <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
+                            <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
+                               target="_blank"
+                               style="font-weight:bold;color:#2563eb;text-decoration:none;">{code}</a>{new_dot}
+                            <span style="color:#374151;font-size:0.88em;">{name}</span>
+                        </div>
+                        <div style="margin-top:4px;">{fine_badge}</div>
+                        <div style="margin-top:6px;">{_make_sparkline(prices, width=160, height=48)}</div>
+                        <div style="margin-top:5px;font-size:0.8em;color:#6b7280;">
+                            {entry_date} {days_str} ｜ 選入價 {ep_str}
+                        </div>
+                    </div>""")
+
+        cards_html.append(f"""
+            <details style="background:white;border-radius:12px;
+                            box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:14px;overflow:hidden;">
+                <summary style="padding:16px 20px;cursor:pointer;
+                                display:flex;align-items:center;gap:8px;flex-wrap:wrap;user-select:none;">
+                    <span style="font-size:1.05em;font-weight:bold;color:#1e293b;">{coarse}</span>
+                    <span style="background:#e0f2fe;color:#0369a1;font-size:0.8em;
+                                 padding:2px 10px;border-radius:12px;">{n} 支</span>
+                    {badges_html}
+                    <span class="expand-arrow" style="margin-left:auto;color:#94a3b8;
+                                                      font-size:0.85em;transition:transform 0.2s;">▼</span>
+                </summary>
+                <div style="padding:4px 16px 16px 16px;border-top:1px solid #f1f5f9;">
+                    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;">
+                        {"".join(stock_items)}
+                    </div>
+                </div>
+            </details>""")
+
+    return "\n".join(cards_html)
+
+
 def _build_sector_stocks_html(sec: dict, hist_df) -> str:
     """為族群卡片生成展開後的個股清單（含 sparkline，最多量最大前六名）"""
     codes = sec.get("codes", [])
@@ -685,6 +808,7 @@ def generate_hot_stocks_html(
     output_dir: str = "docs",
     theme_sentiments: dict = None,
     hist=None,
+    industry_data: dict = None,
 ):
     """
     生成每日 Pool 監控 + 熱門族群頁面（{date_str}_hot.html）
@@ -702,55 +826,8 @@ def generate_hot_stocks_html(
     os.makedirs(output_dir, exist_ok=True)
     html_file = os.path.join(output_dir, f"{date_str}_hot.html")
 
-    # ── Pool table rows ──────────────────────────────────────────────────────
-    pool_rows_html = ""
-    pool_is_empty = pool_df is None or (hasattr(pool_df, "empty") and pool_df.empty)
-    if not pool_is_empty:
-        for _, r in pool_df.iterrows():
-            code = r["code"]
-            name = r.get("name") or get_stock_name(code)
-            entry_date = str(r.get("entry_date", ""))[:10]
-            days_held = r.get("days_held", "—")
-            entry_price = r.get("entry_price")
-            heat_entry = r.get("heat_at_entry")
-            heat_now = r.get("current_heat")
-            heat_delta = r.get("heat_delta")
-            status = r.get("heat_status", "unknown")
-
-            ep_str = f"{entry_price:.1f}" if pd.notna(entry_price) else "—"
-            he_str = f"{heat_entry:.0%}" if pd.notna(heat_entry) else "—"
-            hn_str = f"{heat_now:.0%}" if pd.notna(heat_now) else "—"
-            hd_str = f"{heat_delta:+.0%}" if pd.notna(heat_delta) else "—"
-
-            if status == "hot":
-                status_html = '<span style="color:#16a34a;font-weight:bold;">🔥 跟進</span>'
-                row_bg = "#f0fdf4"
-            elif status == "cold":
-                status_html = '<span style="color:#dc2626;font-weight:bold;">❄️ 降溫</span>'
-                row_bg = "#fef2f2"
-            else:
-                status_html = '<span style="color:#6b7280;">➡️ 持穩</span>'
-                row_bg = "white"
-
-            pool_rows_html += f"""
-                    <tr style="background:{row_bg}; border-bottom: 1px solid #e5e7eb;">
-                        <td style="padding:10px 12px; font-weight:bold;">
-                            <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
-                               target="_blank" style="color:#2563eb;text-decoration:none;">{code}</a>
-                            <div style="font-size:0.85em;color:#6b7280;">{name}</div>
-                        </td>
-                        <td style="padding:10px 12px; text-align:center; color:#6b7280;">{entry_date}<br><span style="font-size:0.85em;">({days_held}天)</span></td>
-                        <td style="padding:10px 12px; text-align:center;">{ep_str}</td>
-                        <td style="padding:10px 12px; text-align:center;">{he_str}</td>
-                        <td style="padding:10px 12px; text-align:center;">{hn_str}</td>
-                        <td style="padding:10px 12px; text-align:center;">{hd_str}</td>
-                        <td style="padding:10px 12px; text-align:center;">{status_html}</td>
-                    </tr>"""
-    else:
-        pool_rows_html = """
-                    <tr><td colspan="7" style="padding:24px;text-align:center;color:#9ca3af;">
-                        觀察池目前為空（明日起入選股票自動記錄）
-                    </td></tr>"""
+    # ── Pool cards (grouped by coarse category) ─────────────────────────────
+    pool_cards_html = _build_pool_cards_html(pool_df, industry_data, hist, date_str=date_str)
 
     # ── Top sectors cards (expandable) ───────────────────────────────────────
     sector_cards_html = ""
@@ -827,23 +904,6 @@ def generate_hot_stocks_html(
             align-items: center;
             gap: 8px;
         }}
-        .pool-table {{
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.95em;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        }}
-        .pool-table th {{
-            background: #1e3a5f;
-            color: white;
-            padding: 10px 12px;
-            text-align: center;
-            font-weight: 600;
-            font-size: 0.9em;
-        }}
-        .pool-table th:first-child {{ text-align: left; }}
         .nav-buttons {{
             display: flex; justify-content: center; gap: 12px;
             margin-top: 28px; flex-wrap: wrap;
@@ -870,7 +930,6 @@ def generate_hot_stocks_html(
         @media (max-width:768px) {{
             .header h1 {{ font-size: 1.5em; }}
             .content {{ padding: 20px 12px; }}
-            .pool-table {{ font-size: 0.8em; }}
         }}
     </style>
 </head>
@@ -885,24 +944,9 @@ def generate_hot_stocks_html(
             <!-- ① Pool 觀察池 -->
             <div style="margin-bottom: 48px;">
                 <div class="section-title">📋 觀察池（最近 14 天入選股）</div>
-                <table class="pool-table">
-                    <thead>
-                        <tr>
-                            <th style="text-align:left;">股票</th>
-                            <th>選入日</th>
-                            <th>選入價</th>
-                            <th>選入熱度</th>
-                            <th>目前熱度</th>
-                            <th>Δ熱度</th>
-                            <th>狀態</th>
-                        </tr>
-                    </thead>
-                    <tbody>{pool_rows_html}
-                    </tbody>
-                </table>
-                <p style="font-size:0.78em;color:#94a3b8;margin-top:8px;text-align:right;">
-                    熱度 = 族群帶量上漲比例（close &gt; MA5 且量 &gt; 均量5日）｜
-                    🔥 族群跟進(Δ &gt; +15%)　❄️ 族群降溫(Δ &lt; -10%)
+                {pool_cards_html}
+                <p style="font-size:0.78em;color:#94a3b8;margin-top:10px;text-align:right;">
+                    🔥 族群持續跟進　❄️ 族群降溫　➡️ 持穩
                 </p>
             </div>
 

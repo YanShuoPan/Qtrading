@@ -50,7 +50,7 @@ def _fetch(dataset: str, params: dict) -> list:
 
 def _aggregate_institutional(group) -> pd.Series:
     """
-    對單一日期的法人資料群組進行彙總
+    對單一日期的法人資料群組進行彙總（向量化）
 
     Args:
         group: 同一日期的 DataFrame 群組
@@ -58,27 +58,16 @@ def _aggregate_institutional(group) -> pd.Series:
     Returns:
         pd.Series: foreign_net, trust_net, dealer_net, total_net
     """
-    foreign_net = 0
-    trust_net = 0
-    dealer_net = 0
+    name_col = group["name"].astype(str)
+    buy = pd.to_numeric(group.get("buy", 0), errors="coerce").fillna(0)
+    sell = pd.to_numeric(group.get("sell", 0), errors="coerce").fillna(0)
+    net = buy - sell
 
-    for _, row in group.iterrows():
-        investor = str(row.get("name", ""))
-        try:
-            buy = float(row.get("buy", 0) or 0)
-            sell = float(row.get("sell", 0) or 0)
-        except (ValueError, TypeError):
-            buy, sell = 0.0, 0.0
-        net = buy - sell
-
-        if "Foreign_Investor" in investor:
-            foreign_net += net
-        elif "Investment_Trust" in investor:
-            trust_net += net
-        elif "Dealer" in investor:
-            dealer_net += net
-
+    foreign_net = net[name_col.str.contains("Foreign_Investor", na=False)].sum()
+    trust_net = net[name_col.str.contains("Investment_Trust", na=False)].sum()
+    dealer_net = net[name_col.str.contains("Dealer", na=False)].sum()
     total_net = foreign_net + trust_net + dealer_net
+
     return pd.Series({
         "foreign_net": foreign_net,
         "trust_net": trust_net,
@@ -128,9 +117,10 @@ def fetch_institutional(codes: list, days: int = 10) -> pd.DataFrame:
 
         # 計算連續買超天數（從最新日往回數，total_net > 0 的連續天數）
         daily = daily.sort_values("date", ascending=False)
+        is_buy = (daily["total_net"] > 0).values
         consecutive_buy_days = 0
-        for _, day_row in daily.iterrows():
-            if day_row["total_net"] > 0:
+        for v in is_buy:
+            if v:
                 consecutive_buy_days += 1
             else:
                 break

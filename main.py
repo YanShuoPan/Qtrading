@@ -7,11 +7,10 @@ from datetime import datetime, timedelta, timezone
 
 # 導入模組
 from modules.logger import setup_logger, get_logger
-from modules.config import IN_GITHUB_ACTIONS, LINE_USER_ID, GITHUB_PAGES_URL, LINE_NOTIFY_ENABLED
+from modules.config import IN_GITHUB_ACTIONS, GITHUB_PAGES_URL, LINE_NOTIFY_ENABLED
 from modules.database import (
     ensure_db,
     ensure_users_table,
-    seed_subscribers_from_env,
     upsert_prices,
     load_recent_prices
 )
@@ -21,16 +20,15 @@ from modules.google_drive import (
     sync_line_ids_from_drive,
     sync_database_to_drive
 )
-from modules.line_messaging import broadcast_text, broadcast_image, broadcast_button_message, get_active_subscribers
+from modules.line_messaging import broadcast_text, broadcast_button_message, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
 from modules.stock_data import fetch_prices_yf, pick_stocks
-from modules.visualization import plot_stock_charts, plot_breakout_charts
-from modules.image_upload import upload_image
-from modules.html_generator import generate_daily_html, generate_index_html, generate_hot_stocks_html
+from modules.visualization import plot_charts
+from modules.html_generator import generate_daily_html, generate_hot_stocks_html
 from modules.pool import ensure_pool_table, expire_pool, add_to_pool, get_active_pool, annotate_pool_heat
 from modules.sector_heat import load_industry_data, compute_sector_heat, get_top_sectors
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
-from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df, load_stock_tags
+from modules.hot_stocks_sync import load_hot_stocks, build_hot_stocks_df, load_stock_tags
 from modules.hot_stocks_generator import generate_hot_stocks_csv
 from modules.fundamentals import fetch_fundamentals, filter_by_fundamentals
 from modules.finmind_data import fetch_institutional, fetch_margin
@@ -422,7 +420,7 @@ def main():
         if breakout_df is not None and not breakout_df.empty:
             logger.info(f"生成破底翻股票 K 線圖（MA10）...")
             breakout_codes = breakout_df['code'].unique().tolist()
-            generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir, use_ma10=True)
+            generate_and_save_charts_from_codes(breakout_codes, "破底翻", today_tpe, hist, images_output_dir, ma_period=10)
 
         # 生成並保存熱門題材股圖片（依主題分批，各自命名）
         if not group_hot.empty:
@@ -489,7 +487,7 @@ def main():
         # ===== 步驟 6.7: 生成熱門股獨立頁面 =====
         logger.info("\n📌 步驟 6.7: 生成熱門股獨立 HTML")
         try:
-            hot_html = generate_hot_stocks_html(date_str, pool_df_annotated, top_sectors, output_dir="docs", hist=hist)
+            hot_html = generate_hot_stocks_html(date_str, pool_df_annotated, top_sectors, output_dir="docs", hist=hist, industry_data=industry_data)
             if hot_html:
                 logger.info(f"✅ 觀察池頁面已生成: {hot_html}")
         except Exception as e:
@@ -586,7 +584,7 @@ def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
         batch_display = ", ".join(batch_codes)
         logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
 
-        chart_path = plot_stock_charts(batch_codes, hist)
+        chart_path = plot_charts(batch_codes, hist)
         if chart_path:
             # 保存圖表到 docs/images/{date}/ 資料夾
             # 加入時間戳記避免瀏覽器快取問題
@@ -603,7 +601,7 @@ def generate_and_save_charts(group_df, group_name, today_tpe, hist, output_dir):
             logger.warning(f"  ❌ K 線圖生成失敗")
 
 
-def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist, output_dir, use_ma10=False):
+def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist, output_dir, ma_period=20):
     """
     從股票代碼列表生成 K 線圖並保存到指定目錄
 
@@ -613,7 +611,7 @@ def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist,
         today_tpe: 今日日期
         hist: 歷史股價數據
         output_dir: 輸出目錄
-        use_ma10: 是否使用 MA10（破底翻專用），預設為 False（使用 MA20）
+        ma_period: 移動平均線週期（預設 20，破底翻用 10）
     """
     import shutil
     logger.info(f"生成「{group_name}」組 K 線圖...")
@@ -623,11 +621,7 @@ def generate_and_save_charts_from_codes(codes_list, group_name, today_tpe, hist,
         batch_display = ", ".join(batch_codes)
         logger.info(f"  正在處理第 {batch_num//6 + 1} 批: {batch_display}")
 
-        # 根據參數選擇繪圖函數
-        if use_ma10:
-            chart_path = plot_breakout_charts(batch_codes, hist)
-        else:
-            chart_path = plot_stock_charts(batch_codes, hist)
+        chart_path = plot_charts(batch_codes, hist, ma_period=ma_period)
 
         if chart_path:
             # 保存圖表到 docs/images/{date}/ 資料夾
@@ -673,76 +667,6 @@ def save_stock_list(group_df, group_name, emoji, today_tpe):
     with open(list_path, "w", encoding="utf-8") as f:
         f.write(msg)
     logger.info(f"📝 股票清單已保存: {list_path}")
-
-
-def send_group_messages(group_df, group_name, emoji, today_tpe, subscribers, hist):
-    """
-    發送分組訊息和圖表
-
-    Args:
-        group_df: 股票群組 DataFrame
-        group_name: 群組名稱
-        emoji: 群組表情符號
-        today_tpe: 今日日期
-        subscribers: 訂閱者列表
-        hist: 歷史股價數據
-    """
-    logger.info(f"\n處理「{group_name}」組...")
-    lines = [f"{emoji} {group_name} ({today_tpe})"]
-    lines.append("以下股票可以參考：\n")
-    for i, r in group_df.iterrows():
-        stock_name = get_stock_name(r.code)
-        lines.append(f"{r.code} {stock_name}")
-    msg = "\n".join(lines)
-    logger.info(f"訊息:\n{msg}")
-
-    # 創建日期資料夾
-    date_folder = os.path.join("data", str(today_tpe))
-    os.makedirs(date_folder, exist_ok=True)
-
-    # 保存股票清單到文字檔
-    list_filename = f"{group_name}_{today_tpe}.txt"
-    list_path = os.path.join(date_folder, list_filename)
-    with open(list_path, "w", encoding="utf-8") as f:
-        f.write(msg)
-    logger.info(f"📝 股票清單已保存: {list_path}")
-
-    try:
-        broadcast_text(msg, subscribers)
-        logger.info(f"✅ {group_name}組訊息發送成功")
-    except Exception as e:
-        logger.error(f"❌ {group_name}組訊息發送失敗: {e}")
-
-    logger.info(f"\n生成並發送「{group_name}」組圖片")
-    group_codes = group_df["code"].tolist()
-    for batch_num in range(0, len(group_codes), 6):
-        batch_codes = group_codes[batch_num:batch_num + 6]
-        batch_display = ", ".join(batch_codes)
-        logger.info(f"正在處理{group_name}第 {batch_num//6 + 1} 組: {batch_display}")
-
-        chart_path = plot_stock_charts(batch_codes, hist)
-        if chart_path:
-            # 保存圖表到日期資料夾
-            import shutil
-            chart_filename = f"{group_name}_batch_{batch_num//6 + 1}_{today_tpe}.png"
-            saved_chart_path = os.path.join(date_folder, chart_filename)
-            shutil.copy(chart_path, saved_chart_path)
-            logger.info(f"💾 圖表已保存: {saved_chart_path}")
-
-            img_url = upload_image(chart_path)
-            if img_url:
-                try:
-                    broadcast_image(img_url, subscribers)
-                    logger.info(f"✅ 圖表已發送到 LINE")
-                except Exception as e:
-                    logger.error(f"❌ LINE 發送失敗: {e}")
-            else:
-                logger.warning(f"❌ 圖床上傳失敗")
-
-            # 刪除臨時檔案
-            os.unlink(chart_path)
-        else:
-            logger.warning(f"❌ 圖表生成失敗")
 
 
 if __name__ == "__main__":

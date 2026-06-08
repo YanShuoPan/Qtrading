@@ -3,13 +3,13 @@
 """
 import os
 import re
-import logging
 
 import pandas as pd
 
 from .stock_codes import STOCK_NAMES
+from .logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 def load_hot_stocks(csv_path: str | None = None) -> dict[str, dict]:
@@ -162,21 +162,22 @@ def load_stock_tags(
     # tag_id → 中文名稱
     tag_name_map: dict[str, str] = dict(zip(tm["tag_id"], tm["tag_name"]))
 
-    # core 優先排序
+    # core 優先排序，合併標籤名稱，過濾無名稱的 tag
     score_order = {"core": 0, "related": 1}
     stm = stm.copy()
     stm["_sort"] = stm["score_level"].map(score_order).fillna(2)
-    stm = stm.sort_values(["stock_id", "_sort"])
+    stm["_code"] = stm["stock_id"].astype(int).astype(str)
+    stm["_tag_name"] = stm["tag_id"].map(tag_name_map)
+    stm = stm.dropna(subset=["_tag_name"])
+    stm = stm[stm["_tag_name"] != ""]
+    stm = stm.sort_values(["_code", "_sort"])
 
-    result: dict[str, list[str]] = {}
-    for _, row in stm.iterrows():
-        code = str(int(row["stock_id"]))
-        tag_name = tag_name_map.get(row["tag_id"], "")
-        if not tag_name:
-            continue
-        tags = result.setdefault(code, [])
-        if len(tags) < max_tags:
-            tags.append(tag_name)
+    # 每支股票取前 max_tags 個標籤
+    result: dict[str, list[str]] = (
+        stm.groupby("_code")["_tag_name"]
+        .apply(lambda x: x.head(max_tags).tolist())
+        .to_dict()
+    )
 
     logger.info(f"載入股票標籤：{len(result)} 支股票有標籤資料")
     return result

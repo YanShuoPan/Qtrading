@@ -5,7 +5,7 @@ import os
 import sqlite3
 from datetime import datetime, timedelta
 import pandas as pd
-from .config import DB_PATH, DEBUG_MODE
+from .config import DB_PATH, DEBUG_MODE, TPE_TZ
 from .logger import get_logger
 
 logger = get_logger(__name__)
@@ -181,7 +181,7 @@ def load_recent_prices(days=120) -> pd.DataFrame:
     if df.empty:
         return pd.DataFrame(columns=["code", "date", "open", "high", "low", "close", "volume"])
 
-    cutoff = datetime.utcnow() - timedelta(days=days)
+    cutoff = datetime.now(TPE_TZ).replace(tzinfo=None) - timedelta(days=days)
     df = df[df["date"] >= cutoff]
 
     # 如果過濾後變成空的，仍保留欄位結構

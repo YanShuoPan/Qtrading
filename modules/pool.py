@@ -3,11 +3,11 @@ Pool 監控模組
 管理「觀察池」：記錄每日入選股，追蹤最近 14 日的族群熱度變化
 """
 import sqlite3
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 
-from .config import DB_PATH
+from .config import DB_PATH, TPE_TZ
 from .logger import get_logger
 from .stock_codes import get_stock_name
 
@@ -35,7 +35,7 @@ def ensure_pool_table() -> None:
 
 def expire_pool() -> int:
     """移除 pool 中超過 POOL_DAYS 日曆天的紀錄，回傳移除筆數"""
-    cutoff = (date.today() - timedelta(days=POOL_DAYS)).isoformat()
+    cutoff = (datetime.now(TPE_TZ).date() - timedelta(days=POOL_DAYS)).isoformat()
     with sqlite3.connect(DB_PATH) as conn:
         cur = conn.execute("DELETE FROM pool WHERE entry_date < ?", (cutoff,))
         conn.commit()
@@ -62,28 +62,29 @@ def add_to_pool(picks_df: pd.DataFrame, hist: pd.DataFrame,
     if picks_df.empty:
         return 0
 
-    today_str = date.today().isoformat()
+    today_str = datetime.now(TPE_TZ).date().isoformat()
     latest_close = hist.sort_values("date").groupby("code").last()["close"].to_dict()
 
-    added = 0
+    # 預先組裝所有待插入資料
+    rows_to_insert = []
+    for code in picks_df["code"].astype(str):
+        fine = industry_data.get(code, {}).get("fine", "")
+        heat = heat_scores.get(fine, {}).get("heat") if fine else None
+        rows_to_insert.append((
+            code, get_stock_name(code), today_str,
+            latest_close.get(code), fine or None, heat,
+        ))
+
     with sqlite3.connect(DB_PATH) as conn:
-        for _, row in picks_df.iterrows():
-            code = str(row["code"])
-            fine = industry_data.get(code, {}).get("fine", "")
-            heat = heat_scores.get(fine, {}).get("heat") if fine else None
-            price = latest_close.get(code)
-            name = get_stock_name(code)
-            try:
-                cur = conn.execute(
-                    "INSERT OR IGNORE INTO pool "
-                    "(code, name, entry_date, entry_price, fine_group, heat_at_entry) "
-                    "VALUES (?, ?, ?, ?, ?, ?)",
-                    (code, name, today_str, price, fine or None, heat)
-                )
-                if cur.rowcount > 0:
-                    added += 1
-            except Exception as e:
-                logger.warning(f"⚠️  {code} 加入 Pool 失敗: {e}")
+        before = conn.execute("SELECT COUNT(*) FROM pool").fetchone()[0]
+        conn.executemany(
+            "INSERT OR IGNORE INTO pool "
+            "(code, name, entry_date, entry_price, fine_group, heat_at_entry) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            rows_to_insert,
+        )
+        after = conn.execute("SELECT COUNT(*) FROM pool").fetchone()[0]
+        added = after - before
         conn.commit()
 
     logger.info(f"✅ Pool 新增 {added} 筆（{today_str}）")
@@ -97,7 +98,7 @@ def get_active_pool() -> pd.DataFrame:
     Returns:
         DataFrame columns: code, name, entry_date, entry_price, fine_group, heat_at_entry
     """
-    cutoff = (date.today() - timedelta(days=POOL_DAYS)).isoformat()
+    cutoff = (datetime.now(TPE_TZ).date() - timedelta(days=POOL_DAYS)).isoformat()
     with sqlite3.connect(DB_PATH) as conn:
         df = pd.read_sql_query(
             "SELECT code, name, entry_date, entry_price, fine_group, heat_at_entry "
@@ -128,7 +129,7 @@ def annotate_pool_heat(pool_df: pd.DataFrame, heat_scores: dict) -> pd.DataFrame
         return pool_df
 
     df = pool_df.copy()
-    today = date.today()
+    today = datetime.now(TPE_TZ).date()
 
     df["current_heat"] = df["fine_group"].apply(
         lambda f: heat_scores.get(f, {}).get("heat") if f else None

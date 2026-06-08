@@ -13,7 +13,6 @@
 
 import os
 import time
-import logging
 from collections import defaultdict
 from datetime import datetime
 from urllib.parse import quote
@@ -24,7 +23,9 @@ import requests
 import yaml
 from bs4 import BeautifulSoup
 
-logger = logging.getLogger(__name__)
+from .logger import get_logger
+
+logger = get_logger(__name__)
 
 RSS_BASE_URL = "https://news.google.com/rss/search"
 

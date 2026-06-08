@@ -3,9 +3,13 @@
 """
 import os
 import re
+from datetime import timezone, timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ===== 時區設定 =====
+TPE_TZ = timezone(timedelta(hours=8))  # 台北時區 UTC+8
 
 # ===== Debug 設定 =====
 DEBUG_MODE = os.environ.get("DEBUG_MODE", "false").lower() == "true"

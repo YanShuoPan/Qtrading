@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import pandas as pd
 import yfinance as yf
 import time
+from .config import TPE_TZ
 from .database import get_existing_data_range
 from .logger import get_logger
 
@@ -23,7 +24,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         DataFrame: 包含股價數據的 DataFrame
     """
     existing = get_existing_data_range()
-    target_start = (datetime.utcnow() - timedelta(days=lookback_days * 2)).date().isoformat()
+    target_start = (datetime.now(TPE_TZ) - timedelta(days=lookback_days * 2)).date().isoformat()
 
     codes_to_fetch = []
     for c in codes:
@@ -35,7 +36,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
             logger.info(f"{c}: 無歷史資料，需下載")
         else:
             max_date = existing[c]["max"]
-            if max_date < datetime.utcnow().date().isoformat():
+            if max_date < datetime.now(TPE_TZ).date().isoformat():
                 codes_to_fetch.append(c)
                 logger.info(f"{c}: 資料過舊 (最新: {max_date})，需更新")
             else:
@@ -290,7 +291,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
 
         # 判斷最後一天是否為最低收盤價
         latest = last_5.iloc[-1]
-        is_lowest_close = latest["close"] == last_5["close"].min()
+        is_lowest_close = abs(latest["close"] - last_5["close"].min()) < 1e-9
 
         results.append({
             "code": code,
@@ -318,7 +319,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
 
     # Group1: MA20 斜率 >= 0.5，最多選 6 支
     if len(group1) > 6:
-        group1_filtered = group1[group1["is_lowest_close"] == False]
+        group1_filtered = group1[~group1["is_lowest_close"]]
         if len(group1_filtered) > 6:
             group1 = group1_filtered.nsmallest(6, "avg_ma20_distance")
         elif len(group1_filtered) > 0:
@@ -328,7 +329,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
 
     # Group2: MA20 斜率 < 0.5，最多選 6 支
     if len(group2) > 6:
-        group2_filtered = group2[group2["is_lowest_close"] == False]
+        group2_filtered = group2[~group2["is_lowest_close"]]
         if len(group2_filtered) > 6:
             group2 = group2_filtered.nsmallest(6, "avg_ma20_distance")
         elif len(group2_filtered) > 0:
