@@ -610,243 +610,245 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
     return html_file
 
 
-def generate_hot_stocks_html(date_str: str, hot_stocks_df, output_dir: str = "docs", images_dir: str = None, theme_sentiments: dict = None):
+def generate_hot_stocks_html(
+    date_str: str,
+    pool_df,
+    top_sectors: list,
+    output_dir: str = "docs",
+    theme_sentiments: dict = None,
+):
     """
-    生成每日熱門題材股獨立 HTML 頁面（{date_str}_hot.html）
+    生成每日 Pool 監控 + 熱門族群頁面（{date_str}_hot.html）
 
     Args:
         date_str: 日期字串 (YYYY-MM-DD)
-        hot_stocks_df: 熱門股 DataFrame（code, tag_name, mention_count, rank）
-        output_dir: 輸出目錄
-        images_dir: 圖片資料夾路徑（相對於 output_dir）
+        pool_df: annotate_pool_heat() 回傳的 DataFrame（可為空或 None）
+        top_sectors: get_top_sectors() 回傳的 list（最多 3 個族群 dict）
+        output_dir: 輸出目錄（預設 'docs'）
+        theme_sentiments: 未使用，保留參數相容性
 
     Returns:
-        生成的 HTML 檔案路徑，若 DataFrame 為空則回傳 None
+        生成的 HTML 檔案路徑
     """
-    if hot_stocks_df is None or hot_stocks_df.empty:
-        logger.info("熱門股 DataFrame 為空，跳過生成熱門股 HTML")
-        return None
-
     os.makedirs(output_dir, exist_ok=True)
-
-    if images_dir is None:
-        images_dir = f"images/{date_str}"
-
     html_file = os.path.join(output_dir, f"{date_str}_hot.html")
+
+    # ── Pool table rows ──────────────────────────────────────────────────────
+    pool_rows_html = ""
+    pool_is_empty = pool_df is None or (hasattr(pool_df, "empty") and pool_df.empty)
+    if not pool_is_empty:
+        for _, r in pool_df.iterrows():
+            code = r["code"]
+            name = r.get("name") or get_stock_name(code)
+            entry_date = str(r.get("entry_date", ""))[:10]
+            days_held = r.get("days_held", "—")
+            entry_price = r.get("entry_price")
+            heat_entry = r.get("heat_at_entry")
+            heat_now = r.get("current_heat")
+            heat_delta = r.get("heat_delta")
+            status = r.get("heat_status", "unknown")
+
+            ep_str = f"{entry_price:.1f}" if pd.notna(entry_price) else "—"
+            he_str = f"{heat_entry:.0%}" if pd.notna(heat_entry) else "—"
+            hn_str = f"{heat_now:.0%}" if pd.notna(heat_now) else "—"
+            hd_str = f"{heat_delta:+.0%}" if pd.notna(heat_delta) else "—"
+
+            if status == "hot":
+                status_html = '<span style="color:#16a34a;font-weight:bold;">🔥 跟進</span>'
+                row_bg = "#f0fdf4"
+            elif status == "cold":
+                status_html = '<span style="color:#dc2626;font-weight:bold;">❄️ 降溫</span>'
+                row_bg = "#fef2f2"
+            else:
+                status_html = '<span style="color:#6b7280;">➡️ 持穩</span>'
+                row_bg = "white"
+
+            pool_rows_html += f"""
+                    <tr style="background:{row_bg}; border-bottom: 1px solid #e5e7eb;">
+                        <td style="padding:10px 12px; font-weight:bold;">
+                            <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
+                               target="_blank" style="color:#2563eb;text-decoration:none;">{code}</a>
+                            <div style="font-size:0.85em;color:#6b7280;">{name}</div>
+                        </td>
+                        <td style="padding:10px 12px; text-align:center; color:#6b7280;">{entry_date}<br><span style="font-size:0.85em;">({days_held}天)</span></td>
+                        <td style="padding:10px 12px; text-align:center;">{ep_str}</td>
+                        <td style="padding:10px 12px; text-align:center;">{he_str}</td>
+                        <td style="padding:10px 12px; text-align:center;">{hn_str}</td>
+                        <td style="padding:10px 12px; text-align:center;">{hd_str}</td>
+                        <td style="padding:10px 12px; text-align:center;">{status_html}</td>
+                    </tr>"""
+    else:
+        pool_rows_html = """
+                    <tr><td colspan="7" style="padding:24px;text-align:center;color:#9ca3af;">
+                        觀察池目前為空（明日起入選股票自動記錄）
+                    </td></tr>"""
+
+    # ── Top sectors cards ────────────────────────────────────────────────────
+    sector_cards_html = ""
+    medals = ["🥇", "🥈", "🥉"]
+    for i, sec in enumerate(top_sectors or []):
+        fine = sec.get("fine", "")
+        heat = sec.get("heat", 0)
+        active = sec.get("active", 0)
+        total = sec.get("total", 0)
+        medal = medals[i] if i < len(medals) else f"#{i+1}"
+        heat_color = "#16a34a" if heat >= 0.7 else ("#d97706" if heat >= 0.5 else "#6b7280")
+        sector_cards_html += f"""
+                <div style="background:white;border-radius:12px;padding:20px 24px;
+                            box-shadow:0 2px 8px rgba(0,0,0,0.08);margin-bottom:16px;">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                        <span style="font-size:1.5em;">{medal}</span>
+                        <span style="font-size:1.2em;font-weight:bold;color:#1e293b;">{fine}</span>
+                        <span style="margin-left:auto;background:#f0fdf4;color:{heat_color};
+                               font-weight:bold;padding:4px 14px;border-radius:20px;">{heat:.0%}</span>
+                    </div>
+                    <div style="color:#6b7280;font-size:0.9em;">{active} / {total} 支帶量上漲</div>
+                </div>"""
+
+    if not sector_cards_html:
+        sector_cards_html = '<p style="color:#9ca3af;text-align:center;padding:20px 0;">今日無足夠資料</p>'
 
     html_content = f"""<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{date_str} 每日熱門股</title>
+    <title>{date_str} 觀察池 &amp; 熱門族群</title>
     <style>
-        * {{ margin: 0; padding: 0; box-sizing: border-box; }}
+        * {{ margin:0; padding:0; box-sizing:border-box; }}
         body {{
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2d6a4f 100%);
             min-height: 100vh;
             padding: 20px;
         }}
         .container {{
-            max-width: 1200px;
+            max-width: 960px;
             margin: 0 auto;
-            background: white;
+            background: #f8fafc;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
             overflow: hidden;
         }}
         .header {{
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
             color: white;
-            padding: 40px 30px;
+            padding: 32px 30px;
             text-align: center;
         }}
-        .header h1 {{ font-size: 2.5em; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }}
-        .header .date {{ font-size: 1.2em; opacity: 0.95; }}
-        .content {{ padding: 40px 30px; }}
-        .section {{ margin-bottom: 50px; }}
+        .header h1 {{ font-size: 2em; margin-bottom: 8px; }}
+        .header .date {{ font-size: 1.1em; opacity: 0.9; }}
+        .content {{ padding: 32px 24px; }}
         .section-title {{
-            font-size: 1.8em;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 3px solid #e67e22;
-            color: #e67e22;
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }}
-        .stock-grid {{
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-            gap: 15px;
-            margin-top: 20px;
-        }}
-        .stock-card {{
-            background: linear-gradient(135deg, #fff8f0 0%, #ffe5cc 100%);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
-            cursor: pointer;
-        }}
-        .stock-card:hover {{ transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }}
-        .stock-code {{ font-size: 1.5em; font-weight: bold; color: #e67e22; margin-bottom: 8px; }}
-        .stock-name {{ font-size: 1.1em; color: #333; }}
-        .stock-info {{ margin-top: 10px; font-size: 0.9em; color: #666; }}
-        .tag-badge {{
-            display: inline-block;
-            background: #e67e22;
-            color: white;
-            padding: 2px 10px;
-            border-radius: 20px;
-            font-size: 0.8em;
-            margin-top: 6px;
-        }}
-        .chart-container {{ margin-top: 30px; display: grid; gap: 20px; }}
-        .chart-image {{
+        .pool-table {{
             width: 100%;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            border-collapse: collapse;
+            font-size: 0.95em;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         }}
-        .chart-image:hover {{ transform: scale(1.02); cursor: pointer; }}
+        .pool-table th {{
+            background: #1e3a5f;
+            color: white;
+            padding: 10px 12px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.9em;
+        }}
+        .pool-table th:first-child {{ text-align: left; }}
         .nav-buttons {{
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-            flex-wrap: wrap;
+            display: flex; justify-content: center; gap: 12px;
+            margin-top: 28px; flex-wrap: wrap;
         }}
         .btn {{
-            padding: 12px 30px;
-            background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 100%);
             color: white;
             text-decoration: none;
-            border-radius: 25px;
+            border-radius: 20px;
             font-weight: bold;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s;
             display: inline-block;
+            font-size: 0.95em;
         }}
-        .btn:hover {{ transform: translateY(-2px); box-shadow: 0 5px 15px rgba(230,126,34,0.4); }}
-        .btn.secondary {{
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }}
+        .btn:hover {{ transform: translateY(-2px); }}
         .footer {{
-            text-align: center;
-            padding: 30px;
-            background: #f5f7fa;
-            color: #666;
-            border-top: 1px solid #e0e0e0;
+            text-align:center; padding:24px; background:#f1f5f9;
+            color:#94a3b8; font-size:0.85em; border-top:1px solid #e2e8f0;
         }}
-        @media (max-width: 768px) {{
-            .header h1 {{ font-size: 1.8em; }}
-            .stock-grid {{ grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }}
-            .content {{ padding: 20px 15px; }}
+        @media (max-width:768px) {{
+            .header h1 {{ font-size: 1.5em; }}
+            .content {{ padding: 20px 12px; }}
+            .pool-table {{ font-size: 0.8em; }}
         }}
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔥 每日熱門股</h1>
+            <h1>📋 觀察池 &amp; 熱門族群</h1>
             <div class="date">{date_str}</div>
         </div>
         <div class="content">
-"""
 
-    # 按題材分組顯示
-    tags_seen = []
-    for _, row in hot_stocks_df.iterrows():
-        tag_name = row.get('tag_name', '')
-        if tag_name not in tags_seen:
-            tags_seen.append(tag_name)
-
-    for tag_name in tags_seen:
-        tag_df = hot_stocks_df[hot_stocks_df['tag_name'] == tag_name]
-        mention_count = int(tag_df.iloc[0].get('mention_count', 0))
-
-        # 情緒標籤
-        sentiment_badge = ""
-        if theme_sentiments and tag_name in theme_sentiments:
-            s = theme_sentiments[tag_name]
-            sent = s.get("sentiment", "neutral")
-            score = s.get("score", 5)
-            if sent == "bullish":
-                sentiment_badge = f'<span style="background: #dcfce7; color: #166534; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">📈 看多 ({score}/10)</span>'
-            elif sent == "bearish":
-                sentiment_badge = f'<span style="background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">📉 看空 ({score}/10)</span>'
-            else:
-                sentiment_badge = f'<span style="background: #f3f4f6; color: #6b7280; padding: 2px 8px; border-radius: 4px; font-size: 0.55em;">➖ 中性 ({score}/10)</span>'
-
-        html_content += f"""
-            <div class="section">
-                <div class="section-title">
-                    <span>📌</span>
-                    <span>{tag_name}</span>
-                    {sentiment_badge}
-                    <span style="font-size: 0.6em; color: #999; margin-left: auto;">新聞提及 {mention_count} 次</span>
-                </div>
-                <div class="stock-grid">
-"""
-        for _, row in tag_df.iterrows():
-            code = row['code']
-            name = get_stock_name(code)
-            html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
-                        <div class="stock-code">{code}</div>
-                        <div class="stock-name">{name}</div>
-                    </div>
-"""
-        html_content += """
-                </div>
-"""
-
-        # K 線圖（每個主題各自的圖）
-        images_path = os.path.join(output_dir, images_dir)
-        if os.path.exists(images_path):
-            safe_tag = tag_name.replace('/', '-').replace(' ', '_')
-            tag_images = sorted([
-                f for f in os.listdir(images_path)
-                if f'熱門題材_{safe_tag}' in f and f.endswith('.png')
-            ])
-            if tag_images:
-                html_content += """
-                <div class="chart-container">
-"""
-                for img_file in tag_images:
-                    img_path = f"{images_dir}/{img_file}"
-                    html_content += f"""
-                    <img src="{img_path}" alt="{tag_name} K線圖" class="chart-image" onclick="window.open('{img_path}', '_blank')">
-"""
-                html_content += """
-                </div>
-"""
-
-        html_content += """
+            <!-- ① Pool 觀察池 -->
+            <div style="margin-bottom: 48px;">
+                <div class="section-title">📋 觀察池（最近 14 天入選股）</div>
+                <table class="pool-table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;">股票</th>
+                            <th>入場日</th>
+                            <th>入場價</th>
+                            <th>入場熱度</th>
+                            <th>目前熱度</th>
+                            <th>Δ熱度</th>
+                            <th>狀態</th>
+                        </tr>
+                    </thead>
+                    <tbody>{pool_rows_html}
+                    </tbody>
+                </table>
+                <p style="font-size:0.78em;color:#94a3b8;margin-top:8px;text-align:right;">
+                    熱度 = 族群帶量上漲比例（close &gt; MA5 且量 &gt; 均量5日）｜
+                    🔥 族群跟進(Δ &gt; +15%)　❄️ 族群降溫(Δ &lt; -10%)
+                </p>
             </div>
-"""
 
-    html_content += f"""
+            <!-- ② 今日熱門族群前三名 -->
+            <div>
+                <div class="section-title">🏆 今日熱門族群前三名</div>
+                {sector_cards_html}
+            </div>
+
             <div class="nav-buttons">
-                <a href="{date_str}.html" class="btn secondary">← 回到選股策略</a>
-                <a href="index.html" class="btn secondary">📅 回到首頁</a>
+                <a href="{date_str}.html" class="btn">📊 今日選股</a>
+                <a href="index.html" class="btn">🏠 首頁</a>
             </div>
         </div>
-
         <div class="footer">
             <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
-            <p>投資有風險，請謹慎評估</p>
+            <p style="margin-top:4px;">Qtrading 台股推薦機器人 · {date_str}</p>
         </div>
     </div>
 </body>
-</html>
-"""
+</html>"""
 
-    with open(html_file, 'w', encoding='utf-8') as f:
+    with open(html_file, "w", encoding="utf-8") as f:
         f.write(html_content)
 
-    logger.info(f"✅ 已生成熱門股 HTML: {html_file}")
+    logger.info(f"✅ 已生成 Pool 監控 HTML: {html_file}")
     return html_file
 
 

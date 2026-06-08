@@ -5,6 +5,7 @@
 # Service account credentials
 *.json
 !.github/**/*.json
+!backtest/stock_industry.json
 
 # Data directory (runtime data, not tracked)
 data/*

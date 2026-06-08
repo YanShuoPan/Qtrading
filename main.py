@@ -27,6 +27,8 @@ from modules.stock_data import fetch_prices_yf, pick_stocks
 from modules.visualization import plot_stock_charts, plot_breakout_charts
 from modules.image_upload import upload_image
 from modules.html_generator import generate_daily_html, generate_index_html, generate_hot_stocks_html
+from modules.pool import ensure_pool_table, expire_pool, add_to_pool, get_active_pool, annotate_pool_heat
+from modules.sector_heat import load_industry_data, compute_sector_heat, get_top_sectors
 from modules.breakout_detector import detect_c_pattern, summarize_c_pattern_events
 from modules.hot_stocks_sync import load_hot_stocks, get_hot_codes_list, build_hot_stocks_df, load_stock_tags
 from modules.hot_stocks_generator import generate_hot_stocks_csv
@@ -67,6 +69,7 @@ def main():
         logger.info("\n📌 步驟 3: 建立資料庫")
         ensure_db()
         ensure_users_table()
+        ensure_pool_table()
         # 取得訂閱者（優先從 line_id.txt，再從資料庫，最後用環境變數）
         subscribers = get_active_subscribers()
 
@@ -432,6 +435,34 @@ def main():
                     today_tpe, hist, images_output_dir,
                 )
 
+        # ===== 步驟 6.55: 計算族群熱度 & 更新 Pool =====
+        logger.info("\n📌 步驟 6.55: 計算族群熱度，更新觀察池")
+        pool_df_annotated = pd.DataFrame()
+        top_sectors = []
+        try:
+            industry_data = load_industry_data()
+            heat_scores = compute_sector_heat(hist, industry_data)
+            logger.info(f"  族群熱度計算完成: {len(heat_scores)} 個有效族群")
+
+            expire_pool()
+            pool_picks_list = []
+            if not group2a.empty:
+                pool_picks_list.append(group2a)
+            if not group2b.empty:
+                pool_picks_list.append(group2b)
+            if pool_picks_list:
+                pool_picks = pd.concat(pool_picks_list, ignore_index=True).drop_duplicates("code")
+                add_to_pool(pool_picks, hist, industry_data, heat_scores)
+
+            pool_df_annotated = annotate_pool_heat(get_active_pool(), heat_scores)
+            top_sectors = get_top_sectors(heat_scores, n=3, industry_data=industry_data)
+            logger.info(
+                f"  Pool 活躍: {len(pool_df_annotated)} 筆，"
+                f"Top 3 族群: {[s['fine'] for s in top_sectors]}"
+            )
+        except Exception as e:
+            logger.warning(f"⚠️  Pool/族群熱度更新失敗（不影響主流程）: {e}")
+
         # ===== 步驟 6.6: 生成 GitHub Pages HTML =====
         logger.info("\n📌 步驟 6.6: 生成 GitHub Pages HTML")
         try:
@@ -458,9 +489,9 @@ def main():
         # ===== 步驟 6.7: 生成熱門股獨立頁面 =====
         logger.info("\n📌 步驟 6.7: 生成熱門股獨立 HTML")
         try:
-            hot_html = generate_hot_stocks_html(date_str, group_hot, output_dir="docs", theme_sentiments=theme_sentiments)
+            hot_html = generate_hot_stocks_html(date_str, pool_df_annotated, top_sectors, output_dir="docs")
             if hot_html:
-                logger.info(f"✅ 熱門股頁面已生成: {hot_html}")
+                logger.info(f"✅ 觀察池頁面已生成: {hot_html}")
         except Exception as e:
             logger.error(f"❌ 生成熱門股 HTML 失敗: {e}")
 
