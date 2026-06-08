@@ -32,7 +32,7 @@ from modules.hot_stocks_sync import load_hot_stocks, build_hot_stocks_df, load_s
 from modules.hot_stocks_generator import generate_hot_stocks_csv
 from modules.fundamentals import fetch_fundamentals, filter_by_fundamentals
 from modules.finmind_data import fetch_institutional, fetch_margin
-from modules.sentiment import analyze_theme_sentiments
+# from modules.sentiment import analyze_theme_sentiments  # 模組保留，暫停執行
 from modules.strategies import compute_ensemble_for_picks
 from modules.continuation import get_previous_trading_days, parse_picks_from_txt, evaluate_continuation
 import pandas as pd
@@ -346,13 +346,7 @@ def main():
             breakout_df = None
             logger.info("ℹ️  五日內無破底翻事件")
 
-        # ===== 步驟 6.4: AI 情緒分析 =====
-        logger.info("\n📌 步驟 6.4: AI 主題情緒分析")
-        theme_sentiments = {}
-        try:
-            theme_sentiments = analyze_theme_sentiments(hot_stocks_info)
-        except Exception as e:
-            logger.warning(f"情緒分析失敗: {e}")
+        # ===== 步驟 6.4: AI 情緒分析（暫停執行，模組保留） =====
 
         # ===== 步驟 6.5: 生成 K 線圖並複製到 docs 資料夾 =====
         logger.info("\n📌 步驟 6.5: 生成 K 線圖並準備 GitHub Pages 資料")
@@ -431,7 +425,7 @@ def main():
                 fundamentals_df=fundamentals_df,
                 institutional_df=institutional_df,
                 margin_df=margin_df,
-                theme_sentiments=theme_sentiments,
+                theme_sentiments={},
                 yesterday_continuation_df=yesterday_continuation_df,
                 yesterday_date_str=yesterday_date_str,
                 day_before_continuation_df=day_before_continuation_df,
