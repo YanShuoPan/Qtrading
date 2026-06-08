@@ -87,6 +87,9 @@ def analyze_theme_sentiments(hot_stocks_info: dict) -> dict:
     """
     對每個題材主題執行情緒分析。
 
+    先一次性批量抓取所有主題的 RSS 標題，再依關鍵字分配給各主題，
+    避免逐主題重複抓取 RSS。
+
     Args:
         hot_stocks_info: load_hot_stocks() 的回傳值，格式：
             {code: {"tag_name": str, "mention_count": int, ...}}
@@ -112,35 +115,25 @@ def analyze_theme_sentiments(hot_stocks_info: dict) -> dict:
 
     from .hot_stocks_generator import _fetch_rss_titles
 
+    # 一次批量抓取所有主題的 RSS（而非 N 次個別抓取）
+    all_theme_keywords = {
+        tn: {"news_keywords": [tn]} for tn in sorted(tag_names)
+    }
+    logger.info(f"批量抓取 {len(tag_names)} 個主題的 RSS 標題...")
+    all_titles = _fetch_rss_titles(all_theme_keywords, delay=0.5, lookback_days=3)
+    logger.info(f"共取得 {len(all_titles)} 篇不重複標題")
+
     results: dict[str, dict] = {}
 
     for i, tag_name in enumerate(sorted(tag_names)):
         try:
-            logger.info(f"[{i + 1}/{len(tag_names)}] 分析主題情緒: {tag_name}")
+            # 從批量結果中篩選與主題相關的標題
+            relevant = [t for t in all_titles if tag_name.lower() in t.lower()]
+            if not relevant:
+                relevant = all_titles[:10]
 
-            # 建立 _fetch_rss_titles 所需的 theme_keywords 格式：
-            # {tag_id: {"news_keywords": [str]}}
-            # 使用 f"{tag_name} 台股" 作為查詢關鍵字（與 generate_hot_stocks_csv 的邏輯一致）
-            synthetic_theme_keywords = {
-                tag_name: {
-                    "news_keywords": [tag_name],
-                }
-            }
-
-            titles = _fetch_rss_titles(
-                synthetic_theme_keywords,
-                delay=0.5,
-                lookback_days=3,
-            )
-
-            # 最多取 10 則標題送給 Groq
-            sentiment_result = analyze_sentiment(titles[:10])
+            sentiment_result = analyze_sentiment(relevant[:10])
             results[tag_name] = sentiment_result
-
-            logger.info(
-                f"  {tag_name} → {sentiment_result['sentiment']} "
-                f"(score={sentiment_result['score']})"
-            )
 
         except Exception as e:
             logger.warning(f"主題 {tag_name!r} 情緒分析失敗: {e}")
@@ -150,9 +143,10 @@ def analyze_theme_sentiments(hot_stocks_info: dict) -> dict:
                 "reason": f"分析失敗: {e}",
             }
 
-        # 主題間延遲 1 秒（rate limiting）
+        # Groq rate limiting
         if i < len(tag_names) - 1:
             time.sleep(1)
 
-    logger.info(f"主題情緒分析完成：{len(results)} 個主題")
+    summary = {k: f"{v['sentiment']}({v['score']})" for k, v in results.items()}
+    logger.info(f"情緒分析完成: {summary}")
     return results

@@ -146,13 +146,8 @@ def filter_by_fundamentals(
 
     removed = merged[to_remove]
     if not removed.empty:
-        for _, row in removed.iterrows():
-            reason = (
-                f"P/E={row['pe_ratio']:.2f} <= {min_pe}（虧損）"
-                if row["pe_ratio"] <= min_pe
-                else f"P/E={row['pe_ratio']:.2f} > {max_pe}（估值過高）"
-            )
-            logger.info(f"移除 {row['code']}：{reason}")
+        removed_codes = removed['code'].tolist()
+        logger.debug(f"基本面移除 {len(removed_codes)} 支: {', '.join(removed_codes)}")
 
     filtered = merged[~to_remove].reset_index(drop=True)
     logger.info(

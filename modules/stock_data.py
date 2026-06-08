@@ -27,20 +27,22 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     target_start = (datetime.now(TPE_TZ) - timedelta(days=lookback_days * 2)).date().isoformat()
 
     codes_to_fetch = []
+    new_count = 0
+    stale_count = 0
     for c in codes:
         c = c.strip()
         if not c:
             continue
         if c not in existing:
             codes_to_fetch.append(c)
-            logger.info(f"{c}: 無歷史資料，需下載")
+            new_count += 1
         else:
             max_date = existing[c]["max"]
             if max_date < datetime.now(TPE_TZ).date().isoformat():
                 codes_to_fetch.append(c)
-                logger.info(f"{c}: 資料過舊 (最新: {max_date})，需更新")
-            else:
-                logger.debug(f"{c}: 資料已是最新 (最新: {max_date})")
+                stale_count += 1
+    if new_count or stale_count:
+        logger.info(f"需下載: {new_count} 支新股 + {stale_count} 支過舊 = {len(codes_to_fetch)} 支")
 
     if not codes_to_fetch:
         logger.info("所有股票資料都已是最新，無需下載")
@@ -82,20 +84,10 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                 group_by="ticker",
                 auto_adjust=False,
                 progress=False,
+                threads=True,
             )
-            logger.info(f"   ✅ 批次 {batch_num} (.TW) 下載完成，形狀: {df.shape if hasattr(df, 'shape') else 'N/A'}")
-
             if df is not None and isinstance(df, pd.DataFrame) and not df.empty:
-                # 診斷：顯示 DataFrame 結構
-                if hasattr(df.columns, 'nlevels'):
-                    logger.info(f"   DataFrame columns nlevels={df.columns.nlevels}")
-                    if df.columns.nlevels > 1:
-                        level0 = list(df.columns.get_level_values(0).unique())[:5]
-                        level1 = list(df.columns.get_level_values(1).unique())[:5]
-                        logger.info(f"   Level 0 (前5): {level0}")
-                        logger.info(f"   Level 1 (前5): {level1}")
-                if hasattr(df.index, 'max'):
-                    logger.info(f"   DataFrame 日期範圍: {df.index.min()} ~ {df.index.max()}")
+                logger.debug(f"   批次 {batch_num} (.TW): shape={df.shape}, nlevels={getattr(df.columns, 'nlevels', '?')}")
 
                 for c in batch_codes:
                     t = f"{c}.TW"
@@ -135,6 +127,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
                     group_by="ticker",
                     auto_adjust=False,
                     progress=False,
+                    threads=True,
                 )
                 if df2 is not None and isinstance(df2, pd.DataFrame) and not df2.empty:
                     recovered = 0
@@ -178,20 +171,12 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
 
     # 合併所有批次的結果
     if not all_results:
-        logger.error("❌ 所有批次都未能成功下載資料")
-        logger.error("   可能原因：")
-        logger.error("   1. Yahoo Finance API 暫時無法訪問")
-        logger.error("   2. 網路連線問題")
-        logger.error("   3. API 限流（Too Many Requests）")
-        logger.error("   建議：稍後重試或檢查 GitHub Actions 日誌")
+        logger.error("❌ 所有批次都未能成功下載資料（API 無法訪問/網路問題/限流）")
         return pd.DataFrame()
 
-    # 合併所有批次的結果
     result = pd.concat(all_results, ignore_index=True) if all_results else pd.DataFrame()
-    logger.info(f"成功下載 {len(result)} 筆數據")
     if not result.empty and 'date' in result.columns:
-        logger.info(f"合併後總日期範圍: {result['date'].min()} ~ {result['date'].max()}")
-        logger.info(f"合併後唯一日期數: {result['date'].nunique()}")
+        logger.info(f"下載完成: {len(result)} 筆, {result['date'].min()}~{result['date'].max()}, {result['date'].nunique()} 個交易日")
     return result
 
 

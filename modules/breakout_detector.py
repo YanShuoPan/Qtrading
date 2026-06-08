@@ -146,7 +146,7 @@ def detect_reclaim(df: pd.DataFrame, max_lag: int = 2) -> pd.DataFrame:
     # 找出所有 breakdown 的索引
     breakdown_indices = df[df['breakdown_event']].index.tolist()
 
-    logger.info(f"找到 {len(breakdown_indices)} 個 breakdown 事件")
+    logger.debug(f"找到 {len(breakdown_indices)} 個 breakdown 事件")
 
     for bd_idx in breakdown_indices:
         # 取得 breakdown 當日的 box_low_ref
@@ -220,21 +220,14 @@ def detect_c_pattern(
     # 確保按日期排序
     df = df.sort_values('date').reset_index(drop=True)
 
-    logger.info("Step 1: 計算 ATR")
     df = compute_atr(df, n=atr_period)
-
-    logger.info("Step 2: 偵測盤整")
     df = detect_consolidation(
         df,
         window=consolidation_window,
         range_pct=consolidation_range_pct,
         atr_pct=consolidation_atr_pct
     )
-
-    logger.info("Step 3: 偵測假跌破")
     df = detect_breakdown(df, k_atr=breakdown_k_atr, min_volume=breakdown_min_volume)
-
-    logger.info("Step 4: 偵測收回箱底")
     df = detect_reclaim(df, max_lag=reclaim_max_lag)
 
     return df
@@ -261,7 +254,6 @@ def summarize_c_pattern_events(df: pd.DataFrame) -> pd.DataFrame:
     reclaim_df = df[df['reclaim_event']].copy()
 
     if reclaim_df.empty:
-        logger.info("未發現任何破底翻事件")
         return pd.DataFrame()
 
     # 向量化構建事件清單（全部用 .values 確保 index 對齊）
@@ -280,6 +272,6 @@ def summarize_c_pattern_events(df: pd.DataFrame) -> pd.DataFrame:
         (events_df['close_at_reclaim'] - events_df['box_low_ref']) / events_df['box_low_ref'] * 100,
         np.nan,
     )
-    logger.info(f"找到 {len(events_df)} 個破底翻事件")
+    logger.debug(f"找到 {len(events_df)} 個破底翻事件")
 
     return events_df

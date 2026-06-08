@@ -75,11 +75,6 @@ def main():
             logger.warning("⚠️ 無任何可推送對象（line_id.txt、資料庫、環境變數皆為空）。")
         else:
             logger.info(f"📱 活躍訂閱者數量: {len(subscribers)}")
-            for sub in subscribers:
-                if isinstance(sub, dict):
-                    logger.info(f"  - {sub.get('display_name', 'Unknown')}: {sub['user_id']}")
-                else:
-                    logger.info(f"  - {sub}")
 
         # ===== 步驟 3.5: 生成並載入熱門題材股清單 =====
         logger.info("\n📌 步驟 3.5a: 生成每日熱門題材股清單（Google News RSS）")
@@ -137,21 +132,11 @@ def main():
 
         # 檢查資料是否正常載入
         if hist.empty:
-            logger.warning("⚠️  資料庫中沒有可用的股價數據")
-            logger.warning("   可能原因：")
-            logger.warning("   1. 首次執行，資料庫為空")
-            logger.warning("   2. yfinance 下載失敗")
-            logger.warning("   3. 網路連線問題")
+            logger.warning("⚠️  資料庫中沒有可用的股價數據（首次執行/下載失敗/網路問題）")
         else:
-            logger.info(f"✅ 載入 {len(hist)} 筆歷史資料")
-            logger.info(f"   涵蓋 {hist['code'].nunique()} 支股票")
-            logger.info(f"   日期範圍: {hist['date'].min()} ~ {hist['date'].max()}")
-            # 顯示最近 5 個交易日（診斷用）
-            recent_dates = sorted(hist['date'].unique())[-5:]
-            logger.info(f"   最近 5 個交易日: {[str(d)[:10] for d in recent_dates]}")
-            # 警告：如果最新交易日不是今天或昨天
             latest_date = hist['date'].max()
             days_behind = (pd.Timestamp(today_tpe) - latest_date).days
+            logger.info(f"✅ 載入 {len(hist)} 筆, {hist['code'].nunique()} 支股票, {hist['date'].min()}~{latest_date}")
             if days_behind > 2:
                 logger.warning(f"   ⚠️  數據可能過舊！最新交易日距今 {days_behind} 天")
 
@@ -181,9 +166,8 @@ def main():
         try:
             if not picks.empty:
                 picks = compute_ensemble_for_picks(picks, hist)
-                for _, row in picks.iterrows():
-                    name = get_stock_name(row['code'])
-                    logger.info(f"  {row['code']} {name} → {row['ensemble_label']} 策略看好")
+                label_counts = picks['ensemble_label'].value_counts().to_dict()
+                logger.info(f"  Ensemble 完成: {len(picks)} 支, {label_counts}")
         except Exception as e:
             logger.warning(f"Ensemble 評分失敗: {e}")
 
@@ -191,9 +175,8 @@ def main():
         logger.info("\n📌 步驟 5.5: 建立熱門題材股群組")
         group_hot = build_hot_stocks_df(hot_stocks_info, hist)
         if not group_hot.empty:
-            logger.info(f"🔥 熱門題材股（有資料）：{len(group_hot)} 支")
-            for _, r in group_hot.iterrows():
-                logger.info(f"   #{r['rank']} {r['code']} [{r['tag_name']}] mention={r['mention_count']}")
+            tags = group_hot['tag_name'].unique().tolist()
+            logger.info(f"🔥 熱門題材股（有資料）：{len(group_hot)} 支, 主題: {', '.join(tags[:5])}")
         else:
             logger.info("ℹ️  無熱門題材股資料")
 
@@ -247,9 +230,7 @@ def main():
             try:
                 institutional_df = fetch_institutional(all_picked_codes)
                 if not institutional_df.empty:
-                    for _, row in institutional_df.iterrows():
-                        buy_info = f"連買{row['consecutive_buy_days']}日" if row['consecutive_buy_days'] > 0 else "無連買"
-                        logger.info(f"  {row['code']} 法人: 外資{row['foreign_net']:+d} 投信{row['trust_net']:+d} ({buy_info})")
+                    logger.info(f"  法人資料: {len(institutional_df)} 支股票")
             except Exception as e:
                 logger.warning(f"法人籌碼取得失敗: {e}")
 
@@ -258,9 +239,7 @@ def main():
             try:
                 margin_df = fetch_margin(all_picked_codes)
                 if not margin_df.empty:
-                    for _, row in margin_df.iterrows():
-                        signal = f"融資連減{row['margin_decreasing_days']}日" if row['margin_decreasing_days'] >= 3 else ""
-                        logger.info(f"  {row['code']} 融資變化: {row['margin_change']:+d} ({row['margin_change_pct']:+.1f}%) {signal}")
+                    logger.info(f"  融資融券資料: {len(margin_df)} 支股票")
             except Exception as e:
                 logger.warning(f"融資融券取得失敗: {e}")
 
@@ -280,8 +259,6 @@ def main():
                 prev1_codes = parse_picks_from_txt(prev_days[0], "data")
                 yesterday_continuation_df = evaluate_continuation(prev1_codes, hist, today_codes_set)
                 logger.info(f"  昨日延續觀察（{prev_days[0]}）：{len(yesterday_continuation_df)} 支")
-                for _, r in yesterday_continuation_df.iterrows():
-                    logger.info(f"    {r['code']} {get_stock_name(r['code'])} → {r['status']} ({r['ensemble_label']} 策略看好)")
 
             if len(prev_days) >= 2:
                 day_before_date_str = prev_days[1]
@@ -289,8 +266,6 @@ def main():
                 prev1_codes_set = set(prev1_codes) if len(prev_days) >= 1 else set()
                 day_before_continuation_df = evaluate_continuation(prev2_codes, hist, today_codes_set | prev1_codes_set)
                 logger.info(f"  前日延續觀察（{prev_days[1]}）：{len(day_before_continuation_df)} 支")
-                for _, r in day_before_continuation_df.iterrows():
-                    logger.info(f"    {r['code']} {get_stock_name(r['code'])} → {r['status']} ({r['ensemble_label']} 策略看好)")
 
             # 補充延續觀察股的法人籌碼數據
             continuation_extra_codes = []
@@ -321,69 +296,52 @@ def main():
         for code in stock_codes:
             stock_df = hist[hist['code'] == code].copy()
 
-            # 確保資料量足夠
             if len(stock_df) < 40:
                 continue
 
             try:
-                # 執行破底翻偵測
                 result_df = detect_c_pattern(stock_df)
                 events = summarize_c_pattern_events(result_df)
 
-                # 只保留五日內收回的事件
                 if not events.empty:
-                    # 計算五日前的日期
                     five_days_ago = today_tpe - timedelta(days=5)
                     recent_events = events[events['reclaim_date'].dt.date >= five_days_ago]
                     if not recent_events.empty:
                         breakout_stocks.append(recent_events)
-                        for _, evt in recent_events.iterrows():
-                            logger.info(f"  ✅ {code} 發現破底翻事件（收回日期: {evt['reclaim_date'].date()}）")
             except Exception as e:
-                logger.debug(f"  ⚠️  {code} 偵測失敗: {e}")
+                logger.debug(f"  {code} 偵測失敗: {e}")
+
+        if breakout_stocks:
+            found_codes = [df['code'].iloc[0] for df in breakout_stocks]
+            logger.info(f"  發現 {len(found_codes)} 支有破底翻事件: {', '.join(found_codes)}")
 
         # 彙整破底翻股票
         if breakout_stocks:
             breakout_df = pd.concat(breakout_stocks, ignore_index=True)
 
             # 額外篩選：今日股價需在十日線之上 + 交易量超過2000張
-            logger.info("🔍 篩選條件：1) 今日股價在十日線之上 2) 今日交易量 > 2000 張")
             filtered_breakout = []
             for idx, row in breakout_df.iterrows():
                 code = row['code']
                 stock_df = hist[hist['code'] == code].copy()
-
-                # 計算十日均線
                 stock_df = stock_df.sort_values('date')
                 stock_df['MA10'] = stock_df['close'].rolling(window=10).mean()
-
-                # 取得今日資料（最新一筆）
                 today_data = stock_df.iloc[-1]
                 close_price = today_data['close']
                 ma10 = today_data['MA10']
                 volume = today_data['volume']
 
-                # 判斷今日收盤是否在十日線之上 且 交易量 > 2000
                 if pd.notna(ma10) and close_price > ma10 and volume > 2000:
                     filtered_breakout.append(row)
-                    logger.info(f"  ✅ {code} 通過篩選（收盤: {close_price:.2f}, MA10: {ma10:.2f}, 量: {volume:.0f}）")
-                else:
-                    ma10_str = f"{ma10:.2f}" if pd.notna(ma10) else "N/A"
-                    reasons = []
-                    if not (pd.notna(ma10) and close_price > ma10):
-                        reasons.append(f"收盤 {close_price:.2f} ≤ MA10 {ma10_str}")
-                    if volume <= 2000:
-                        reasons.append(f"量 {volume:.0f} ≤ 2000")
-                    logger.info(f"  ❌ {code} 未通過篩選（{', '.join(reasons)}）")
 
             if filtered_breakout:
                 breakout_df = pd.DataFrame(filtered_breakout)
-                # 按收回日期排序（最新的在前）
                 breakout_df = breakout_df.sort_values('reclaim_date', ascending=False)
-                logger.info(f"🔥 五日內破底翻股票（篩選後）：{len(breakout_df)} 支")
+                codes_str = ', '.join(breakout_df['code'].unique().tolist())
+                logger.info(f"🔥 破底翻（篩選後）：{len(breakout_df)} 支 → {codes_str}")
             else:
                 breakout_df = None
-                logger.info("ℹ️  五日內無符合條件的破底翻事件（需滿足：股價在十日線之上 & 交易量 > 2000 張）")
+                logger.info("ℹ️  五日內無符合篩選條件的破底翻事件")
         else:
             breakout_df = None
             logger.info("ℹ️  五日內無破底翻事件")

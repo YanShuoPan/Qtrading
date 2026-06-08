@@ -14,6 +14,7 @@
 import os
 import time
 from collections import defaultdict
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from urllib.parse import quote
 
@@ -400,19 +401,22 @@ def generate_hot_stocks_csv(
         logger.error("無法載入股票-主題對應，停止生成")
         return False
 
-    # 2. 抓取三個來源
-    logger.info("--- [1/3] Google News RSS ---")
-    rss_titles = _fetch_rss_titles(
-        theme_keywords, delay=rss_delay, lookback_days=lookback_days
-    )
+    # 2. 並行抓取三個來源（互不依賴）
+    logger.info("--- 並行抓取 RSS / PTT / Anue ---")
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        fut_rss = executor.submit(
+            _fetch_rss_titles, theme_keywords, rss_delay, lookback_days
+        )
+        fut_ptt = executor.submit(
+            _fetch_ptt_texts, ptt_pages, ptt_delay
+        )
+        fut_anue = executor.submit(
+            _fetch_anue_data, anue_limit, anue_delay
+        )
 
-    logger.info("--- [2/3] PTT 股版 ---")
-    ptt_titles = _fetch_ptt_texts(pages=ptt_pages, delay=ptt_delay)
-
-    logger.info("--- [3/3] 鉅亨網 Anue ---")
-    anue_titles, anue_stock_sets = _fetch_anue_data(
-        limit_per_category=anue_limit, delay=anue_delay
-    )
+    rss_titles = fut_rss.result()
+    ptt_titles = fut_ptt.result()
+    anue_titles, anue_stock_sets = fut_anue.result()
 
     # 3. 計算提及次數
     all_titles = rss_titles + ptt_titles + anue_titles
