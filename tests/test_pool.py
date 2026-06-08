@@ -1,9 +1,16 @@
 """Tests for modules/pool.py"""
 import sqlite3
-from datetime import date, timedelta
+from datetime import datetime, timedelta
 
 import pandas as pd
 import pytest
+
+from modules.config import TPE_TZ
+
+
+def _today() -> str:
+    """回傳台北時區的今天日期字串（與 pool.py 邏輯一致）"""
+    return datetime.now(TPE_TZ).date().isoformat()
 
 
 @pytest.fixture()
@@ -27,8 +34,9 @@ def test_ensure_pool_table_creates_table(pool_env):
 
 def test_expire_pool_removes_old_entries(pool_env):
     db_path, pool_mod = pool_env
-    old_date = (date.today() - timedelta(days=15)).isoformat()
-    recent_date = date.today().isoformat()
+    tpe_today = datetime.now(TPE_TZ).date()
+    old_date = (tpe_today - timedelta(days=15)).isoformat()
+    recent_date = tpe_today.isoformat()
     with sqlite3.connect(db_path) as conn:
         conn.execute(
             "INSERT INTO pool (code, name, entry_date) VALUES (?, ?, ?)",
@@ -81,8 +89,9 @@ def test_add_to_pool_no_duplicate_same_day(pool_env, monkeypatch):
 
 def test_get_active_pool_filters_by_date(pool_env):
     db_path, pool_mod = pool_env
-    old_date = (date.today() - timedelta(days=15)).isoformat()
-    today_str = date.today().isoformat()
+    tpe_today = datetime.now(TPE_TZ).date()
+    old_date = (tpe_today - timedelta(days=15)).isoformat()
+    today_str = tpe_today.isoformat()
     with sqlite3.connect(db_path) as conn:
         conn.execute(
             "INSERT INTO pool (code, name, entry_date) VALUES ('0001','A',?)", (old_date,)
@@ -101,7 +110,7 @@ def test_annotate_pool_heat_adds_columns(pool_env):
     pool_df = pd.DataFrame({
         "code": ["2330"],
         "name": ["台積電"],
-        "entry_date": [date.today().isoformat()],
+        "entry_date": [_today()],
         "entry_price": [900.0],
         "fine_group": ["半導體"],
         "heat_at_entry": [0.60],
@@ -123,7 +132,7 @@ def test_annotate_pool_heat_status_cold(pool_env):
     pool_df = pd.DataFrame({
         "code": ["2330"],
         "name": ["台積電"],
-        "entry_date": [date.today().isoformat()],
+        "entry_date": [_today()],
         "entry_price": [900.0],
         "fine_group": ["半導體"],
         "heat_at_entry": [0.80],
