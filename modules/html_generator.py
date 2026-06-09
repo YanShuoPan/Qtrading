@@ -396,7 +396,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
         html_content += f"""
             <div style="text-align: center; margin-bottom: 35px;">
                 <a href="{date_str}_hot.html" class="btn" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); font-size: 1.1em; padding: 14px 36px;">
-                    🔥 每日熱門股 ({date_str})
+                    🔥 觀察池 & 熱門族群 ({date_str})
                 </a>
             </div>
 """
