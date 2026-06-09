@@ -1,4 +1,4 @@
-﻿stock_id,tag_id,score_level,confidence_level,source,evidence_text,start_date,end_date,updated_by,updated_at
+stock_id,tag_id,score_level,confidence_level,source,evidence_text,start_date,end_date,updated_by,updated_at
 1101,cement,related,medium,official_sector,官方產業分類: 水泥工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1101,energy_storage,core,high,official_business,業務描述匹配: 儲能,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1102,cement,related,medium,official_sector,官方產業分類: 水泥工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -30,9 +30,7 @@
 1259,tourism_hospitality,related,medium,official_sector,官方產業分類: 觀光餐旅,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1264,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1268,tourism_hospitality,related,medium,official_sector,官方產業分類: 觀光餐旅,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1294,ems,core,high,official_business,業務描述匹配: OEM,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1294,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1294,server_odm,core,high,official_business,業務描述匹配: ODM,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1295,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1301,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1303,ccl,core,high,official_business,業務描述匹配: 銅箔基板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -49,7 +47,6 @@
 1310,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1312,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1313,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1313,semiconductor_material,core,high,official_business,業務描述匹配: 特用化學,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1314,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1315,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1316,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -113,7 +110,6 @@
 1476,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1477,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1503,heavy_electric,core,high,official_business,業務描述匹配: 重電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1503,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1503,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1504,ev,core,high,official_business,業務描述匹配: 電動車,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1504,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -122,17 +118,14 @@
 1506,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1512,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1513,heavy_electric,core,high,official_business,業務描述匹配: 重電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1513,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1513,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1514,heavy_electric,core,high,official_business,業務描述匹配: 重電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1514,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1514,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1515,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1515,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1517,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1517,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1519,heavy_electric,core,high,official_business,業務描述匹配: 重電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1519,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1519,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1521,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1522,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -144,7 +137,6 @@
 1527,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1528,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1528,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1528,pcb,core,high,official_business,業務描述匹配: PCB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1529,heavy_electric,core,high,official_business,業務描述匹配: 配電盤,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1529,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1529,solar,core,high,official_business,業務描述匹配: 太陽能,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -155,13 +147,11 @@
 1532,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1532,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1533,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1533,mosfet,core,high,official_business,業務描述匹配: 整流器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1535,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1535,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1536,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1536,ev,core,high,official_business,業務描述匹配: 電動車,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1537,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1537,led,core,high,official_business,業務描述匹配: 照明,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1537,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1538,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1538,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -177,11 +167,9 @@
 1560,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1563,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1565,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1565,optical_module,core,high,official_business,業務描述匹配: 光學鏡片,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1568,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1569,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1569,server_odm,core,high,official_business,業務描述匹配: NB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1569,tft_lcd,core,high,official_business,業務描述匹配: LCD,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1570,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1570,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1580,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -211,8 +199,6 @@
 1605,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1608,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1609,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1609,semiconductor_material,core,high,official_business,業務描述匹配: 電子材料,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1609,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1611,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1611,led,core,high,official_business,業務描述匹配: 照明,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1612,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -223,7 +209,6 @@
 1616,power_supply,core,high,official_business,業務描述匹配: 電源,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1617,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1617,heavy_electric,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1617,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1618,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1623,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1626,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -257,7 +242,6 @@
 1737,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1742,chemical,related,medium,official_sector,官方產業分類: 化學工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1742,semiconductor_material,core,high,official_business,業務描述匹配: 特用化學,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-1742,solar,core,high,official_business,業務描述匹配: 太陽能,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1752,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1760,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1762,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -281,7 +265,6 @@
 1809,glass_ceramic,related,medium,official_sector,官方產業分類: 玻璃陶瓷,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1810,glass_ceramic,related,medium,official_sector,官方產業分類: 玻璃陶瓷,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1813,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-1813,optical_module,core,high,official_business,業務描述匹配: 光學儀器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 1815,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1817,glass_ceramic,related,medium,official_sector,官方產業分類: 玻璃陶瓷,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 1903,paper,related,medium,official_sector,官方產業分類: 造紙工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -356,7 +339,6 @@
 2207,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2208,shipping,related,medium,official_sector,官方產業分類: 航運業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2211,steel,related,medium,official_sector,官方產業分類: 鋼鐵工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-2221,connector,core,high,official_business,業務描述匹配: 接頭,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2227,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2228,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2230,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -399,7 +381,6 @@
 2313,pcb,core,high,official_business,業務描述匹配: PCB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2313,server_odm,core,high,official_business,業務描述匹配: 伺服器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2313,substrate,core,high,official_business,業務描述匹配: 載板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-2314,mosfet,core,high,official_business,業務描述匹配: MOSFET,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2314,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2316,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2316,pcb,core,high,official_business,業務描述匹配: PCB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -424,7 +405,6 @@
 2330,advanced_packaging,core,high,official_business,業務描述匹配: 先進封裝,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2330,cowos,core,high,official_business,業務描述匹配: CoWoS,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2330,ems,core,high,official_business,業務描述匹配: 代工製造,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-2330,osat,core,high,official_business,業務描述匹配: 封裝測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2330,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2330,wafer_foundry,core,high,official_business,業務描述匹配: 晶圓代工,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2331,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -467,7 +447,6 @@
 2357,server_odm,core,high,official_business,業務描述匹配: 主機板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2359,robot,core,high,official_business,業務描述匹配: 機器人,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2360,ev,core,high,official_business,業務描述匹配: 電動車,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-2360,mosfet,core,high,official_business,業務描述匹配: 功率半導體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2360,semiconductor_equipment,core,high,official_business,業務描述匹配: 半導體測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2362,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2362,server_odm,core,high,official_business,業務描述匹配: 筆記型電腦,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -484,7 +463,6 @@
 2369,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2369,semiconductor_material,core,high,official_business,業務描述匹配: 導線架,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2371,heavy_electric,core,high,official_business,業務描述匹配: 重電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-2371,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2371,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2371,solar,core,high,official_business,業務描述匹配: 太陽能,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2374,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -577,14 +555,12 @@
 2432,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2432,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2434,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-2436,connector,core,high,official_business,業務描述匹配: USB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2436,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2436,power_supply,core,high,official_business,業務描述匹配: 電源,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2436,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2438,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2438,panel,core,high,official_business,業務描述匹配: 面板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2439,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-2440,ccl,core,high,official_business,業務描述匹配: CCL,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2440,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2441,osat,core,high,official_business,業務描述匹配: 封裝測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2441,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -594,7 +570,6 @@
 2444,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2444,wifi,core,high,official_business,業務描述匹配: WiFi,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2448,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-2448,led_chip,core,high,official_business,業務描述匹配: LED磊晶,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2448,mini_micro_led,core,high,official_business,業務描述匹配: Mini LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2449,osat,core,high,official_business,業務描述匹配: 封裝測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2449,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -670,7 +645,6 @@
 2492,passive_component,core,high,official_business,業務描述匹配: 被動元件,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2492,rf_component,core,high,official_business,業務描述匹配: 射頻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2493,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-2493,inductor_component,core,high,official_business,業務描述匹配: 電感,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 2495,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2497,auto_parts,related,medium,official_sector,官方產業分類: 汽車工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2498,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -702,7 +676,6 @@
 2548,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2596,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2597,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-2601,retail_trade,related,medium,official_sector,官方產業分類: 貿易百貨,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2603,shipping,related,medium,official_sector,官方產業分類: 航運業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2605,shipping,related,medium,official_sector,官方產業分類: 航運業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 2606,shipping,related,medium,official_sector,官方產業分類: 航運業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -822,7 +795,6 @@
 3006,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3006,nand,core,high,official_business,業務描述匹配: Flash,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3006,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-3008,cis,core,high,official_business,業務描述匹配: CIS,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3008,optical_module,core,high,official_business,業務描述匹配: 光學鏡頭,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3008,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3010,panel,core,high,official_business,業務描述匹配: 顯示器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -965,7 +937,6 @@
 3141,driver_ic,core,high,official_business,業務描述匹配: 驅動IC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3141,ic_design,core,high,official_business,業務描述匹配: IC之設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3141,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-3141,tft_lcd,core,high,official_business,業務描述匹配: LCD,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3147,cybersecurity,core,high,official_business,業務描述匹配: 資安,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3147,server_odm,core,high,official_business,業務描述匹配: 伺服器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3149,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1242,7 +1213,6 @@
 3540,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3540,heat_dissipation,core,high,official_business,業務描述匹配: 散熱,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3543,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-3545,nand,core,high,official_business,業務描述匹配: Flash,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3545,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3546,cultural_creative,related,medium,official_sector,官方產業分類: 文化創意業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3548,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1270,7 +1240,6 @@
 3583,semiconductor_equipment,core,high,official_business,業務描述匹配: 半導體設備,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3588,driver_ic,core,high,official_business,業務描述匹配: 驅動IC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3588,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-3588,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3588,power_supply,core,high,official_business,業務描述匹配: 電源,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3588,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3591,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1301,7 +1270,6 @@
 3609,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3611,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3615,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-3617,substrate,core,high,official_business,業務描述匹配: 載板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3622,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 3622,panel,core,high,official_business,業務描述匹配: 面板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 3622,touch_panel,core,high,official_business,業務描述匹配: 觸控面板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1442,12 +1410,10 @@
 4183,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4188,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4190,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4190,rf_component,core,high,official_business,業務描述匹配: PA,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4192,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4198,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4205,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4207,food_industry,related,medium,official_sector,官方產業分類: 食品工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4207,osat,core,high,official_business,業務描述匹配: 封裝及測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4207,semiconductor_equipment,core,high,official_business,業務描述匹配: 探針卡,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4303,plastics,related,medium,official_sector,官方產業分類: 塑膠工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4304,pcb,core,high,official_business,業務描述匹配: PCB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1468,10 +1434,7 @@
 4432,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4433,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4438,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4439,connector,core,high,official_business,業務描述匹配: USB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-4439,power_supply,core,high,official_business,業務描述匹配: 電源,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4439,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4440,osat,core,high,official_business,業務描述匹配: IC測試,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4440,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4441,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4442,textile,related,medium,official_sector,官方產業分類: 紡織纖維,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1514,7 +1477,6 @@
 4543,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4543,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4543,networking,core,high,official_business,業務描述匹配: 交換器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-4543,switch,core,high,official_business,業務描述匹配: 交換器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4545,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4549,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4549,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1598,7 +1560,6 @@
 4760,advanced_packaging,core,high,official_business,業務描述匹配: 先進封裝,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4760,heat_dissipation,core,high,official_business,業務描述匹配: 散熱,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4763,chemical,related,medium,official_sector,官方產業分類: 化學工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4763,semiconductor_material,core,high,official_business,業務描述匹配: 半導體材料,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4764,chemical,related,medium,official_sector,官方產業分類: 化學工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4766,chemical,related,medium,official_sector,官方產業分類: 化學工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4767,chemical,related,medium,official_sector,官方產業分類: 化學工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1614,16 +1575,12 @@
 4904,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4904,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4905,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4905,semiconductor_material,core,high,official_business,業務描述匹配: 特用化學,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4906,networking,core,high,official_business,業務描述匹配: 網通,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4906,switch,core,high,official_business,業務描述匹配: 交換器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4907,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4908,mosfet,core,high,official_business,業務描述匹配: 二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4908,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4909,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4911,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4911,ems,core,high,official_business,業務描述匹配: OEM,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-4911,server_odm,core,high,official_business,業務描述匹配: ODM,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4912,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4915,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4915,server_odm,core,high,official_business,業務描述匹配: 筆電,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1639,7 +1596,6 @@
 4927,pcb,core,high,official_business,業務描述匹配: 印刷電路板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4930,electrical_cable,related,medium,official_sector,官方產業分類: 電器電纜,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4931,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4931,semiconductor_material,core,high,official_business,業務描述匹配: 電子材料,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4933,led_backlight,core,high,official_business,業務描述匹配: 背光模組,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4933,optical_module,core,high,official_business,業務描述匹配: 光模組,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4933,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1683,7 +1639,6 @@
 4961,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4961,power_supply,core,high,official_business,業務描述匹配: 電源,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4961,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-4966,connector,core,high,official_business,業務描述匹配: USB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4966,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 4966,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 4966,telecom,core,high,official_business,業務描述匹配: ISP,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1739,7 +1694,6 @@
 5212,cybersecurity,related,medium,official_sector,官方產業分類: 資訊服務業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5213,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5215,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-5215,touch_panel,core,high,official_business,業務描述匹配: 觸控開關,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5220,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5220,panel,core,high,official_business,業務描述匹配: 面板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5220,touch_panel,core,high,official_business,業務描述匹配: 觸控面板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1795,8 +1749,6 @@
 5310,cybersecurity,related,medium,official_sector,官方產業分類: 資訊服務業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5312,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5315,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-5315,rf_component,core,high,official_business,業務描述匹配: PA,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-5315,telecom,core,high,official_business,業務描述匹配: ISP,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5315,tft_lcd,core,high,official_business,業務描述匹配: LCD,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5321,cloud_digital,related,medium,official_sector,官方產業分類: 數位雲端,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5324,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1820,7 +1772,6 @@
 5371,tft_lcd,core,high,official_business,業務描述匹配: 液晶顯示,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5381,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5381,heavy_electric,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-5381,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5381,pcb,core,high,official_business,業務描述匹配: 印刷電路板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5386,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5386,server_odm,core,high,official_business,業務描述匹配: 伺服器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -1913,7 +1864,6 @@
 5704,tourism_hospitality,related,medium,official_sector,官方產業分類: 觀光餐旅,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5706,tourism_hospitality,related,medium,official_sector,官方產業分類: 觀光餐旅,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5864,financial,related,medium,official_sector,官方產業分類: 金融業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-5871,solar,core,high,official_business,業務描述匹配: 太陽能電廠,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 5876,financial,related,medium,official_sector,官方產業分類: 金融保險,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5878,financial,related,medium,official_sector,官方產業分類: 金融業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 5880,financial,related,medium,official_sector,官方產業分類: 金融保險,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1948,7 +1898,6 @@
 6109,power_supply,core,high,official_business,業務描述匹配: 電源供應器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6111,cultural_creative,related,medium,official_sector,官方產業分類: 文化創意業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6112,cybersecurity,related,medium,official_sector,官方產業分類: 資訊服務業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-6113,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6114,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6115,connector,core,high,official_business,業務描述匹配: 連接器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6115,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -1982,7 +1931,6 @@
 6134,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6134,networking,core,high,official_business,業務描述匹配: 網通,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6136,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-6138,driver_ic,core,high,official_business,業務描述匹配: 驅動IC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6138,mosfet,core,high,official_business,業務描述匹配: 功率元件,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6138,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6140,cybersecurity,related,medium,official_sector,官方產業分類: 資訊服務業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2022,7 +1970,6 @@
 6163,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6163,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6164,led,core,high,official_business,業務描述匹配: 發光二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6164,mosfet,core,high,official_business,業務描述匹配: 二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6164,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6165,cloud_digital,related,medium,official_sector,官方產業分類: 數位雲端,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6166,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2032,7 +1979,6 @@
 6167,panel,core,high,official_business,業務描述匹配: 顯示器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6167,tft_lcd,core,high,official_business,業務描述匹配: 液晶顯示,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6168,led,core,high,official_business,業務描述匹配: 發光二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6168,mosfet,core,high,official_business,業務描述匹配: 二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6168,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6169,cultural_creative,related,medium,official_sector,官方產業分類: 文化創意業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6170,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2084,12 +2030,10 @@
 6203,networking,core,high,official_business,業務描述匹配: switch,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6203,power_supply,core,high,official_business,業務描述匹配: 電源供應器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6204,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-6204,mosfet,core,high,official_business,業務描述匹配: 整流器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6205,connector,core,high,official_business,業務描述匹配: 連接器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6205,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6206,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6206,ipc,core,high,official_business,業務描述匹配: POS,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6206,rf_component,core,high,official_business,業務描述匹配: PA,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6207,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6207,semiconductor_equipment,core,high,official_business,業務描述匹配: 自動光學檢,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6208,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2121,10 +2065,8 @@
 6223,semiconductor_equipment,core,high,official_business,業務描述匹配: 探針卡,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6224,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6224,passive_component,core,high,official_business,業務描述匹配: 熱敏電阻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6225,mosfet,core,high,official_business,業務描述匹配: SiC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6225,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6226,led,core,high,official_business,業務描述匹配: 發光二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6226,mosfet,core,high,official_business,業務描述匹配: 二極體,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6226,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6226,panel,core,high,official_business,業務描述匹配: 顯示器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6228,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2155,7 +2097,6 @@
 6244,solar,core,high,official_business,業務描述匹配: 太陽能電池,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6245,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6246,heavy_electric,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6246,inductor_component,core,high,official_business,業務描述匹配: 變壓器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6246,led_backlight,core,high,official_business,業務描述匹配: 背光模組,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6246,optical_module,core,high,official_business,業務描述匹配: 光模組,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6246,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2267,7 +2208,6 @@
 6461,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6462,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6462,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-6462,touch_panel,core,high,official_business,業務描述匹配: 指紋辨識,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6464,telecom,core,high,official_business,業務描述匹配: 寬頻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6465,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6469,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2396,7 +2336,6 @@
 6649,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6651,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6651,semiconductor_material,core,high,official_business,業務描述匹配: 電子材料,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6654,inductor_component,core,high,official_business,業務描述匹配: 電感,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6654,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6657,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6661,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2414,7 +2353,6 @@
 6672,pcb,core,high,official_business,業務描述匹配: 印刷電路板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6674,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6674,telecom,core,high,official_business,業務描述匹配: 寬頻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-6679,ems,core,high,official_business,業務描述匹配: EMS,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6679,ic_design,core,high,official_business,業務描述匹配: IC設計,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6679,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6680,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2481,7 +2419,6 @@
 6770,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6770,wafer_foundry,core,high,official_business,業務描述匹配: 晶圓代工,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6771,green_energy,related,medium,official_sector,官方產業分類: 綠能環保,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-6781,e_paper,core,high,official_business,業務描述匹配: 電子紙,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 6781,electronic_component,related,medium,official_sector,官方產業分類: 電子零組件業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6782,biotech,related,medium,official_sector,官方產業分類: 生技醫療,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6785,biotech,related,medium,official_sector,官方產業分類: 生技醫療業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2627,7 +2564,6 @@
 6996,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 6997,cloud_digital,related,medium,official_sector,官方產業分類: 數位雲端,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 7402,military,core,high,official_business,業務描述匹配: 軍工,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-7402,mosfet,core,high,official_business,業務描述匹配: SiC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 7402,optoelectronic,related,medium,official_sector,官方產業分類: 光電業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 7402,robot,core,high,official_business,業務描述匹配: 機器人,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 7547,cloud_digital,related,medium,official_sector,官方產業分類: 數位雲端,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2743,7 +2679,6 @@
 8050,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 8050,ipc,core,high,official_business,業務描述匹配: 嵌入式電腦,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 8050,server_odm,core,high,official_business,業務描述匹配: 主機板,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-8054,mosfet,core,high,official_business,業務描述匹配: SiC,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 8054,semiconductor,related,medium,official_sector,官方產業分類: 半導體業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 8059,networking,related,medium,official_sector,官方產業分類: 通信網路業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 8059,telecom,core,high,official_business,業務描述匹配: 寬頻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
@@ -2926,13 +2861,11 @@
 8996,heavy_electric,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 8996,motor,related,medium,official_sector,官方產業分類: 電機機械,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 8996,server_odm,core,high,official_business,業務描述匹配: 伺服器,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-9105,pcb,core,high,official_business,業務描述匹配: PCB,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 911868,led,core,high,official_business,業務描述匹配: LED,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 9802,sports_leisure,related,medium,official_sector,官方產業分類: 運動休閒,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9904,sports_leisure,related,medium,official_sector,官方產業分類: 運動休閒,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9906,construction,related,medium,official_sector,官方產業分類: 建材營造,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9908,oil_gas,related,medium,official_sector,官方產業分類: 油電燃氣業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-9908,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 9910,sports_leisure,related,medium,official_sector,官方產業分類: 運動休閒,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9911,home_living,related,medium,official_sector,官方產業分類: 居家生活,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9912,computer_peripheral,related,medium,official_sector,官方產業分類: 電腦及週邊設備業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2942,8 +2875,6 @@
 9918,oil_gas,related,medium,official_sector,官方產業分類: 油電燃氣業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9921,sports_leisure,related,medium,official_sector,官方產業分類: 運動休閒,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9924,home_living,related,medium,official_sector,官方產業分類: 居家生活,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
-9924,rf_component,core,high,official_business,業務描述匹配: 射頻,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
-9924,telecom,core,high,official_business,業務描述匹配: 電信,2026-04-13T01:20:12.243019,,system,2026-04-13T01:20:12.243019
 9926,oil_gas,related,medium,official_sector,官方產業分類: 油電燃氣業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9930,green_energy,related,medium,official_sector,官方產業分類: 綠能環保,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9931,oil_gas,related,medium,official_sector,官方產業分類: 油電燃氣業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
@@ -2960,3 +2891,5 @@
 9958,steel,related,medium,official_sector,官方產業分類: 鋼鐵工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9960,sports_leisure,related,medium,official_sector,官方產業分類: 運動休閒,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
 9962,steel,related,medium,official_sector,官方產業分類: 鋼鐵工業,2026-04-13T01:06:56.534581,,system,2026-04-13T01:20:12.243019
+2601,shipping,related,high,twse_reclassify,證交所2025/6/1變更產業類別為航運,2026-06-09T22:07:48.226383,,manual_review,2026-06-09T22:07:48.226383
+3141,e_paper,core,high,manual_review,核心產品為電子紙驅動IC (EPD IC),2026-06-09T22:07:48.226383,,manual_review,2026-06-09T22:07:48.226383
