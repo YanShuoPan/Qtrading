@@ -1,9 +1,23 @@
-# 台股推薦機器人 (Stocks Autobot)
+# Qtrading — 台股每日選股機器人 (Taiwan Stock Screener)
 
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions&logoColor=white)
 ![LINE](https://img.shields.io/badge/LINE-00C300?style=for-the-badge&logo=line&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-222222?style=for-the-badge&logo=github&logoColor=white)
+
+## Overview (English)
+
+Qtrading is a fully automated daily stock-screening pipeline for the Taiwan stock market (1,000+ listed tickers). Every trading day at 18:00 Taipei time, a GitHub Actions workflow downloads the latest market data and screens stocks through a three-stage funnel:
+
+1. **Momentum screen** — MA20-based trend and volatility rules
+2. **Fundamental filter** — P/E screening via TWSE OpenAPI
+3. **Technical ensemble** — 4-signal vote (RSI / MACD / Bollinger Bands / volume)
+
+Picks are enriched with institutional chip data (FinMind API), rendered as candlestick charts, pushed to LINE subscribers, and published as a static report site on GitHub Pages. SQLite synced to Google Drive preserves 90 days of price history between CI runs; the codebase is modular (19 modules) with 41 unit tests gating deployment.
+
+**Live demo:** [yanshuopan.github.io/Qtrading](https://yanshuopan.github.io/Qtrading/) — full documentation below is in Traditional Chinese.
+
+---
 
 每天台北時間 **18:00** 自動執行，提供台股技術分析推薦，透過 LINE 推播文字訊息和 K 線圖表，並自動發布到 GitHub Pages 網頁展示。
 
@@ -44,6 +58,8 @@
 - 使用 `llama-3.3-70b-versatile` 模型分析 Google News 新聞標題
 - 判斷每個熱門題材的市場情緒：bullish / bearish / neutral
 - 顯示於熱門題材股報告中
+
+> **註**：此功能目前預設停用（模組保留於 `modules/sentiment.py`，設定 `GROQ_API_KEY` 後可重新啟用）。
 
 ### 🔄 延續觀察追蹤
 - **昨日延續觀察**：前一交易日推薦股票的今日狀態評估
@@ -218,7 +234,7 @@ graph TD
 ## 📁 專案結構
 
 ```
-stocks-autobot/
+Qtrading/
 ├── main.py                       # 主要執行程式
 ├── generate_historical_data.py   # 歷史資料生成工具（用於測試或補資料）
 ├── generate_index_standalone.py  # 獨立的 index.html 生成器（用於 gh-pages）
@@ -331,20 +347,19 @@ stocks-autobot/
 
 ```bash
 # 複製專案
-git clone https://github.com/your-username/stocks-autobot.git
-cd stocks-autobot
+git clone https://github.com/YanShuoPan/Qtrading.git
+cd Qtrading
 
 # 安裝依賴
 pip install -r requirements.txt
 
-# 設定環境變數
-cp .env.example .env
-# 編輯 .env 檔案填入必要資訊
+# 設定環境變數：在專案根目錄建立 .env 檔案，
+# 填入必要的 API 金鑰（項目參考上方「GitHub Secrets 設定」表格）
 
-# 本地測試（含 OAuth 2.0 Google Drive 功能）
-python test_local_oauth.py
+# 執行單元測試
+python -m pytest tests/
 
-# 雲端版本測試（完整功能）
+# 完整流程測試
 python main.py
 ```
 
