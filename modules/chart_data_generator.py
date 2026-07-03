@@ -55,10 +55,11 @@ def compute_four_color(df: pd.DataFrame, n: int = MA_PERIOD) -> pd.DataFrame:
 def generate_chart_data(output_dir: str = "docs", db_path: str | None = None) -> int:
     """為資料庫中全部股票產生互動圖 JSON，並複製 chart.html 到 output_dir
 
-    單股失敗時跳過並繼續（永不中斷 pipeline）。
+    單股失敗時跳過並繼續（永不中斷 pipeline）；
+    無任何有效資料列的股票（已下市/停牌）計為 skipped，不產檔也不算失敗。
 
     Returns:
-        int: 成功產生的股票數
+        int: 成功產生的股票數（不含 skipped 與失敗）
     """
     db_path = db_path or DB_PATH
     chart_dir = os.path.join(output_dir, "chart_data")

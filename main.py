@@ -475,6 +475,14 @@ def main():
         except Exception as e:
             logger.error(f"❌ 生成熱門股 HTML 失敗: {e}")
 
+        # ===== 步驟 6.75: 產生互動圖表資料（四色 K 線）=====
+        logger.info("\n📌 步驟 6.75: 產生互動圖表資料（四色 K 線）")
+        try:
+            from modules.chart_data_generator import generate_chart_data
+            generate_chart_data(output_dir="docs")
+        except Exception as e:
+            logger.warning(f"⚠️ 圖表資料產生失敗（不影響主流程）: {e}")
+
         # ===== 步驟 7: 發送 LINE 訊息 =====
         logger.info("\n📌 步驟 7: 發送 LINE 訊息")
 
