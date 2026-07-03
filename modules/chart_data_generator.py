@@ -52,7 +52,7 @@ def compute_four_color(df: pd.DataFrame, n: int = MA_PERIOD) -> pd.DataFrame:
     return out
 
 
-def generate_chart_data(output_dir: str = "docs", db_path: str = None) -> int:
+def generate_chart_data(output_dir: str = "docs", db_path: str | None = None) -> int:
     """為資料庫中全部股票產生互動圖 JSON，並複製 chart.html 到 output_dir
 
     單股失敗時跳過並繼續（永不中斷 pipeline）。
@@ -71,10 +71,14 @@ def generate_chart_data(output_dir: str = "docs", db_path: str = None) -> int:
             conn,
         )
 
-    ok, fail = 0, 0
+    ok, fail, skipped = 0, 0, 0
     for code, g in prices.groupby("code"):
         try:
-            g = g.tail(DAYS_TO_EXPORT).reset_index(drop=True)
+            g = (g.dropna(subset=["open", "high", "low", "close", "volume"])
+                  .tail(DAYS_TO_EXPORT).reset_index(drop=True))
+            if g.empty:  # 全部為 NULL 列（已下市/無資料）
+                skipped += 1
+                continue
             g["volume"] = (g["volume"] // 1000).astype(int)  # 股 → 張
             g = compute_four_color(g)
             days = [
@@ -106,5 +110,5 @@ def generate_chart_data(output_dir: str = "docs", db_path: str = None) -> int:
     else:
         logger.warning("⚠️ static/chart.html 不存在，略過複製")
 
-    logger.info(f"✅ 圖表資料完成: {ok} 支成功, {fail} 支失敗")
+    logger.info(f"✅ 圖表資料完成: {ok} 支成功, {fail} 支失敗, {skipped} 支無有效資料")
     return ok

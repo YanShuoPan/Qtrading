@@ -120,3 +120,71 @@ def test_generate_chart_data_copies_chart_html(tmp_path):
     generate_chart_data(output_dir=out_dir, db_path=db)
     # static/chart.html 存在於 repo，應被複製為 docs/chart.html
     assert os.path.exists(os.path.join(out_dir, "chart.html"))
+
+
+def test_generate_chart_data_skips_null_rows(tmp_path):
+    """OHLC+volume 全 NULL 的列（停牌日）應被剔除，該股仍產出有效 JSON"""
+    from modules.chart_data_generator import generate_chart_data
+
+    db = str(tmp_path / "test.sqlite")
+    dates = pd.date_range("2025-10-01", periods=60).strftime("%Y-%m-%d")
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE prices (code TEXT, date TEXT, open REAL, high REAL, "
+            "low REAL, close REAL, volume INTEGER)"
+        )
+        rows = []
+        for i, d in enumerate(dates):
+            if i % 10 == 5:  # 每 10 天混入一筆全 NULL 列
+                rows.append(("2330", d, None, None, None, None, None))
+            else:
+                rows.append(("2330", d, 100.0, 105.0, 99.0, 102.0, 5_000_000))
+        # 另一支全 NULL 的股票（已下市/無資料）→ 應被略過、不算失敗也不產檔
+        rows += [("1294", d, None, None, None, None, None) for d in dates]
+        conn.executemany("INSERT INTO prices VALUES (?,?,?,?,?,?,?)", rows)
+
+    out_dir = str(tmp_path / "docs")
+    count = generate_chart_data(output_dir=out_dir, db_path=db)
+
+    assert count == 1
+    assert not os.path.exists(os.path.join(out_dir, "chart_data", "1294.json"))
+    json_path = os.path.join(out_dir, "chart_data", "2330.json")
+    with open(json_path, encoding="utf-8") as f:
+        payload = json.load(f)
+
+    valid_rows = 60 - 6  # 60 天中有 6 筆 NULL 列被剔除
+    assert len(payload["days"]) == valid_rows
+    # 剔除後不應有任何 NULL 的 OHLC/volume
+    for day in payload["days"]:
+        assert day[1] is not None and day[4] is not None
+        assert day[5] == 5000
+
+
+def test_generate_chart_data_isolates_bad_stock(tmp_path):
+    """一支股票資料損壞時應被跳過，其餘股票照常產出"""
+    from modules.chart_data_generator import generate_chart_data
+
+    db = str(tmp_path / "test.sqlite")
+    dates = pd.date_range("2025-10-01", periods=30).strftime("%Y-%m-%d")
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE prices (code TEXT, date TEXT, open REAL, high REAL, "
+            "low REAL, close REAL, volume INTEGER)"
+        )
+        rows = [
+            ("2330", d, 100.0, 105.0, 99.0, 102.0, 5_000_000)
+            for d in dates
+        ]
+        # 壞股票：volume 為非數值字串，dropna 剔不掉，處理時會拋例外
+        rows += [
+            ("9999", d, 100.0, 105.0, 99.0, 102.0, "bad")
+            for d in dates
+        ]
+        conn.executemany("INSERT INTO prices VALUES (?,?,?,?,?,?,?)", rows)
+
+    out_dir = str(tmp_path / "docs")
+    count = generate_chart_data(output_dir=out_dir, db_path=db)
+
+    assert count == 1
+    assert os.path.exists(os.path.join(out_dir, "chart_data", "2330.json"))
+    assert not os.path.exists(os.path.join(out_dir, "chart_data", "9999.json"))
