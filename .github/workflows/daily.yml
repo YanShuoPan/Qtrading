@@ -191,7 +191,7 @@ jobs:
           git stash push -m "Stash before switching to gh-pages" || echo "無需 stash"
 
           # 拉取 gh-pages 分支
-          git fetch origin gh-pages:gh-pages 2>/dev/null || {
+          git fetch --depth 1 origin gh-pages:gh-pages 2>/dev/null || {
             echo "gh-pages 分支不存在（可能是首次執行）"
             exit 0
           }
@@ -340,6 +340,7 @@ jobs:
           # 掃描根目錄中的日期 HTML 檔案（deploy 後檔案在根目錄）
           html_files = [f for f in os.listdir('.')
                         if f.endswith('.html') and f != 'index.html'
+                        and f != 'chart.html'
                         and not f.endswith('_hot.html')]
 
           # 解析日期並排序
