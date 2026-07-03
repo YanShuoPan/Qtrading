@@ -123,7 +123,7 @@ def _build_continuation_section(section_title, icon, title_css_class, continuati
         enriched = _build_enriched_badges(code, badge_row, fundamentals_df, institutional_df, margin_df)
 
         html += f"""
-                    <div class="{card_class}" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                    <div class="{card_class}" onclick="window.open('chart.html?code={code}', '_blank')">
                         {badge_html}
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
@@ -427,7 +427,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             enriched = _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_df)
 
             html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                    <div class="stock-card" onclick="window.open('chart.html?code={code}', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
@@ -486,7 +486,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
             enriched = _build_enriched_badges(code, row, fundamentals_df, institutional_df, margin_df)
 
             html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')">
+                    <div class="stock-card" onclick="window.open('chart.html?code={code}', '_blank')">
                         <div class="stock-code">{code}</div>
                         <div class="stock-name">{name}</div>
                         {f'<div class="stock-tags">{tags_html}</div>' if tags_html else ''}
@@ -556,7 +556,7 @@ def generate_daily_html(date_str: str, group2a_df, group2b_df, output_dir: str =
                 reclaim_date_str = str(reclaim_date)[:10] if reclaim_date else ''
 
             html_content += f"""
-                    <div class="stock-card" onclick="window.open('https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                    <div class="stock-card" onclick="window.open('chart.html?code={code}', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
                         <div class="stock-code" style="color: #e74c3c;">{code}</div>
                         <div class="stock-name">{name}</div>
                         <div class="stock-info">收回: {reclaim_date_str} ({reclaim_pct:.2f}%)</div>
@@ -720,7 +720,7 @@ def _build_pool_cards_html(pool_df, industry_data, hist_df, date_str: str = "") 
                     <div style="background:{bg_color};border-radius:8px;padding:10px 12px;
                                 border:1px solid {border_color};min-width:150px;flex:1;max-width:210px;">
                         <div style="display:flex;align-items:center;gap:4px;flex-wrap:wrap;">
-                            <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
+                            <a href="chart.html?code={code}"
                                target="_blank"
                                style="font-weight:bold;color:#2563eb;text-decoration:none;">{code}</a>{new_dot}
                             <span style="color:#374151;font-size:0.88em;">{name}</span>
@@ -787,7 +787,7 @@ def _build_sector_stocks_html(sec: dict, hist_df) -> str:
                 <div style="background:#f8fafc;border-radius:8px;padding:10px 12px;
                             border:1px solid #e2e8f0;min-width:150px;flex:1;max-width:195px;">
                     <div style="font-weight:bold;font-size:0.88em;">
-                        <a href="https://tw.stock.yahoo.com/quote/{code}.TW/technical-analysis"
+                        <a href="chart.html?code={code}"
                            target="_blank" style="color:#2563eb;text-decoration:none;">{code}</a>
                         <span style="color:#6b7280;font-size:0.85em;margin-left:4px;">{name}</span>
                     </div>
