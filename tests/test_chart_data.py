@@ -1,4 +1,8 @@
 """四色指標圖表資料測試"""
+import json
+import os
+import sqlite3
+
 import pandas as pd
 
 from modules.chart_data_generator import compute_four_color
@@ -62,3 +66,57 @@ def test_ma_columns_present():
     assert out["ma20"].iloc[:19].isna().all()
     assert out["ma20"].iloc[19] == 100.0
     assert out["vma20"].iloc[19] == 1000.0
+
+
+def _make_test_db(tmp_path, code="2330", days=140):
+    """建立含單一股票的測試資料庫"""
+    db = str(tmp_path / "test.sqlite")
+    dates = pd.date_range("2025-10-01", periods=days).strftime("%Y-%m-%d")
+    with sqlite3.connect(db) as conn:
+        conn.execute(
+            "CREATE TABLE prices (code TEXT, date TEXT, open REAL, high REAL, "
+            "low REAL, close REAL, volume INTEGER)"
+        )
+        rows = [
+            (code, d, 100.0, 105.0, 99.0, 102.0, 5_000_000)
+            for d in dates
+        ]
+        conn.executemany("INSERT INTO prices VALUES (?,?,?,?,?,?,?)", rows)
+    return db
+
+
+def test_generate_chart_data_writes_json(tmp_path):
+    from modules.chart_data_generator import generate_chart_data
+
+    db = _make_test_db(tmp_path)
+    out_dir = str(tmp_path / "docs")
+    count = generate_chart_data(output_dir=out_dir, db_path=db)
+
+    assert count == 1
+    json_path = os.path.join(out_dir, "chart_data", "2330.json")
+    assert os.path.exists(json_path)
+
+    with open(json_path, encoding="utf-8") as f:
+        payload = json.load(f)
+
+    assert payload["code"] == "2330"
+    assert payload["updated"] == payload["days"][-1][0]
+    # 欄位順序: [date, open, high, low, close, volume(張), ma20, vma20, color]
+    last = payload["days"][-1]
+    assert len(last) == 9
+    assert last[1] == 100.0 and last[4] == 102.0
+    assert last[5] == 5000          # 股 → 張
+    assert last[8] in ("red", "green", "yellow", "blue")
+    # 暖身期 ma 為 null
+    assert payload["days"][0][6] is None
+    assert payload["days"][0][8] == "gray"
+
+
+def test_generate_chart_data_copies_chart_html(tmp_path):
+    from modules.chart_data_generator import generate_chart_data
+
+    db = _make_test_db(tmp_path)
+    out_dir = str(tmp_path / "docs")
+    generate_chart_data(output_dir=out_dir, db_path=db)
+    # static/chart.html 存在於 repo，應被複製為 docs/chart.html
+    assert os.path.exists(os.path.join(out_dir, "chart.html"))
