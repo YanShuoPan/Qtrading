@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>四色 K 線圖</title>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Microsoft JhengHei', sans-serif; background: #f5f6fa; }
@@ -46,8 +46,11 @@ const SIGNALS = { red: '帶量翻紅（偏買進）', green: '帶量翻黑（偏
                   yellow: '偏強、量未確認', blue: '偏弱、量未確認',
                   gray: '均線暖身期' };
 
-const code = new URLSearchParams(location.search).get('code');
-const yahooUrl = 'https://tw.stock.yahoo.com/quote/' + code + '.TW/technical-analysis';
+const raw = new URLSearchParams(location.search).get('code');
+const code = raw && /^[0-9A-Za-z]{4,6}$/.test(raw) ? raw : null;
+const yahooUrl = code
+  ? 'https://tw.stock.yahoo.com/quote/' + code + '.TW/technical-analysis'
+  : 'https://tw.stock.yahoo.com/';
 document.getElementById('yahoo').href = yahooUrl;
 
 function showError(msg) {
@@ -58,12 +61,14 @@ function showError(msg) {
 }
 
 if (!code) {
-  showError('網址缺少 ?code= 參數');
+  showError(raw ? '股票代碼格式不正確' : '網址缺少 ?code= 參數');
+} else if (typeof echarts === 'undefined') {
+  showError('圖表資源載入失敗，請稍後重試');
 } else {
   fetch('chart_data/' + code + '.json')
     .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
     .then(render)
-    .catch(() => showError('暫無此股票的圖表資料'));
+    .catch(e => { console.error(e); showError('暫無此股票的圖表資料'); });
 }
 
 function render(data) {
@@ -77,8 +82,7 @@ function render(data) {
     const c = COLORS[d[8]] || COLORS.gray;
     dates.push(d[0]);
     kbars.push({ value: [d[1], d[4], d[3], d[2]],  // ECharts: [open, close, low, high]
-                 itemStyle: { color: c, color0: c, borderColor: c, borderColor0: c },
-                 signal: d[8], vma20: d[7] });
+                 itemStyle: { color: c, color0: c, borderColor: c, borderColor0: c } });
     vols.push({ value: d[5], itemStyle: { color: c } });
     ma20.push(d[6]);
   }
@@ -117,7 +121,7 @@ function render(data) {
     ],
     yAxis: [
       { scale: true, gridIndex: 0, splitLine: { lineStyle: { color: '#eee' } } },
-      { gridIndex: 1, axisLabel: { formatter: v => (v >= 10000 ? (v / 1000) + 'k' : v) },
+      { gridIndex: 1, axisLabel: { formatter: v => (v >= 10000 ? Math.round(v / 1000) + 'k' : v) },
         splitLine: { show: false } },
     ],
     dataZoom: [
