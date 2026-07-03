@@ -364,6 +364,11 @@ jobs:
               os.makedirs('archive', exist_ok=True)
               os.makedirs('archive/images', exist_ok=True)
 
+              # 寫入轉址 stub，讓 archive/*.html 內的相對連結 chart.html 能正確解析回根目錄
+              # （不複製整個 chart.html，因其內 fetch('chart_data/...') 在 archive/ 下同樣 404）
+              with open('archive/chart.html', 'w', encoding='utf-8') as _f:
+                  _f.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><script>location.replace(\'../chart.html\' + location.search);</script></head><body><a href="../chart.html">四色 K 線圖</a></body></html>')
+
               for date, date_str in dates[KEEP_DAYS:]:
                   # 移動日期 HTML 檔案
                   html_file = f"{date_str}.html"

@@ -84,7 +84,7 @@ ma20/vma20 暖身期為 null。陣列格式為壓縮檔案大小。
 1. `modules/html_generator.py`：6 處 Yahoo 連結改為 `chart.html?code={code}`
 2. `main.py`：流程尾端新增「產生圖表資料」步驟，失敗 log warning 不中斷
 3. `.github/workflows/daily.yml`：
-   - 兩處 `git fetch origin gh-pages` 加 `--depth 1`（抑制歷史增長造成的變慢）
+   - `git fetch origin gh-pages` 的讀取用那處加了 `--depth 1`（抑制歷史增長造成的變慢）；會 commit+push 的清理步驟保守不動（shallow clone 後 push 可能產生 non-fast-forward 錯誤）
    - 確認 7 天清理腳本不誤刪 chart_data/（該腳本只掃根目錄 *.html，不動資料夾）
 
 ## 錯誤處理
@@ -107,3 +107,4 @@ ma20/vma20 暖身期為 null。陣列格式為壓縮檔案大小。
 - 全部 JSON 約 12MB，CI 產生時間約 10 秒內，對整體 pipeline 無感
 - gh-pages git 歷史每日增長約 1-2MB（差異壓縮後），以 `--depth 1` 抑制 fetch 變慢
 - GitHub Pages 大小/流量限制均遠未觸及；使用者每次看圖僅載入單支 ~10KB JSON
+- 備註：已下市股票的舊 JSON 會殘留在 gh-pages（keep_files 不清理），量級 ~10KB/支，屬可接受的維護債
