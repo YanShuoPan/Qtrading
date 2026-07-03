@@ -12,7 +12,8 @@ from modules.database import (
     ensure_db,
     ensure_users_table,
     upsert_prices,
-    load_recent_prices
+    load_recent_prices,
+    get_existing_data_range
 )
 from modules.google_drive import (
     get_drive_service,
@@ -22,7 +23,8 @@ from modules.google_drive import (
 )
 from modules.line_messaging import broadcast_text, broadcast_button_message, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
-from modules.stock_data import fetch_prices_yf, pick_stocks
+from modules.stock_data import fetch_prices_yf, pick_stocks, filter_fresh_stocks
+from modules.twse_daily import fetch_official_daily
 from modules.visualization import plot_charts
 from modules.html_generator import generate_daily_html, generate_hot_stocks_html
 from modules.pool import ensure_pool_table, expire_pool, add_to_pool, get_active_pool, annotate_pool_heat
@@ -126,6 +128,26 @@ def main():
             else:
                 logger.info("ℹ️  無需更新資料庫")
 
+            # ===== 步驟 4.5: 官方 API 補當日缺漏（yfinance 備援）=====
+            logger.info("\n📌 步驟 4.5: 檢查當日資料缺漏（TWSE/TPEx 官方 API 備援）")
+            try:
+                existing = get_existing_data_range()
+                today_iso = today_tpe.isoformat()
+                missing_today = [c for c in codes if existing.get(c, {}).get("max", "") < today_iso]
+                if missing_today:
+                    logger.info(f"   {len(missing_today)} 支缺 {today_iso} 資料，改用官方 API 補回")
+                    df_official = fetch_official_daily(today_tpe, codes=missing_today)
+                    if not df_official.empty:
+                        upsert_prices(df_official)
+                        data_updated = True
+                        logger.info(f"✅ 官方 API 補回 {df_official['code'].nunique()} 支當日資料")
+                    else:
+                        logger.warning("⚠️  官方 API 無資料可補（可能非交易日或資料尚未更新）")
+                else:
+                    logger.info("   所有股票皆已有當日資料，無需備援")
+            except Exception as e:
+                logger.warning(f"⚠️  官方 API 備援失敗: {e}")
+
         # ===== 步驟 5: 選股 =====
         logger.info("\n📌 步驟 5: 載入數據並篩選股票")
         hist = load_recent_prices(days=120)
@@ -139,6 +161,14 @@ def main():
             logger.info(f"✅ 載入 {len(hist)} 筆, {hist['code'].nunique()} 支股票, {hist['date'].min()}~{latest_date}")
             if days_behind > 2:
                 logger.warning(f"   ⚠️  數據可能過舊！最新交易日距今 {days_behind} 天")
+
+            # 排除資料未更新到最新交易日的股票，避免用舊資料推薦
+            hist, stale_codes = filter_fresh_stocks(hist)
+            if stale_codes:
+                logger.warning(
+                    f"⚠️  {len(stale_codes)} 支股票資料未更新到 {latest_date.date()}，"
+                    f"已排除於今日推薦之外（如 {', '.join(stale_codes[:10])}{'...' if len(stale_codes) > 10 else ''}）"
+                )
 
         top_k = get_picks_top_k()
         picks = pick_stocks(hist, top_k=top_k)

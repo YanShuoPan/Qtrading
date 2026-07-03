@@ -307,11 +307,13 @@ jobs:
           git checkout gh-pages
           git pull origin gh-pages
 
-          # 移除不該存在的資料庫檔案（如果存在）
-          if [ -f "taiex.sqlite" ]; then
+          # 移除不該存在的資料庫檔案（如果存在於 git 追蹤中）
+          if git ls-files --error-unmatch taiex.sqlite >/dev/null 2>&1; then
             echo "⚠️  發現 taiex.sqlite 在 gh-pages 分支中，移除中..."
             git rm -f taiex.sqlite
             git commit -m "🧹 移除錯誤上傳的 taiex.sqlite 資料庫檔案" || echo "已經移除"
+          else
+            rm -f taiex.sqlite
           fi
 
           # 清理 gh-pages 上殘留的 docs/ 資料夾（舊結構遺留）

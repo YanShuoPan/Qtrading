@@ -12,6 +12,106 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
+def _download_two_pass(batch_codes, target_start, batch_label: str = "") -> tuple:
+    """
+    單一批次的兩段式下載：先試 .TW（上市），無資料者改試 .TWO（上櫃）
+
+    Args:
+        batch_codes: 這一批的股票代碼列表
+        target_start: 下載起始日（ISO 字串）
+        batch_label: log 用的批次標籤
+
+    Returns:
+        tuple[list[pd.DataFrame], set]: (各股票的股價 DataFrame 清單, 成功取得資料的代碼集合)
+    """
+    batch_results = []
+    got_data = set()
+
+    # ── Pass 1: .TW（上市 + 部分上櫃）────────────────────────────────────
+    tickers = [f"{c}.TW" for c in batch_codes]
+    try:
+        df = yf.download(
+            tickers=" ".join(tickers),
+            start=target_start,
+            interval="1d",
+            group_by="ticker",
+            auto_adjust=False,
+            progress=False,
+            threads=True,
+        )
+        if df is not None and isinstance(df, pd.DataFrame) and not df.empty:
+            logger.debug(f"   {batch_label} (.TW): shape={df.shape}, nlevels={getattr(df.columns, 'nlevels', '?')}")
+
+            for c in batch_codes:
+                t = f"{c}.TW"
+                if isinstance(df, pd.DataFrame) and t in df:
+                    tmp = df[t].reset_index().rename(columns=str.lower)
+                    if "date" not in tmp.columns:
+                        for col in tmp.columns:
+                            if pd.api.types.is_datetime64_any_dtype(tmp[col]):
+                                tmp = tmp.rename(columns={col: "date"})
+                                break
+                    if "date" not in tmp.columns:
+                        continue
+                    tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
+                    tmp["code"] = c
+                    tmp = tmp.dropna(subset=["close"])
+                    if not tmp.empty:
+                        if "volume" not in tmp.columns:
+                            tmp["volume"] = 0
+                        batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
+                        got_data.add(c)
+        else:
+            logger.warning(f"   ⚠️  {batch_label} (.TW) 返回空資料")
+
+    except Exception as e:
+        logger.error(f"   ❌ {batch_label} (.TW) 下載失敗: {e}")
+
+    # ── Pass 2: .TWO（對 .TW 無資料的上櫃股票重試）────────────────────────
+    missing_codes = [c for c in batch_codes if c not in got_data]
+    if missing_codes:
+        logger.debug(f"   🔄 {batch_label}: {len(missing_codes)} 支改用 .TWO 重試（上櫃）")
+        tickers_two = [f"{c}.TWO" for c in missing_codes]
+        try:
+            df2 = yf.download(
+                tickers=" ".join(tickers_two),
+                start=target_start,
+                interval="1d",
+                group_by="ticker",
+                auto_adjust=False,
+                progress=False,
+                threads=True,
+            )
+            if df2 is not None and isinstance(df2, pd.DataFrame) and not df2.empty:
+                recovered = 0
+                for c in missing_codes:
+                    t2 = f"{c}.TWO"
+                    if t2 in df2:
+                        tmp2 = df2[t2].reset_index().rename(columns=str.lower)
+                        if "date" not in tmp2.columns:
+                            for col in tmp2.columns:
+                                if pd.api.types.is_datetime64_any_dtype(tmp2[col]):
+                                    tmp2 = tmp2.rename(columns={col: "date"})
+                                    break
+                        if "date" not in tmp2.columns:
+                            continue
+                        tmp2["date"] = pd.to_datetime(tmp2["date"]).dt.tz_localize(None)
+                        tmp2["code"] = c
+                        tmp2 = tmp2.dropna(subset=["close"])
+                        if not tmp2.empty:
+                            if "volume" not in tmp2.columns:
+                                tmp2["volume"] = 0
+                            batch_results.append(tmp2[["code", "date", "open", "high", "low", "close", "volume"]])
+                            got_data.add(c)
+                            recovered += 1
+                if recovered:
+                    logger.debug(f"   ✅ {batch_label}: .TWO 補回 {recovered} 支上櫃股票")
+        except Exception as e:
+            logger.error(f"   ❌ {batch_label} (.TWO) 下載失敗: {e}")
+
+    return batch_results, got_data
+
+
 def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     """
     從 Yahoo Finance 下載股價數據
@@ -63,6 +163,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         logger.info(f"   批次之間延遲 {BATCH_DELAY} 秒，以避免 API 限流")
 
     all_results = []
+    fetched_codes = set()
     for batch_idx in range(0, len(codes_to_fetch), BATCH_SIZE):
         batch_codes = codes_to_fetch[batch_idx:batch_idx + BATCH_SIZE]
         batch_num = batch_idx // BATCH_SIZE + 1
@@ -71,90 +172,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         if total_batches > 1:
             logger.info(f"\n📦 批次 {batch_num}/{total_batches}: 下載 {len(batch_codes)} 支股票")
 
-        batch_results = []
-        got_data = set()
-
-        # ── Pass 1: .TW（上市 + 部分上櫃）────────────────────────────────────
-        tickers = [f"{c}.TW" for c in batch_codes]
-        try:
-            df = yf.download(
-                tickers=" ".join(tickers),
-                start=target_start,
-                interval="1d",
-                group_by="ticker",
-                auto_adjust=False,
-                progress=False,
-                threads=True,
-            )
-            if df is not None and isinstance(df, pd.DataFrame) and not df.empty:
-                logger.debug(f"   批次 {batch_num} (.TW): shape={df.shape}, nlevels={getattr(df.columns, 'nlevels', '?')}")
-
-                for c in batch_codes:
-                    t = f"{c}.TW"
-                    if isinstance(df, pd.DataFrame) and t in df:
-                        tmp = df[t].reset_index().rename(columns=str.lower)
-                        if "date" not in tmp.columns:
-                            for col in tmp.columns:
-                                if pd.api.types.is_datetime64_any_dtype(tmp[col]):
-                                    tmp = tmp.rename(columns={col: "date"})
-                                    break
-                        if "date" not in tmp.columns:
-                            continue
-                        tmp["date"] = pd.to_datetime(tmp["date"]).dt.tz_localize(None)
-                        tmp["code"] = c
-                        tmp = tmp.dropna(subset=["close"])
-                        if not tmp.empty:
-                            if "volume" not in tmp.columns:
-                                tmp["volume"] = 0
-                            batch_results.append(tmp[["code", "date", "open", "high", "low", "close", "volume"]])
-                            got_data.add(c)
-            else:
-                logger.warning(f"   ⚠️  批次 {batch_num} (.TW) 返回空資料")
-
-        except Exception as e:
-            logger.error(f"   ❌ 批次 {batch_num} (.TW) 下載失敗: {e}")
-
-        # ── Pass 2: .TWO（對 .TW 無資料的上櫃股票重試）────────────────────────
-        missing_codes = [c for c in batch_codes if c not in got_data]
-        if missing_codes:
-            logger.info(f"   🔄 {len(missing_codes)} 支改用 .TWO 重試（上櫃）")
-            tickers_two = [f"{c}.TWO" for c in missing_codes]
-            try:
-                df2 = yf.download(
-                    tickers=" ".join(tickers_two),
-                    start=target_start,
-                    interval="1d",
-                    group_by="ticker",
-                    auto_adjust=False,
-                    progress=False,
-                    threads=True,
-                )
-                if df2 is not None and isinstance(df2, pd.DataFrame) and not df2.empty:
-                    recovered = 0
-                    for c in missing_codes:
-                        t2 = f"{c}.TWO"
-                        if t2 in df2:
-                            tmp2 = df2[t2].reset_index().rename(columns=str.lower)
-                            if "date" not in tmp2.columns:
-                                for col in tmp2.columns:
-                                    if pd.api.types.is_datetime64_any_dtype(tmp2[col]):
-                                        tmp2 = tmp2.rename(columns={col: "date"})
-                                        break
-                            if "date" not in tmp2.columns:
-                                continue
-                            tmp2["date"] = pd.to_datetime(tmp2["date"]).dt.tz_localize(None)
-                            tmp2["code"] = c
-                            tmp2 = tmp2.dropna(subset=["close"])
-                            if not tmp2.empty:
-                                if "volume" not in tmp2.columns:
-                                    tmp2["volume"] = 0
-                                batch_results.append(tmp2[["code", "date", "open", "high", "low", "close", "volume"]])
-                                got_data.add(c)
-                                recovered += 1
-                    if recovered:
-                        logger.info(f"   ✅ .TWO 補回 {recovered} 支上櫃股票")
-            except Exception as e:
-                logger.error(f"   ❌ 批次 {batch_num} (.TWO) 下載失敗: {e}")
+        batch_results, got_data = _download_two_pass(batch_codes, target_start, f"批次 {batch_num}")
 
         still_missing = len(batch_codes) - len(got_data)
         if still_missing > 0:
@@ -163,11 +181,43 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
         if batch_results:
             all_results.extend(batch_results)
             logger.info(f"   ✅ 批次 {batch_num} 成功處理 {len(batch_results)} 支股票")
+        fetched_codes |= got_data
 
         # 如果還有下一批，延遲一段時間避免限流
         if batch_idx + BATCH_SIZE < len(codes_to_fetch):
             logger.debug(f"   ⏸️  延遲 {BATCH_DELAY} 秒後繼續下一批...")
             time.sleep(BATCH_DELAY)
+
+    # ── 對失敗的股票用小批次重試（避免整批被限流後永遠拿舊資料）────────────────
+    failed_codes = [c for c in codes_to_fetch if c not in fetched_codes]
+    if failed_codes:
+        RETRY_BATCH_SIZE = 50
+        RETRY_DELAY = 10  # 秒
+        logger.warning(
+            f"⚠️  {len(failed_codes)} 支主批次下載失敗，"
+            f"{RETRY_DELAY} 秒後以小批次重試（每批 {RETRY_BATCH_SIZE} 支）"
+        )
+        time.sleep(RETRY_DELAY)
+
+        for retry_idx in range(0, len(failed_codes), RETRY_BATCH_SIZE):
+            retry_codes = failed_codes[retry_idx:retry_idx + RETRY_BATCH_SIZE]
+            retry_num = retry_idx // RETRY_BATCH_SIZE + 1
+            retry_results, got_data = _download_two_pass(retry_codes, target_start, f"重試 {retry_num}")
+            if retry_results:
+                all_results.extend(retry_results)
+            fetched_codes |= got_data
+            if retry_idx + RETRY_BATCH_SIZE < len(failed_codes):
+                time.sleep(RETRY_DELAY)
+
+        still_failed = sorted(c for c in failed_codes if c not in fetched_codes)
+        recovered_count = len(failed_codes) - len(still_failed)
+        if still_failed:
+            logger.warning(
+                f"🔁 重試完成: 補回 {recovered_count} 支，仍失敗 {len(still_failed)} 支"
+                f"（如 {', '.join(still_failed[:10])}{'...' if len(still_failed) > 10 else ''}）"
+            )
+        else:
+            logger.info(f"🔁 重試完成: 全數補回 {recovered_count} 支")
 
     # 合併所有批次的結果
     if not all_results:
@@ -178,6 +228,34 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     if not result.empty and 'date' in result.columns:
         logger.info(f"下載完成: {len(result)} 筆, {result['date'].min()}~{result['date'].max()}, {result['date'].nunique()} 個交易日")
     return result
+
+
+def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple:
+    """
+    過濾掉資料過舊的股票，避免用非最新交易日的資料選股
+
+    以整體資料中的最新日期為基準（最近一個交易日），
+    排除自身最新日期落後超過 max_lag_days 天的股票。
+
+    Args:
+        prices: 股價數據 DataFrame（含 code, date 欄位）
+        max_lag_days: 容忍落後的天數（預設 0 = 必須有最新交易日的資料）
+
+    Returns:
+        tuple[pd.DataFrame, list[str]]: (過濾後的股價數據, 被排除的股票代碼排序清單)
+    """
+    if prices.empty or "code" not in prices.columns or "date" not in prices.columns:
+        return prices, []
+
+    latest_date = prices["date"].max()
+    code_max = prices.groupby("code")["date"].max()
+    stale_codes = sorted(code_max[(latest_date - code_max).dt.days > max_lag_days].index)
+
+    if not stale_codes:
+        return prices, []
+
+    fresh = prices[~prices["code"].isin(stale_codes)]
+    return fresh, stale_codes
 
 
 def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
