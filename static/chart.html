@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>四色 K 線圖</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Microsoft JhengHei', sans-serif; background: #f5f6fa; }
+  .header { background: white; padding: 12px 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .title { font-size: 1.2em; font-weight: bold; color: #1e293b; }
+  .updated { color: #94a3b8; font-size: .85em; }
+  .yahoo-link { margin-left: auto; font-size: .85em; color: #2563eb; text-decoration: none; }
+  .legend { display: flex; gap: 10px; padding: 8px 16px; flex-wrap: wrap; font-size: .82em; color: #475569; }
+  .legend span::before { content: "■ "; }
+  .lg-red::before    { color: #E74C3C; }
+  .lg-green::before  { color: #27AE60; }
+  .lg-yellow::before { color: #F1C40F; }
+  .lg-blue::before   { color: #3498DB; }
+  .lg-gray::before   { color: #95A5A6; }
+  #chart { width: 100%; height: calc(100vh - 110px); min-height: 420px; }
+  .error { text-align: center; padding: 60px 20px; color: #64748b; }
+  .error a { color: #2563eb; }
+</style>
+</head>
+<body>
+<div class="header">
+  <span class="title" id="title">載入中…</span>
+  <span class="updated" id="updated"></span>
+  <a class="yahoo-link" id="yahoo" target="_blank">Yahoo 技術分析 ↗</a>
+</div>
+<div class="legend">
+  <span class="lg-red">帶量翻紅（偏買進）</span>
+  <span class="lg-green">帶量翻黑（偏賣出）</span>
+  <span class="lg-yellow">偏強、量未確認</span>
+  <span class="lg-blue">偏弱、量未確認</span>
+  <span class="lg-gray">均線暖身期</span>
+</div>
+<div id="chart"></div>
+<script>
+const COLORS = { red: '#E74C3C', green: '#27AE60', yellow: '#F1C40F',
+                 blue: '#3498DB', gray: '#95A5A6' };
+const SIGNALS = { red: '帶量翻紅（偏買進）', green: '帶量翻黑（偏賣出）',
+                  yellow: '偏強、量未確認', blue: '偏弱、量未確認',
+                  gray: '均線暖身期' };
+
+const code = new URLSearchParams(location.search).get('code');
+const yahooUrl = 'https://tw.stock.yahoo.com/quote/' + code + '.TW/technical-analysis';
+document.getElementById('yahoo').href = yahooUrl;
+
+function showError(msg) {
+  document.getElementById('title').textContent = code || '未指定股票';
+  document.getElementById('chart').innerHTML =
+    '<div class="error"><p>' + msg + '</p><p style="margin-top:12px;">' +
+    '<a href="' + yahooUrl + '" target="_blank">改用 Yahoo 技術分析 ↗</a></p></div>';
+}
+
+if (!code) {
+  showError('網址缺少 ?code= 參數');
+} else {
+  fetch('chart_data/' + code + '.json')
+    .then(r => { if (!r.ok) throw new Error('not found'); return r.json(); })
+    .then(render)
+    .catch(() => showError('暫無此股票的圖表資料'));
+}
+
+function render(data) {
+  document.getElementById('title').textContent = data.code + ' ' + data.name;
+  document.getElementById('updated').textContent = '更新至 ' + data.updated;
+  document.title = data.code + ' ' + data.name + ' - 四色 K 線圖';
+
+  const dates = [], kbars = [], vols = [], ma20 = [];
+  for (const d of data.days) {
+    // d = [date, open, high, low, close, volume(張), ma20, vma20, color]
+    const c = COLORS[d[8]] || COLORS.gray;
+    dates.push(d[0]);
+    kbars.push({ value: [d[1], d[4], d[3], d[2]],  // ECharts: [open, close, low, high]
+                 itemStyle: { color: c, color0: c, borderColor: c, borderColor0: c },
+                 signal: d[8], vma20: d[7] });
+    vols.push({ value: d[5], itemStyle: { color: c } });
+    ma20.push(d[6]);
+  }
+
+  const chart = echarts.init(document.getElementById('chart'));
+  chart.setOption({
+    animation: false,
+    axisPointer: { link: [{ xAxisIndex: 'all' }] },
+    tooltip: {
+      trigger: 'axis',
+      axisPointer: { type: 'cross' },
+      formatter: function (params) {
+        const i = params[0].dataIndex;
+        const d = data.days[i];
+        const lines = [
+          '<b>' + d[0] + '</b>',
+          '開 ' + d[1] + '　高 ' + d[2],
+          '低 ' + d[3] + '　收 ' + d[4],
+          '量 ' + d[5].toLocaleString() + ' 張' +
+            (d[7] ? '（均量 ' + d[7].toLocaleString() + '）' : ''),
+          d[6] ? 'MA20 ' + d[6] : '',
+          '<b style="color:' + (COLORS[d[8]] || '#888') + '">● ' +
+            (SIGNALS[d[8]] || '') + '</b>',
+        ];
+        return lines.filter(Boolean).join('<br>');
+      },
+    },
+    grid: [
+      { left: 55, right: 20, top: 20, height: '58%' },
+      { left: 55, right: 20, top: '72%', height: '16%' },
+    ],
+    xAxis: [
+      { type: 'category', data: dates, gridIndex: 0,
+        axisLabel: { show: false }, axisPointer: { show: true } },
+      { type: 'category', data: dates, gridIndex: 1 },
+    ],
+    yAxis: [
+      { scale: true, gridIndex: 0, splitLine: { lineStyle: { color: '#eee' } } },
+      { gridIndex: 1, axisLabel: { formatter: v => (v >= 10000 ? (v / 1000) + 'k' : v) },
+        splitLine: { show: false } },
+    ],
+    dataZoom: [
+      { type: 'inside', xAxisIndex: [0, 1], start: 55, end: 100 },
+      { type: 'slider', xAxisIndex: [0, 1], top: '92%', start: 55, end: 100 },
+    ],
+    series: [
+      { name: 'K線', type: 'candlestick', data: kbars,
+        xAxisIndex: 0, yAxisIndex: 0 },
+      { name: 'MA20', type: 'line', data: ma20, xAxisIndex: 0, yAxisIndex: 0,
+        showSymbol: false, lineStyle: { width: 1.5, type: 'dashed', color: '#7f8c8d' } },
+      { name: '成交量', type: 'bar', data: vols, xAxisIndex: 1, yAxisIndex: 1 },
+    ],
+  });
+  window.addEventListener('resize', () => chart.resize());
+}
+</script>
+</body>
+</html>
