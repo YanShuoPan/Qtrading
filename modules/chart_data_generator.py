@@ -65,6 +65,14 @@ def generate_chart_data(output_dir: str = "docs", db_path: str | None = None) ->
     chart_dir = os.path.join(output_dir, "chart_data")
     os.makedirs(chart_dir, exist_ok=True)
 
+    # 先複製前端頁面再做 DB 工作：即使後續失敗，chart.html 仍會部署，
+    # 個股連結只會顯示「暫無資料」而非整頁 404
+    src = os.path.join(os.path.dirname(__file__), "..", "static", "chart.html")
+    if os.path.exists(src):
+        shutil.copy(src, os.path.join(output_dir, "chart.html"))
+    else:
+        logger.warning("⚠️ static/chart.html 不存在，略過複製")
+
     with sqlite3.connect(db_path) as conn:
         prices = pd.read_sql_query(
             "SELECT code, date, open, high, low, close, volume "
@@ -104,12 +112,6 @@ def generate_chart_data(output_dir: str = "docs", db_path: str | None = None) ->
         except Exception as e:
             logger.debug(f"{code} 圖表資料產生失敗: {e}")
             fail += 1
-
-    src = os.path.join(os.path.dirname(__file__), "..", "static", "chart.html")
-    if os.path.exists(src):
-        shutil.copy(src, os.path.join(output_dir, "chart.html"))
-    else:
-        logger.warning("⚠️ static/chart.html 不存在，略過複製")
 
     logger.info(f"✅ 圖表資料完成: {ok} 支成功, {fail} 支失敗, {skipped} 支無有效資料")
     return ok

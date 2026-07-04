@@ -106,6 +106,14 @@ class TestParseTwse:
         df = _parse_twse_mi_index({"stat": "很抱歉，沒有符合條件的資料!"}, TRADE_DATE)
         assert df.empty
 
+    def test_short_row_does_not_abort_parse(self):
+        """欄位數不足的異常列（如小計列）應被跳過，不得讓整表解析中斷"""
+        payload = _twse_payload()
+        # 在正常列之間插入一筆只有 3 欄的短列
+        payload["tables"][1]["data"].insert(1, ["小計", "合計", "38,364,633"])
+        df = _parse_twse_mi_index(payload, TRADE_DATE)
+        assert set(df["code"]) == {"2330", "8110"}  # 正常列全數保留
+
 
 class TestParseTpex:
     """TPEx 上櫃行情解析"""

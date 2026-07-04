@@ -81,7 +81,12 @@ def _parse_twse_mi_index(payload: dict, trade_date: date) -> pd.DataFrame:
             continue
 
         rows = []
+        max_idx = max(idx.values())
+        short_rows = 0
         for r in data:
+            if len(r) <= max_idx:  # 欄位數不足的異常列（如小計列），跳過以免整表解析中斷
+                short_rows += 1
+                continue
             ohlc = [_parse_number(r[idx[k]]) for k in ("開盤價", "最高價", "最低價", "收盤價")]
             if any(v is None for v in ohlc):
                 continue  # 無成交
@@ -92,6 +97,8 @@ def _parse_twse_mi_index(payload: dict, trade_date: date) -> pd.DataFrame:
                 "open": ohlc[0], "high": ohlc[1], "low": ohlc[2], "close": ohlc[3],
                 "volume": int(volume) if volume is not None else 0,
             })
+        if short_rows:
+            logger.debug(f"TWSE 解析跳過 {short_rows} 筆欄位數不足的列")
         if rows:
             return pd.DataFrame(rows, columns=_COLUMNS)
 

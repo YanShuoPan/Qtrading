@@ -12,7 +12,7 @@ from .logger import get_logger
 logger = get_logger(__name__)
 
 
-def _download_two_pass(batch_codes, target_start, batch_label: str = "") -> tuple:
+def _download_two_pass(batch_codes, target_start, batch_label: str = "") -> tuple[list, set]:
     """
     單一批次的兩段式下載：先試 .TW（上市），無資料者改試 .TWO（上櫃）
 
@@ -230,7 +230,7 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     return result
 
 
-def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple:
+def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple[pd.DataFrame, list]:
     """
     過濾掉資料過舊的股票，避免用非最新交易日的資料選股
 
