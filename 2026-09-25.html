@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026-09-25 台股推薦</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft JhengHei", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .header .date {
+            font-size: 1.2em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px 30px;
+        }
+
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title.strong {
+            color: #667eea;
+        }
+
+        .section-title.potential {
+            color: #764ba2;
+        }
+
+        .section-title.continuation-yesterday {
+            color: #0f766e;
+            border-bottom-color: #0f766e;
+        }
+
+        .section-title.continuation-daybefore {
+            color: #b45309;
+            border-bottom-color: #b45309;
+        }
+
+        .stock-card.still-valid {
+            background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+        }
+
+        .stock-card.no-longer-valid {
+            background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);
+            opacity: 0.75;
+        }
+
+        .stock-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stock-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .stock-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .stock-code {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stock-name {
+            font-size: 1.1em;
+            color: #333;
+        }
+
+        .stock-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .stock-tag {
+            background: rgba(102, 126, 234, 0.12);
+            color: #5a6fd6;
+            font-size: 0.72em;
+            padding: 2px 7px;
+            border-radius: 10px;
+            border: 1px solid rgba(102, 126, 234, 0.25);
+            white-space: nowrap;
+        }
+
+        .stock-info {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .chart-image {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .chart-image:hover {
+            transform: scale(1.02);
+            cursor: pointer;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 30px;
+            background: #f5f7fa;
+            color: #666;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .stock-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .content {
+                padding: 20px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 台股推薦</h1>
+            <div class="date">2026-09-25</div>
+        </div>
+
+        <div class="content">
+
+            <div style="text-align: center; margin-bottom: 35px;">
+                <a href="2026-09-25_hot.html" class="btn" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%); font-size: 1.1em; padding: 14px 36px;">
+                    🔥 觀察池 & 熱門族群 (2026-09-25)
+                </a>
+            </div>
+
+            <div class="section">
+                <div class="section-title strong">
+                    <span>👀</span>
+                    <span>有機會噴 - 前100大交易量能</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=6207', '_blank')">
+                        <div class="stock-code">6207</div>
+                        <div class="stock-name">雷科</div>
+                        <div class="stock-tags"><span class="stock-tag">半導體設備</span><span class="stock-tag">電子零組件</span></div>
+                        <div class="stock-info">斜率: 0.656</div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +2,397,606</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-09-25/有機會噴-前100大交易量能_batch_1_2026-09-25_103932.png" alt="K線圖" class="chart-image" onclick="window.open('images/2026-09-25/有機會噴-前100大交易量能_batch_1_2026-09-25_103932.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title potential">
+                    <span>👀</span>
+                    <span>有機會噴 - 其餘</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=2493', '_blank')">
+                        <div class="stock-code">2493</div>
+                        <div class="stock-name">揚博</div>
+                        <div class="stock-tags"><span class="stock-tag">電子零組件</span></div>
+                        <div class="stock-info">斜率: 0.675</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 36.5</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 2.09%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 7.85</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -1,032,891</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -37,962</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=8042', '_blank')">
+                        <div class="stock-code">8042</div>
+                        <div class="stock-name">金山電</div>
+                        <div class="stock-tags"><span class="stock-tag">被動元件</span><span class="stock-tag">電子零組件</span></div>
+                        <div class="stock-info">斜率: 0.604</div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -482,252</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=1708', '_blank')">
+                        <div class="stock-code">1708</div>
+                        <div class="stock-name">東鹼</div>
+                        <div class="stock-tags"><span class="stock-tag">化學</span></div>
+                        <div class="stock-info">斜率: 0.024</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 12.7</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 3.06%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.71</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +4,148,134</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買3日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=2369', '_blank')">
+                        <div class="stock-code">2369</div>
+                        <div class="stock-name">菱生</div>
+                        <div class="stock-tags"><span class="stock-tag">封測</span><span class="stock-tag">半導體材料</span></div>
+                        <div class="stock-info">斜率: -0.003</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 -</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 2.38</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -7,375,530</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=9933', '_blank')">
+                        <div class="stock-code">9933</div>
+                        <div class="stock-name">中鼎</div>
+                        
+                        <div class="stock-info">斜率: 0.002</div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 7.6</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 2.32%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.61</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +3,562,406</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -116,700</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=6190', '_blank')">
+                        <div class="stock-code">6190</div>
+                        <div class="stock-name">萬泰科</div>
+                        <div class="stock-tags"><span class="stock-tag">電源</span><span class="stock-tag">網通</span></div>
+                        <div class="stock-info">斜率: 0.084</div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +475,987</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-09-25/有機會噴-其餘_batch_1_2026-09-25_103934.png" alt="K線圖" class="chart-image" onclick="window.open('images/2026-09-25/有機會噴-其餘_batch_1_2026-09-25_103934.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="section">
+                <div class="section-title continuation-yesterday">
+                    <span>🔄</span>
+                    <span>昨日延續觀察（2026-09-24 推薦）</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card still-valid" onclick="window.open('chart.html?code=4540', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">4540</div>
+                        <div class="stock-name">全球傳動</div>
+                        <div class="stock-tags"><span class="stock-tag">重電</span><span class="stock-tag">馬達</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 -</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.98</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -626,713</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title continuation-daybefore">
+                    <span>📋</span>
+                    <span>前日延續觀察（2026-09-23 推薦）</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card no-longer-valid" onclick="window.open('chart.html?code=2882', '_blank')">
+                        <span style="display:inline-block;background:#92400e;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">已轉弱</span>
+                        <div class="stock-code">2882</div>
+                        <div class="stock-name">國泰金</div>
+                        <div class="stock-tags"><span class="stock-tag">金融</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 13.0</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 3.17%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.59</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -11,870,508</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +3,912,269</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">0/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('chart.html?code=3029', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">3029</div>
+                        <div class="stock-name">零壹</div>
+                        <div class="stock-tags"><span class="stock-tag">資安</span><span class="stock-tag">網通</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 17.1</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 4.58%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 3.79</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 -1,153,985</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -3,345</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買3日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">3/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('chart.html?code=3293', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">3293</div>
+                        <div class="stock-name">鈊象</div>
+                        <div class="stock-tags"><span class="stock-tag">文創</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +3,732,921</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +988,000</span>
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">連買3日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">融資連減10日</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card no-longer-valid" onclick="window.open('chart.html?code=6191', '_blank')">
+                        <span style="display:inline-block;background:#92400e;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">已轉弱</span>
+                        <div class="stock-code">6191</div>
+                        <div class="stock-name">精成科</div>
+                        <div class="stock-tags"><span class="stock-tag">PCB</span><span class="stock-tag">電子零組件</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E 14.3</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 3.16%</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 1.12</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +509,993</span>
+                            <span style="background: #fee2e2; color: #991b1b; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 -69,000</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dbeafe; color: #2563eb; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">2/4 策略看好</span>
+                        </div>
+                    </div>
+
+                    <div class="stock-card still-valid" onclick="window.open('chart.html?code=2340', '_blank')">
+                        <span style="display:inline-block;background:#134e4a;color:white;font-size:0.8em;font-weight:bold;padding:3px 10px;border-radius:12px;margin-bottom:6px;">仍符合</span>
+                        <div class="stock-code">2340</div>
+                        <div class="stock-name">台亞</div>
+                        <div class="stock-tags"><span class="stock-tag">LED</span><span class="stock-tag">LED磊晶</span></div>
+                        <div style="display: flex; gap: 6px; margin-top: 6px; flex-wrap: wrap;">
+                            <span style="background: #eef2ff; color: #4338ca; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/E -</span>
+                            <span style="background: #fef3c7; color: #92400e; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">殖利率 -</span>
+                            <span style="background: #ecfdf5; color: #065f46; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">P/B 2.38</span>
+                        </div>
+                        <div style="display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap;">
+                            <span style="background: #dcfce7; color: #166534; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">外資 +2,784,956</span>
+                            <span style="background: #f3f4f6; color: #6b7280; padding: 2px 7px; border-radius: 4px; font-size: 0.75em;">投信 +0</span>
+                        </div>
+                        <div style="margin-top: 4px;">
+                            <span style="background: #dcfce7; color: #059669; padding: 2px 7px; border-radius: 4px; font-size: 0.75em; font-weight: bold;">4/4 策略看好</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title" style="color: #e74c3c; border-bottom-color: #e74c3c;">
+                    <span>🔥</span>
+                    <span>破底翻型態 (五日內) - 至少等三天站穩十日線</span>
+                </div>
+
+                <div class="stock-grid">
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=3465', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">3465</div>
+                        <div class="stock-name">進泰電子</div>
+                        <div class="stock-info">收回: 09/24 (4.96%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=3531', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">3531</div>
+                        <div class="stock-name">先益</div>
+                        <div class="stock-info">收回: 09/24 (2.41%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=1611', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">1611</div>
+                        <div class="stock-name">中電</div>
+                        <div class="stock-info">收回: 09/21 (2.25%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=2505', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2505</div>
+                        <div class="stock-name">國揚</div>
+                        <div class="stock-info">收回: 09/21 (1.80%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=2538', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">2538</div>
+                        <div class="stock-name">基泰</div>
+                        <div class="stock-info">收回: 09/21 (1.30%)</div>
+                    </div>
+
+                    <div class="stock-card" onclick="window.open('chart.html?code=5512', '_blank')" style="background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);">
+                        <div class="stock-code" style="color: #e74c3c;">5512</div>
+                        <div class="stock-name">力麒</div>
+                        <div class="stock-info">收回: 09/21 (3.34%)</div>
+                    </div>
+
+                </div>
+
+                <div class="chart-container">
+
+                    <img src="images/2026-09-25/破底翻_batch_1_2026-09-25_103936.png" alt="破底翻K線圖" class="chart-image" onclick="window.open('images/2026-09-25/破底翻_batch_1_2026-09-25_103936.png', '_blank')">
+
+                </div>
+
+            </div>
+
+            <div class="nav-buttons">
+                <a href="index.html" class="btn">📅 回到首頁</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>⚠️ 本資訊僅供學習研究使用，不構成任何投資建議</p>
+            <p>投資有風險，請謹慎評估</p>
+        </div>
+    </div>
+</body>
+</html>
