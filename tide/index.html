@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="zh-TW"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>潮汐策略回測圖</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #F3F5F8;
+    --surface: #FFFFFF;
+    --surface-2: #ECF0F4;
+    --border: #DCE2E9;
+    --text: #172230;
+    --text-muted: #5B6774;
+    --text-faint: #8996A3;
+    --accent-ma10: #2F6FE0;
+    --accent-ma60: #D6842A;
+    --bb: #8B5CF6;
+    --up: #D64550;
+    --down: #1E9E5A;
+    --entry: #049C7C;
+    --exit: #7A4FE0;
+    --short-entry: #C2410C;
+    --short-exit: #0891B2;
+    --v-reversal: #B8860B;
+    --grid: #E3E8EE;
+    --crosshair: #93A2B1;
+    --shadow: 0 1px 2px rgba(23,34,48,0.06), 0 8px 24px rgba(23,34,48,0.06);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0A0E15;
+      --surface: #111827;
+      --surface-2: #151E2C;
+      --border: #253046;
+      --text: #E8EDF4;
+      --text-muted: #92A0B3;
+      --text-faint: #5F6D80;
+      --accent-ma10: #6EA3FF;
+      --accent-ma60: #F2A657;
+      --bb: #B79CFF;
+      --up: #F0596A;
+      --down: #35C783;
+      --entry: #2BE0B4;
+      --exit: #B198FF;
+      --short-entry: #FB923C;
+      --short-exit: #22D3EE;
+      --v-reversal: #F5D442;
+      --grid: #1B2536;
+      --crosshair: #47536A;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0A0E15;
+    --surface: #111827;
+    --surface-2: #151E2C;
+    --border: #253046;
+    --text: #E8EDF4;
+    --text-muted: #92A0B3;
+    --text-faint: #5F6D80;
+    --accent-ma10: #6EA3FF;
+    --accent-ma60: #F2A657;
+    --bb: #B79CFF;
+    --up: #F0596A;
+    --down: #35C783;
+    --entry: #2BE0B4;
+    --exit: #B198FF;
+    --short-entry: #FB923C;
+    --short-exit: #22D3EE;
+    --v-reversal: #F5D442;
+    --grid: #1B2536;
+    --crosshair: #47536A;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px rgba(0,0,0,0.35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", -apple-system, "Segoe UI", "Microsoft JhengHei", sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 24px 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  header.top {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  header.top h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+
+  header.top p.sub {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+  }
+
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat .label {
+    font-size: 0.72rem;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 500;
+  }
+
+  .stat .value {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .stat .value.up { color: var(--up); }
+  .stat .value.down { color: var(--down); }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .chart-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .legend {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    user-select: none;
+    transition: opacity 0.15s ease;
+  }
+
+  .chip .dot {
+    width: 9px; height: 9px; border-radius: 50%; flex: none;
+  }
+
+  .chip.off { opacity: 0.4; }
+
+  .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .hint {
+    font-size: 0.76rem;
+    color: var(--text-faint);
+  }
+
+  button.tool {
+    font-family: inherit;
+    font-size: 0.8rem;
+    color: var(--text);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 12px;
+    cursor: pointer;
+  }
+
+  button.tool:hover { border-color: var(--accent-ma10); }
+  button.tool:focus-visible, .chip:focus-visible { outline: 2px solid var(--accent-ma10); outline-offset: 2px; }
+
+  .chart-wrap {
+    position: relative;
+    padding: 12px 16px 4px;
+  }
+
+  #mainCanvas {
+    display: block;
+    width: 100%;
+    height: 540px;
+    cursor: grab;
+    touch-action: none;
+  }
+  #mainCanvas.dragging { cursor: grabbing; }
+
+  #minimapCanvas {
+    display: block;
+    width: 100%;
+    height: 56px;
+    cursor: pointer;
+    touch-action: none;
+  }
+
+  .minimap-wrap { padding: 4px 16px 16px; }
+
+  .tooltip {
+    position: absolute;
+    pointer-events: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 10px 12px;
+    font-size: 0.78rem;
+    line-height: 1.55;
+    color: var(--text);
+    min-width: 190px;
+    opacity: 0;
+    transition: opacity 0.08s ease;
+    z-index: 5;
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip .t-date { font-weight: 600; margin-bottom: 4px; font-family: "IBM Plex Mono", monospace; }
+  .tooltip .row { display: flex; justify-content: space-between; gap: 14px; color: var(--text-muted); }
+  .tooltip .row b { color: var(--text); font-family: "IBM Plex Mono", monospace; font-weight: 500; }
+  .tooltip .trade-flag { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); font-weight: 600; }
+
+  table.trades {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+  }
+
+  .table-scroll { overflow-x: auto; }
+
+  table.trades th, table.trades td {
+    padding: 8px 14px;
+    text-align: right;
+    white-space: nowrap;
+    font-family: "IBM Plex Mono", monospace;
+  }
+  table.trades th:first-child, table.trades td:first-child,
+  table.trades th:nth-child(2), table.trades td:nth-child(2),
+  table.trades th:nth-child(3), table.trades td:nth-child(3) {
+    text-align: left;
+    font-family: "IBM Plex Sans", sans-serif;
+  }
+
+  table.trades thead th {
+    color: var(--text-faint);
+    font-weight: 500;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+  }
+
+  table.trades tbody tr { border-bottom: 1px solid var(--border); }
+  table.trades tbody tr:hover { background: var(--surface-2); }
+  table.trades td.pos { color: var(--up); }
+  table.trades td.neg { color: var(--down); }
+
+  .panel-title {
+    padding: 14px 16px 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  .panel-title .n { color: var(--text-faint); font-weight: 400; font-size: 0.8rem; }
+
+  footer.note {
+    color: var(--text-faint);
+    font-size: 0.76rem;
+    line-height: 1.6;
+    padding: 4px 2px;
+  }
+
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+
+<div class="page">
+  <header class="top">
+    <a id="homeLink" href="../" hidden style="font-size:0.85rem;color:var(--text-muted);text-decoration:none">← 回首頁</a>
+    <h1 id="pageTitle">潮汐策略回測：台指現貨 K 線 + 模擬進出場</h1>
+    <p class="sub" id="pageSub">進場：站上60日均線 + 拉回10日均線後收回站上　出場：從持倉高點回落2.0%　資料：台指現貨(^TWII)代理，1997-07 ~ 2026-09</p>
+  </header>
+
+  <div class="stats" id="statsRow"></div>
+
+  <div class="panel">
+    <div class="chart-toolbar">
+      <div class="legend" id="legend"></div>
+      <div class="toolbar-right">
+        <span class="hint">滾輪縮放・拖曳平移・下方縮圖可跳轉</span>
+        <button class="tool" id="resetBtn">重置檢視</button>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="mainCanvas"></canvas>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+    <div class="minimap-wrap">
+      <canvas id="minimapCanvas"></canvas>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">模擬交易明細 <span class="n" id="tableCount"></span></div>
+    <div class="table-scroll">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>#</th><th>進場日</th><th>出場日</th><th>持有天數</th>
+            <th>進場價</th><th>出場價</th><th>期間高點</th><th>損益點數</th><th>損益%</th>
+          </tr>
+        </thead>
+        <tbody id="tradeTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">空方(鏡像策略)模擬交易明細 <span class="n" id="shortTableCount"></span></div>
+    <div class="table-scroll">
+      <table class="trades">
+        <thead>
+          <tr>
+            <th>#</th><th>放空日</th><th>回補日</th><th>持有天數</th>
+            <th>放空價</th><th>回補價</th><th>期間低點</th><th>損益點數</th><th>損益%</th>
+          </tr>
+        </thead>
+        <tbody id="shortTradeTbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer class="note" id="pageFooter">
+    方法說明：技術面背景（K線、MA10、MA60）為台指現貨代理，非台指期貨本尊，兩者日內走勢高度同步但仍有基差；進出場為機械化規則模擬結果，非真人操作紀錄。完整方法與限制見
+    yoteame_ptt_trades/STRATEGY_FINDINGS.md。
+  </footer>
+</div>
+
+<script>
+(async function () {
+  async function loadData() {
+    for (const path of ['backtest/data.json', 'data.json', './data.json']) {
+      try {
+        const res = await fetch(path);
+        if (res.ok) return await res.json();
+      } catch (e) { /* try next path */ }
+    }
+    throw new Error('data.json not found at any known path');
+  }
+
+  let data;
+  try {
+    data = await loadData();
+  } catch (e) {
+    document.querySelector('.page').innerHTML =
+      '<p style="color:#D64550;font-family:monospace;padding:40px;">資料檔載入失敗：' + e.message + '</p>';
+    return;
+  }
+  const candles = data.candles;
+  const trades = data.trades;
+  const shortTrades = data.short_trades || [];
+
+  // 資料檔可帶 meta 覆寫頁首/頁尾文字（GitHub Pages 版用；artifact 版沒有 meta 就維持原樣）
+  if (data.meta) {
+    if (data.meta.title) document.getElementById('pageTitle').textContent = data.meta.title;
+    if (data.meta.sub) document.getElementById('pageSub').textContent = data.meta.sub;
+    if (data.meta.footer) document.getElementById('pageFooter').textContent = data.meta.footer;
+    if (data.meta.home) { const a = document.getElementById('homeLink'); a.href = data.meta.home; a.hidden = false; }
+  }
+
+  const dateIndex = new Map();
+  candles.forEach((c, i) => dateIndex.set(c.t, i));
+
+  trades.forEach(tr => {
+    tr.entryIdx = dateIndex.has(tr.entry_date) ? dateIndex.get(tr.entry_date) : null;
+    tr.exitIdx = tr.exit_date && dateIndex.has(tr.exit_date) ? dateIndex.get(tr.exit_date) : null;
+  });
+  shortTrades.forEach(tr => {
+    tr.entryIdx = dateIndex.has(tr.entry_date) ? dateIndex.get(tr.entry_date) : null;
+    tr.exitIdx = tr.exit_date && dateIndex.has(tr.exit_date) ? dateIndex.get(tr.exit_date) : null;
+  });
+
+  // ---------- Stats row ----------
+  const closed = trades.filter(t => t.net_points !== null);
+  const wins = closed.filter(t => t.net_points > 0);
+  const totalPts = closed.reduce((s, t) => s + t.net_points, 0);
+  const avgPts = totalPts / closed.length;
+  const avgDays = closed.reduce((s, t) => s + t.days_held, 0) / closed.length;
+  const winRate = (wins.length / closed.length) * 100;
+
+  const shortClosed = shortTrades.filter(t => t.net_points !== null);
+  const shortWins = shortClosed.filter(t => t.net_points > 0);
+  const shortTotalPts = shortClosed.reduce((s, t) => s + t.net_points, 0);
+  const shortWinRate = shortClosed.length ? (shortWins.length / shortClosed.length) * 100 : 0;
+
+  const statsRow = document.getElementById('statsRow');
+  const statDefs = [
+    ['多方交易筆數', closed.length, ''],
+    ['多方勝率', winRate.toFixed(1) + '%', winRate >= 50 ? 'up' : 'down'],
+    ['多方總點數', (totalPts >= 0 ? '+' : '') + totalPts.toFixed(1), totalPts >= 0 ? 'up' : 'down'],
+    ['平均每筆', (avgPts >= 0 ? '+' : '') + avgPts.toFixed(1) + ' 點', avgPts >= 0 ? 'up' : 'down'],
+    ['平均持有天數', avgDays.toFixed(1) + ' 天', ''],
+    ['空方勝率', shortWinRate.toFixed(1) + '%', shortWinRate >= 50 ? 'up' : 'down'],
+    ['空方總點數', (shortTotalPts >= 0 ? '+' : '') + shortTotalPts.toFixed(1), shortTotalPts >= 0 ? 'up' : 'down'],
+  ];
+  statDefs.forEach(([label, value, cls]) => {
+    const el = document.createElement('div');
+    el.className = 'stat';
+    el.innerHTML = `<div class="label">${label}</div><div class="value ${cls}">${value}</div>`;
+    statsRow.appendChild(el);
+  });
+
+  // ---------- Trade table ----------
+  document.getElementById('tableCount').textContent = `共 ${trades.length} 筆（含未平倉）`;
+  const tbody = document.getElementById('tradeTbody');
+  trades.forEach(t => {
+    const tr = document.createElement('tr');
+    const ptsCls = t.net_points === null ? '' : (t.net_points > 0 ? 'pos' : 'neg');
+    tr.innerHTML = `
+      <td>${t.id}</td>
+      <td>${t.entry_date}</td>
+      <td>${t.exit_date || '持倉中'}</td>
+      <td>${t.days_held ?? '-'}</td>
+      <td>${t.entry_price.toFixed(1)}</td>
+      <td>${t.exit_price !== null ? t.exit_price.toFixed(1) : '-'}</td>
+      <td>${t.peak != null ? t.peak.toFixed(1) : '-'}</td>
+      <td class="${ptsCls}">${t.net_points !== null ? (t.net_points > 0 ? '+' : '') + t.net_points.toFixed(1) : '-'}</td>
+      <td class="${ptsCls}">${t.net_pct !== null ? (t.net_pct > 0 ? '+' : '') + t.net_pct.toFixed(2) + '%' : '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('shortTableCount').textContent = `共 ${shortTrades.length} 筆（含未平倉）`;
+  const shortTbody = document.getElementById('shortTradeTbody');
+  shortTrades.forEach(t => {
+    const tr = document.createElement('tr');
+    const ptsCls = t.net_points === null ? '' : (t.net_points > 0 ? 'pos' : 'neg');
+    tr.innerHTML = `
+      <td>${t.id}</td>
+      <td>${t.entry_date}</td>
+      <td>${t.exit_date || '持倉中'}</td>
+      <td>${t.days_held ?? '-'}</td>
+      <td>${t.entry_price.toFixed(1)}</td>
+      <td>${t.exit_price !== null ? t.exit_price.toFixed(1) : '-'}</td>
+      <td>${t.trough != null ? t.trough.toFixed(1) : '-'}</td>
+      <td class="${ptsCls}">${t.net_points !== null ? (t.net_points > 0 ? '+' : '') + t.net_points.toFixed(1) : '-'}</td>
+      <td class="${ptsCls}">${t.net_pct !== null ? (t.net_pct > 0 ? '+' : '') + t.net_pct.toFixed(2) + '%' : '-'}</td>
+    `;
+    shortTbody.appendChild(tr);
+  });
+
+  // ---------- Theming ----------
+  function cssVar(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // ---------- Chart state ----------
+  const N = candles.length;
+  let viewStart = Math.max(0, N - 120);
+  let viewCount = Math.min(120, N);
+  let series = { ma10: true, ma60: true, bb: true, trades: true, shortTrades: true, vReversalMark: true };
+
+  const canvas = document.getElementById('mainCanvas');
+  const ctx = canvas.getContext('2d');
+  const mini = document.getElementById('minimapCanvas');
+  const mctx = mini.getContext('2d');
+  const tooltip = document.getElementById('tooltip');
+  const wrap = document.querySelector('.chart-wrap');
+
+  let dpr = Math.max(1, window.devicePixelRatio || 1);
+  let W = 0, H = 0, padL = 56, padR = 16, padT = 16, padB = 46;
+
+  function resize() {
+    const rect = canvas.getBoundingClientRect();
+    W = rect.width; H = rect.height;
+    canvas.width = W * dpr; canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const mrect = mini.getBoundingClientRect();
+    mini.width = mrect.width * dpr; mini.height = mrect.height * dpr;
+    mctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    draw();
+  }
+
+  function clampView() {
+    viewCount = Math.max(15, Math.min(N, viewCount));
+    viewStart = Math.max(0, Math.min(N - viewCount, viewStart));
+  }
+
+  function visibleSlice() {
+    clampView();
+    const end = Math.min(N, viewStart + viewCount);
+    return { start: viewStart, end, list: candles.slice(viewStart, end) };
+  }
+
+  function priceRange(list) {
+    let lo = Infinity, hi = -Infinity;
+    list.forEach(c => {
+      lo = Math.min(lo, c.l); hi = Math.max(hi, c.h);
+      if (series.ma10 && c.ma10 != null) { lo = Math.min(lo, c.ma10); hi = Math.max(hi, c.ma10); }
+      if (series.ma60 && c.ma60 != null) { lo = Math.min(lo, c.ma60); hi = Math.max(hi, c.ma60); }
+      if (series.bb && c.bbu != null) { lo = Math.min(lo, c.bbl); hi = Math.max(hi, c.bbu); }
+    });
+    const pad = (hi - lo) * 0.08 || 10;
+    return { lo: lo - pad, hi: hi + pad };
+  }
+
+  function xForIndex(i, start, count) {
+    const plotW = W - padL - padR;
+    return padL + ((i - start + 0.5) / count) * plotW;
+  }
+  function yForPrice(p, lo, hi) {
+    const plotH = H - padT - padB;
+    return padT + (1 - (p - lo) / (hi - lo)) * plotH;
+  }
+
+  let animLo = null, animHi = null, animRAF = null;
+
+  function niceStep(range, targetTicks) {
+    const raw = range / targetTicks;
+    const mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const norm = raw / mag;
+    let step;
+    if (norm < 1.5) step = 1; else if (norm < 3) step = 2; else if (norm < 7) step = 5; else step = 10;
+    return step * mag;
+  }
+
+  function draw() {
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    const surface2 = cssVar('--surface-2');
+    const grid = cssVar('--grid');
+    const textFaint = cssVar('--text-faint');
+    const textMuted = cssVar('--text-muted');
+    const upC = cssVar('--up'), downC = cssVar('--down');
+    const ma10C = cssVar('--accent-ma10'), ma60C = cssVar('--accent-ma60');
+    const entryC = cssVar('--entry'), exitC = cssVar('--exit');
+    const shortEntryC = cssVar('--short-entry'), shortExitC = cssVar('--short-exit');
+
+    const { start, end, list } = visibleSlice();
+    const count = end - start;
+
+    // Y軸範圍隨X軸平移/縮放即時跟著變動：每次draw()都重新計算「目前畫面內K棒」該有的
+    // 價格區間，並用緩動動畫過渡過去，而不是瞬間跳動，讓縮放/拖曳時Y軸的變化肉眼可見、
+    // 感覺是「跟著一起動」而不是卡住不動。
+    const target = priceRange(list);
+    if (animLo === null) { animLo = target.lo; animHi = target.hi; }
+    const ease = 0.28;
+    animLo += (target.lo - animLo) * ease;
+    animHi += (target.hi - animHi) * ease;
+    const settled = Math.abs(target.lo - animLo) < 0.5 && Math.abs(target.hi - animHi) < 0.5;
+    if (settled) { animLo = target.lo; animHi = target.hi; }
+    const lo = animLo, hi = animHi;
+
+    if (!settled && !animRAF) {
+      animRAF = requestAnimationFrame(() => { animRAF = null; draw(); });
+    }
+
+    // grid + y labels
+    ctx.strokeStyle = grid; ctx.lineWidth = 1;
+    ctx.fillStyle = textFaint; ctx.font = '11px "IBM Plex Mono", monospace';
+    const step = niceStep(hi - lo, 6);
+    const firstTick = Math.ceil(lo / step) * step;
+    for (let p = firstTick; p <= hi; p += step) {
+      const y = yForPrice(p, lo, hi);
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+      ctx.fillText(p.toFixed(0), 4, y + 4);
+    }
+
+    // x labels — slanted so consecutive dates don't collide into each other
+    const xTickEvery = Math.max(1, Math.ceil(count / 10));
+    ctx.textAlign = 'right';
+    for (let i = 0; i < count; i += xTickEvery) {
+      const idx = start + i;
+      const x = xForIndex(idx, start, count);
+      ctx.save();
+      ctx.translate(x, H - padB + 14);
+      ctx.rotate(-Math.PI / 5);
+      ctx.fillText(candles[idx].t, 0, 0);
+      ctx.restore();
+    }
+    ctx.textAlign = 'left';
+
+    // candles
+    const plotW = W - padL - padR;
+    const bw = Math.max(1.4, Math.min(14, (plotW / count) * 0.62));
+    list.forEach((c, i) => {
+      const idx = start + i;
+      const x = xForIndex(idx, start, count);
+      const isUp = c.c >= c.o;
+      const col = isUp ? upC : downC;
+      ctx.strokeStyle = col; ctx.fillStyle = col;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x, yForPrice(c.h, lo, hi));
+      ctx.lineTo(x, yForPrice(c.l, lo, hi));
+      ctx.stroke();
+      const yO = yForPrice(c.o, lo, hi), yC = yForPrice(c.c, lo, hi);
+      const top = Math.min(yO, yC), h = Math.max(1, Math.abs(yC - yO));
+      ctx.fillRect(x - bw / 2, top, bw, h);
+    });
+
+    // MA lines
+    function drawMA(key, color) {
+      ctx.strokeStyle = color; ctx.lineWidth = 1.6; ctx.beginPath();
+      let started = false;
+      list.forEach((c, i) => {
+        const v = c[key];
+        if (v == null) { started = false; return; }
+        const idx = start + i;
+        const x = xForIndex(idx, start, count);
+        const y = yForPrice(v, lo, hi);
+        if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+      });
+      ctx.stroke();
+    }
+    if (series.bb) {
+      const bbC = cssVar('--bb');
+      // 上下軌之間填一層淡色，視覺上能一眼看出通道寬窄(盤整/趨勢)變化
+      ctx.beginPath();
+      let started = false;
+      list.forEach((c, i) => {
+        if (c.bbu == null) return;
+        const x = xForIndex(start + i, start, count);
+        const y = yForPrice(c.bbu, lo, hi);
+        if (!started) { ctx.moveTo(x, y); started = true; } else { ctx.lineTo(x, y); }
+      });
+      for (let i = list.length - 1; i >= 0; i--) {
+        const c = list[i];
+        if (c.bbl == null) continue;
+        const x = xForIndex(start + i, start, count);
+        const y = yForPrice(c.bbl, lo, hi);
+        ctx.lineTo(x, y);
+      }
+      ctx.closePath();
+      ctx.fillStyle = bbC + '14';
+      ctx.fill();
+      ctx.setLineDash([4, 3]);
+      drawMA('bbu', bbC);
+      drawMA('bbl', bbC);
+      ctx.setLineDash([]);
+    }
+    if (series.ma10) drawMA('ma10', ma10C);
+    if (series.ma60) drawMA('ma60', ma60C);
+
+    // trade markers — entry/exit connected by a dashed line + trade # label so
+    // pairs stay identifiable even when several trades sit close together.
+    if (series.trades) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padL, padT, W - padL - padR, H - padT - padB);
+      ctx.clip();
+
+      trades.forEach(t => {
+        drawOpenPosition(t, start, end, count, lo, hi, entryC, '#' + t.id);
+        const entryVisible = t.entryIdx !== null && t.entryIdx >= start && t.entryIdx < end;
+        const exitVisible = t.exitIdx !== null && t.exitIdx >= start && t.exitIdx < end;
+        if (!entryVisible && !exitVisible) return;
+
+        let ex = null, ey = null, xx = null, xy = null;
+        if (t.entryIdx !== null) {
+          ex = xForIndex(t.entryIdx, start, count);
+          ey = yForPrice(candles[t.entryIdx].l, lo, hi) + 16;
+        }
+        if (t.exitIdx !== null) {
+          xx = xForIndex(t.exitIdx, start, count);
+          xy = yForPrice(candles[t.exitIdx].h, lo, hi) - 16;
+        }
+
+        if (ex !== null && xx !== null) {
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = textMuted;
+          ctx.globalAlpha = 0.55;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(xx, xy);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (entryVisible) {
+          const isV = series.vReversalMark && t.entry_type === 'v_reversal';
+          if (isV) {
+            // V轉路徑：在三角形外面加一圈金色outline，跟一般拉回訊號區分開
+            ctx.save();
+            ctx.strokeStyle = cssVar('--v-reversal');
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.arc(ex, ey - 1, 9, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+          }
+          drawTriangle(ctx, ex, ey, 6, entryC, 'up');
+          drawLabel(ctx, ex, ey + 11, (isV ? 'V' : '#') + t.id, isV ? cssVar('--v-reversal') : entryC);
+        }
+        if (exitVisible) {
+          drawTriangle(ctx, xx, xy, 6, exitC, 'down');
+          drawLabel(ctx, xx, xy - 11, '#' + t.id, exitC);
+        }
+      });
+
+      ctx.restore();
+    }
+
+    // short-strategy markers — mirrored below the long trades: entry(放空)=down
+    // triangle at the day's high, exit(回補)=up triangle at the day's low, so
+    // they read as the opposite direction from the long entry/exit shapes.
+    if (series.shortTrades) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(padL, padT, W - padL - padR, H - padT - padB);
+      ctx.clip();
+
+      shortTrades.forEach(t => {
+        drawOpenPosition(t, start, end, count, lo, hi, shortEntryC, 'S' + t.id);
+        const entryVisible = t.entryIdx !== null && t.entryIdx >= start && t.entryIdx < end;
+        const exitVisible = t.exitIdx !== null && t.exitIdx >= start && t.exitIdx < end;
+        if (!entryVisible && !exitVisible) return;
+
+        let ex = null, ey = null, xx = null, xy = null;
+        if (t.entryIdx !== null) {
+          ex = xForIndex(t.entryIdx, start, count);
+          ey = yForPrice(candles[t.entryIdx].h, lo, hi) - 16;
+        }
+        if (t.exitIdx !== null) {
+          xx = xForIndex(t.exitIdx, start, count);
+          xy = yForPrice(candles[t.exitIdx].l, lo, hi) + 16;
+        }
+
+        if (ex !== null && xx !== null) {
+          ctx.save();
+          ctx.setLineDash([4, 4]);
+          ctx.strokeStyle = textMuted;
+          ctx.globalAlpha = 0.55;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ex, ey);
+          ctx.lineTo(xx, xy);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        if (entryVisible) {
+          drawTriangle(ctx, ex, ey, 6, shortEntryC, 'down');
+          drawLabel(ctx, ex, ey - 11, 'S' + t.id, shortEntryC);
+        }
+        if (exitVisible) {
+          drawTriangle(ctx, xx, xy, 6, shortExitC, 'up');
+          drawLabel(ctx, xx, xy + 11, 'S' + t.id, shortExitC);
+        }
+      });
+
+      ctx.restore();
+    }
+
+    drawMinimap();
+  }
+
+  // 未平倉部位：從進場價畫水平虛線到最新K棒（進場點捲出畫面左側時也照畫），右端標「持倉中」
+  function drawOpenPosition(t, start, end, count, lo, hi, color, label) {
+    if (t.exitIdx !== null || t.entryIdx === null || t.entryIdx >= end) return;
+    const x0 = Math.max(padL, xForIndex(t.entryIdx, start, count));
+    const x1 = end === N ? xForIndex(N - 1, start, count) : W - padR;
+    const y = yForPrice(t.entry_price, lo, hi);
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.4;
+    ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '600 10px "IBM Plex Mono", monospace';
+    ctx.textAlign = 'right';
+    ctx.fillStyle = color;
+    ctx.fillText(label + ' 持倉中', x1 - 4, y - 6);
+    ctx.textAlign = 'left';
+    ctx.restore();
+  }
+
+  function drawTriangle(c, x, y, r, color, dir) {
+    c.fillStyle = color;
+    c.strokeStyle = cssVar('--surface');
+    c.lineWidth = 1;
+    c.beginPath();
+    if (dir === 'up') {
+      c.moveTo(x, y + r); c.lineTo(x - r, y - r); c.lineTo(x + r, y - r);
+    } else {
+      c.moveTo(x, y - r); c.lineTo(x - r, y + r); c.lineTo(x + r, y + r);
+    }
+    c.closePath(); c.fill(); c.stroke();
+  }
+
+  function drawLabel(c, x, y, text, color) {
+    c.font = '600 10px "IBM Plex Mono", monospace';
+    c.textAlign = 'center';
+    c.fillStyle = color;
+    c.fillText(text, x, y);
+    c.textAlign = 'left';
+  }
+
+  function drawMinimap() {
+    const mrect = mini.getBoundingClientRect();
+    const mw = mrect.width, mh = mrect.height;
+    mctx.clearRect(0, 0, mw, mh);
+    const lo = Math.min(...candles.map(c => c.l));
+    const hi = Math.max(...candles.map(c => c.c));
+    const y = p => mh - 4 - ((p - lo) / (hi - lo)) * (mh - 8);
+    mctx.strokeStyle = cssVar('--text-faint');
+    mctx.lineWidth = 1;
+    mctx.beginPath();
+    candles.forEach((c, i) => {
+      const x = (i / N) * mw;
+      if (i === 0) mctx.moveTo(x, y(c.c)); else mctx.lineTo(x, y(c.c));
+    });
+    mctx.stroke();
+
+    // viewport window
+    const vx = (viewStart / N) * mw;
+    const vw = (viewCount / N) * mw;
+    mctx.fillStyle = cssVar('--accent-ma10');
+    mctx.globalAlpha = 0.15;
+    mctx.fillRect(vx, 0, vw, mh);
+    mctx.globalAlpha = 1;
+    mctx.strokeStyle = cssVar('--accent-ma10');
+    mctx.lineWidth = 1.5;
+    mctx.strokeRect(vx, 0.75, vw, mh - 1.5);
+  }
+
+  // ---------- Legend ----------
+  const legendDefs = [
+    { key: 'ma10', label: 'MA10', color: () => cssVar('--accent-ma10') },
+    { key: 'ma60', label: 'MA60', color: () => cssVar('--accent-ma60') },
+    { key: 'bb', label: '布林通道(20,2)', color: () => cssVar('--bb') },
+    { key: 'trades', label: '多方進場/出場', color: () => cssVar('--entry') },
+    { key: 'shortTrades', label: '空方進場/回補', color: () => cssVar('--short-entry') },
+    { key: 'vReversalMark', label: 'V轉訊號(金圈標記)', color: () => cssVar('--v-reversal') },
+  ];
+  const legendEl = document.getElementById('legend');
+  legendDefs.forEach(def => {
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.tabIndex = 0;
+    chip.innerHTML = `<span class="dot" style="background:${def.color()}"></span>${def.label}`;
+    chip.addEventListener('click', () => {
+      series[def.key] = !series[def.key];
+      chip.classList.toggle('off', !series[def.key]);
+      draw();
+    });
+    chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); chip.click(); } });
+    legendEl.appendChild(chip);
+  });
+
+  // ---------- Interaction: zoom / pan / hover ----------
+  canvas.addEventListener('wheel', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const { start, end, list } = visibleSlice();
+    const count = end - start;
+    const frac = Math.max(0, Math.min(1, (mouseX - padL) / (W - padL - padR)));
+    const centerIdx = start + frac * count;
+
+    const zoomFactor = e.deltaY > 0 ? 1.15 : 1 / 1.15;
+    const newCount = Math.round(viewCount * zoomFactor);
+    const newStart = Math.round(centerIdx - frac * newCount);
+    viewCount = newCount;
+    viewStart = newStart;
+    clampView();
+    draw();
+  }, { passive: false });
+
+  let dragging = false, dragStartX = 0, dragStartView = 0;
+  canvas.addEventListener('pointerdown', e => {
+    dragging = true; canvas.classList.add('dragging');
+    dragStartX = e.clientX; dragStartView = viewStart;
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointerup', () => { dragging = false; canvas.classList.remove('dragging'); });
+  canvas.addEventListener('pointerleave', () => { hideTooltip(); });
+
+  canvas.addEventListener('pointermove', e => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+
+    if (dragging) {
+      const { count } = (() => { const s = visibleSlice(); return { count: s.end - s.start }; })();
+      const dx = e.clientX - dragStartX;
+      const plotW = W - padL - padR;
+      const idxDelta = -(dx / plotW) * count;
+      viewStart = Math.round(dragStartView + idxDelta);
+      clampView();
+      draw();
+      hideTooltip();
+      return;
+    }
+    showTooltip(mouseX, mouseY);
+  });
+
+  function hideTooltip() { tooltip.classList.remove('show'); }
+
+  function showTooltip(mouseX, mouseY) {
+    const { start, end, list } = visibleSlice();
+    const count = end - start;
+    if (mouseX < padL || mouseX > W - padR) { hideTooltip(); return; }
+    const plotW = W - padL - padR;
+    const frac = (mouseX - padL) / plotW;
+    let idx = start + Math.floor(frac * count);
+    idx = Math.max(start, Math.min(end - 1, idx));
+    const c = candles[idx];
+    if (!c) { hideTooltip(); return; }
+
+    let html = `<div class="t-date">${c.t}</div>`;
+    html += row('開', c.o.toFixed(1));
+    html += row('高', c.h.toFixed(1));
+    html += row('低', c.l.toFixed(1));
+    html += row('收', c.c.toFixed(1));
+    if (c.ma10 != null) html += row('MA10', c.ma10.toFixed(1));
+    if (c.ma60 != null) html += row('MA60', c.ma60.toFixed(1));
+
+    const tEntry = trades.find(t => t.entryIdx === idx);
+    const tExit = trades.find(t => t.exitIdx === idx);
+    if (tEntry) {
+      const vTag = tEntry.entry_type === 'v_reversal' ? '（V轉路徑：深跌乖離反轉）' : '';
+      html += `<div class="trade-flag" style="color:${cssVar('--entry')}">進場 #${tEntry.id} @ ${tEntry.entry_price.toFixed(1)}${vTag}</div>`;
+    }
+    if (tExit) html += `<div class="trade-flag" style="color:${cssVar('--exit')}">出場 #${tExit.id} @ ${tExit.exit_price.toFixed(1)}（${tExit.net_points >= 0 ? '+' : ''}${tExit.net_points.toFixed(1)}點）</div>`;
+
+    const sEntry = shortTrades.find(t => t.entryIdx === idx);
+    const sExit = shortTrades.find(t => t.exitIdx === idx);
+    if (sEntry) html += `<div class="trade-flag" style="color:${cssVar('--short-entry')}">放空 S${sEntry.id} @ ${sEntry.entry_price.toFixed(1)}</div>`;
+    if (sExit) html += `<div class="trade-flag" style="color:${cssVar('--short-exit')}">回補 S${sExit.id} @ ${sExit.exit_price.toFixed(1)}（${sExit.net_points >= 0 ? '+' : ''}${sExit.net_points.toFixed(1)}點）</div>`;
+
+    tooltip.innerHTML = html;
+    tooltip.classList.add('show');
+
+    const tw = tooltip.offsetWidth, th = tooltip.offsetHeight;
+    let left = mouseX + 16, top = mouseY - th - 10;
+    if (left + tw > W - 4) left = mouseX - tw - 16;
+    if (top < 4) top = mouseY + 16;
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+
+    function row(label, val) {
+      return `<div class="row"><span>${label}</span><b>${val}</b></div>`;
+    }
+  }
+
+  // minimap interactions
+  let miniDragging = false;
+  function miniJump(clientX) {
+    const rect = mini.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+    const centerIdx = frac * N;
+    viewStart = Math.round(centerIdx - viewCount / 2);
+    clampView();
+    draw();
+  }
+  mini.addEventListener('pointerdown', e => { miniDragging = true; miniJump(e.clientX); mini.setPointerCapture(e.pointerId); });
+  mini.addEventListener('pointerup', () => { miniDragging = false; });
+  mini.addEventListener('pointermove', e => { if (miniDragging) miniJump(e.clientX); });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    viewStart = Math.max(0, N - 120);
+    viewCount = Math.min(120, N);
+    draw();
+  });
+
+  window.addEventListener('resize', resize);
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => draw());
+  resize();
+})();
+</script>
+
+</body></html>
