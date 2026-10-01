@@ -13,7 +13,9 @@ Qtrading is a fully automated daily stock-screening pipeline for the Taiwan stoc
 2. **Fundamental filter** — P/E screening via TWSE OpenAPI
 3. **Technical ensemble** — 4-signal vote (RSI / MACD / Bollinger Bands / volume)
 
-Picks are enriched with institutional chip data (FinMind API), rendered as candlestick charts, pushed to LINE subscribers, and published as a static report site on GitHub Pages. SQLite synced to Google Drive preserves 90 days of price history between CI runs; the codebase is modular (19 modules) with 41 unit tests gating deployment.
+Picks are enriched with institutional chip data (FinMind API), rendered as candlestick charts, pushed to LINE subscribers, and published as a static report site on GitHub Pages. SQLite synced to Google Drive preserves 90 days of price history between CI runs; the codebase is modular (19 modules) with 75 unit tests gating deployment.
+
+A separate **Tide (潮汐) strategy** times the TAIEX index itself: a long/short pullback-reclaim system (MA10/MA60, 2% trailing exit, Bollinger upper-band profit lock) evaluated on the TAIEX close. After each trading day a second workflow pushes the current position and a **next-day close scenario table** (which close range triggers which action) to LINE/Telegram, and publishes it to the top of the GitHub Pages site.
 
 **Live demo:** [yanshuopan.github.io/Qtrading](https://yanshuopan.github.io/Qtrading/) — full documentation below is in Traditional Chinese.
 
@@ -24,6 +26,8 @@ Picks are enriched with institutional chip data (FinMind API), rendered as candl
 📊 **[查看線上展示頁面](https://yanshuopan.github.io/Qtrading/)** (範例)
 
 ⭐ **最新特色**：多維度選股系統（基本面 + 法人籌碼 + AI 情緒 + 多策略 Ensemble）、**延續觀察追蹤**、GitHub Pages 展示頁面、智能歷史資料歸檔、LINE 通知。
+
+🌊 **潮汐策略**：加權指數多空擇時，每個交易日收盤後推播「明日收盤情境表」，並顯示在 GitHub Pages 首頁最上方。
 
 ## 🎯 核心功能
 
@@ -103,6 +107,21 @@ Picks are enriched with institutional chip data (FinMind API), rendered as candl
   - 超過 7 天的資料自動歸檔至 `archive/` 資料夾
   - 歸檔頁面獨立索引，方便查閱歷史資料
 - **即時更新**：每日執行後自動部署到 GitHub Pages
+
+### 🌊 潮汐策略（加權指數多空訊號）
+獨立於選股流程的大盤擇時策略：只看**台灣加權指數**的日收盤，判斷台指期多空進出（實際下單台指期近月，收盤前下單）。
+- **做多**：站上 MA60 且「前一日收盤跌破 MA10、當日收回」（MA10 近 5 日變化率 ≥ -1.5%）；或深跌 V 轉（MA10 低於 MA60 達 7%、MA10 斜率由負轉正、收盤站上 MA10）
+- **做空**：跌破 MA60 且「前一日收盤站上 MA10、當日跌破」、MA60 近 10 日變化率 < -0.6%、布林通道寬度近一年百分位 ≤ 80（只有寬度不符時記為「幻影單」，不下單但佔位到出場條件成立）
+- **出場**：從持倉最高（空單為最低）收盤回落（反彈）2%
+- **布林上緣鎖利**：持倉期間收盤曾貼近布林上軌（%B ≥ 0.95），之後上軌連 2 天不再上升（容忍 0.05%）且仍獲利 → 出場鎖利，但要等「最高收盤回落 2%」成立後隔天才重新找訊號
+- **連續虧損暫停**：不分多空連虧 3 筆，暫停 30 天
+- **一次只持有一個方向的部位**
+- **每日推播**：週一至週五收盤後（排程 14:30，GitHub 排程常延遲到傍晚），推送今日收盤動作、目前部位、**明日收盤情境表**（明天收盤落在哪個區間 → 該做什麼，精確到小數一位）；休市日自動跳過
+- **情境表做法**：把明天收盤當未知數從 -6% 掃到 +6%，每個價位都完整重跑一次引擎，再以二分法求出區間邊界，所以鎖利、幻影單、暫停等所有規則都已含在表內
+- **網頁**：GitHub Pages 首頁最上方顯示同一份內容，並連到 `tide/` 進出場圖表（2025 起，持有中以虛線＋「持倉中」標示）
+- **驗證**：獨立重寫規則的稽核程式與引擎 242 筆交易逐筆一致；抽樣 330 個歷史交易日，推播情境表與隔天實際動作 100% 一致
+
+> 規則推導與回測過程見 `backtest/STRATEGY_MEMO.md`（研究文件，未納入版控）。回測以加權指數代理，實際下單台指期有基差、滑價與交易成本；歷史績效不代表未來。
 
 ### 🐛 除錯與監控
 - **DEBUG_MODE**：詳細執行日誌與錯誤追蹤
@@ -189,6 +208,8 @@ graph TD
 | `EXTRA_USER_IDS` | 額外的訂閱者 LINE User IDs（逗號分隔） | Secret | 🔷 可選 |
 | `GROQ_API_KEY` | Groq AI API Key（用於情緒分析，`gsk_` 開頭） | Secret | 🔷 可選 |
 | `FINMIND_API_TOKEN` | FinMind API Token（用於法人籌碼/融資融券） | Secret | 🔷 可選 |
+| `TELEGRAM_BOT_TOKEN` | 潮汐推播改用 Telegram 時的 Bot token（有設就優先用 Telegram，否則用 LINE 推給 `LINE_USER_ID`） | Secret | 🔷 可選 |
+| `TELEGRAM_CHAT_ID` | 潮汐推播的 Telegram chat id（與上一項成對） | Secret | 🔷 可選 |
 | `DEBUG_MODE` | 啟用詳細除錯日誌 (`true`/`false`) | Variable | 🔷 可選 |
 
 #### 如何取得 rclone OAuth Token：
@@ -230,6 +251,7 @@ graph TD
    - 確認 LINE 收到推薦訊息和圖表（若有開啟通知）
    - 訪問 GitHub Pages 查看網頁展示（若有啟用）
 6. **等待每日自動執行**：每天 18:00 台北時間會自動運行
+7. **潮汐推播**：GitHub Actions → 選擇 `tide-alert` → Run workflow 可手動測試（會實際送出推播並部署 `tide/`）
 
 ## 📁 專案結構
 
@@ -260,17 +282,27 @@ Qtrading/
 │   ├── hot_stocks_generator.py  # 熱門題材股生成（RSS/PTT/Anue 爬蟲）
 │   ├── visualization.py         # K線圖表生成
 │   └── html_generator.py        # GitHub Pages HTML 生成器（含多維 badge）
+├── backtest/                     # 潮汐策略（其餘研究腳本未納入版控）
+│   ├── tide_backtest.py         # 潮汐策略引擎（多空互斥、2% 移動停利、布林上緣鎖利）
+│   ├── tide_next_close.py       # 明日收盤情境表
+│   ├── tide_daily_alert.py      # 每日推播（Telegram / LINE）＋輸出網頁
+│   ├── tide_pages.py            # GitHub Pages tide/ 輸出（status.json、圖表資料）
+│   ├── tide_chart.html          # 進出場圖表模板
+│   ├── tide_site/panel.js       # 首頁潮汐區塊
+│   └── twii_prices.py           # 加權指數日K（Yahoo＋證交所補缺漏）
 ├── tests/                        # 單元測試
 │   ├── __init__.py
 │   ├── test_strategies.py       # Ensemble 策略測試
 │   ├── test_stock_data.py       # 選股邏輯測試
-│   └── test_pool.py             # 觀察池模組測試
+│   ├── test_pool.py             # 觀察池模組測試
+│   └── test_tide.py             # 潮汐策略測試
 ├── requirements.txt              # Python 套件依賴
 ├── taiex.sqlite                  # 股價歷史資料（與 Google Drive 同步）
 ├── line_id.txt                   # LINE 通知開關（存在=開啟，不存在=關閉）
 ├── .github/
 │   └── workflows/
-│       └── daily.yml            # GitHub Actions 自動化流程
+│       ├── daily.yml            # 每日選股流程
+│       └── tide_alert.yml       # 潮汐策略每日推播＋tide/ 頁面
 └── README.md                    # 專案說明
 ```
 
@@ -411,6 +443,14 @@ python webhook_app.py
 
 ## 📝 更新日誌
 
+### v4.3.0 (2026-10-01)
+- 🌊 **潮汐策略上線**：加權指數多空擇時策略（`backtest/tide_*.py`）
+  - 每個交易日收盤後推播今日動作、目前部位與**明日收盤情境表**（Telegram 優先，否則 LINE 單一使用者）
+  - GitHub Pages 首頁最上方顯示潮汐區塊，`tide/` 提供 2025 起進出場圖表（持有中以虛線標示）
+  - 新增 `tide_alert.yml`，與 `daily.yml` 共用 concurrency 群組避免同時推 gh-pages
+  - 加權指數資料以證交所官方資料補 Yahoo 缺漏日
+  - 新增 `tests/test_tide.py`
+
 ### v4.2.0 (2026-06-09)
 - 🧹 **程式碼品質大掃除**：
   - 移除死碼：刪除 `image_upload.py` 模組及 6 個未使用的 import
@@ -537,6 +577,12 @@ python generate_historical_data.py 30  # 生成過去 30 天的資料
 1. 確認 `GDRIVE_CLIENT_ID`、`GDRIVE_CLIENT_SECRET`、`GDRIVE_TOKEN_JSON` 正確設定
 2. 檢查 token 是否包含 `refresh_token`（需要在本地用 `rclone config` 授權時取得）
 3. 查看 GitHub Actions 的 rclone logs artifact 了解詳細錯誤訊息
+
+### Q8: 潮汐推播的情境表怎麼看？
+隔天 13:25 左右看加權指數，落在哪一格就照該格動作操作（下單台指期近月）。每列代表「下界 ≤ 收盤 < 上界」，區間外（超過 ±6%）沿用最外側的動作。表上沒出現「布林上緣鎖利」代表明天不可能觸發（例如上軌當天仍在上升）。
+
+### Q9: 潮汐推播要改用 Telegram？
+在 GitHub Secrets 新增 `TELEGRAM_BOT_TOKEN` 與 `TELEGRAM_CHAT_ID`，下一次執行就會改用 Telegram；兩者都沒設時使用 `LINE_CHANNEL_ACCESS_TOKEN` + `LINE_USER_ID`。
 
 ## 🤝 貢獻指南
 
