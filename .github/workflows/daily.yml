@@ -7,6 +7,11 @@ on:
     - cron: "33 5 * * 1-5"
   workflow_dispatch:
 
+# 跟 tide_alert.yml 共用同一組，兩個都會推 gh-pages，排隊依序跑避免互相覆蓋/推送衝突
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
 jobs:
   run:
     runs-on: ubuntu-latest

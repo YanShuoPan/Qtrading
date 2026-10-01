@@ -1,0 +1,52 @@
+name: tide-alert
+
+# 潮汐策略每日推播＋GitHub Pages（gh-pages/tide/）更新，只看台灣加權指數。
+# 台股 13:30 收盤，Yahoo/證交所約 14:00 前有收盤資料；排在 14:30（UTC 06:30）。
+# GitHub 排程常延遲（daily.yml 註記平均 ~2.5hr），推的是隔天的情境表，晚到也不影響使用。
+on:
+  schedule:
+    - cron: "30 6 * * 1-5"
+  workflow_dispatch:
+
+# 跟 daily.yml 共用同一組，兩個都會推 gh-pages，排隊依序跑避免推送衝突
+concurrency:
+  group: gh-pages-deploy
+  cancel-in-progress: false
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write  # 推送到 gh-pages 分支
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install pandas numpy yfinance requests
+
+      - name: Run Tide alert and build pages
+        working-directory: backtest
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          LINE_USER_ID: ${{ secrets.LINE_USER_ID }}
+        # 排程觸發才檢查「最新收盤是不是今天」（休市日整個跳過）；手動觸發不檢查，方便測試
+        run: python tide_daily_alert.py --site-dir ../tide_site_out ${{ github.event_name == 'schedule' && '--require-today' || '' }}
+
+      # 休市日沒有輸出就不部署；只更新 gh-pages 的 tide/，其他檔案保留
+      - name: Deploy tide/ to GitHub Pages
+        if: hashFiles('tide_site_out/status.json') != ''
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./tide_site_out
+          publish_branch: gh-pages
+          destination_dir: tide
+          keep_files: true

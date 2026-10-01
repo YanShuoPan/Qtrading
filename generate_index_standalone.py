@@ -172,6 +172,8 @@ def generate_index_html(output_dir='.'):
         </div>
 
         <div class="content">
+            <!-- 潮汐策略區塊：tide/panel.js 讀 tide/status.json 畫在這裡（由 tide_alert 工作流程更新） -->
+            <div id="tide-panel"></div>
             <div class="intro">
                 <h2>選股策略</h2>
                 <p>基於 MA20 斜率與動能分析，每日篩選台股市場中的強勢股與潛力股</p>
@@ -195,6 +197,7 @@ def generate_index_html(output_dir='.'):
             </p>
         </div>
     </div>
+    <script src="tide/panel.js" defer></script>
 </body>
 </html>
 '''
