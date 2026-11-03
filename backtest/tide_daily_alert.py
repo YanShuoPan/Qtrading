@@ -145,7 +145,10 @@ def main() -> None:
     args = parser.parse_args()
 
     sc = Scenario()
-    today = pd.Timestamp.now(tz="Asia/Taipei").date()
+    now = pd.Timestamp.now(tz="Asia/Taipei")
+    # 排程常延遲，若延遲到跨過午夜但還沒到開盤（08:00），這次執行講的其實還是前一天收盤，
+    # 不能拿字面上的日期比對，否則會把「只是晚到」誤判成「休市」而整個跳過推播
+    today = now.date() if now.hour >= 8 else (now - pd.Timedelta(days=1)).date()
     if args.require_today and sc.last["Date"].date() != today:
         print(f"📌 最新資料是 {sc.last['Date']:%Y-%m-%d}，不是今天 {today}（休市或資料未更新），不推播也不更新頁面")
         return
