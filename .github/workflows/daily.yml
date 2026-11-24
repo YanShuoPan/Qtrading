@@ -1,9 +1,14 @@
 name: daily-picks
 
 on:
+  # 主要觸發來源：Google Cloud Scheduler 每個交易日台北 14:30 打 workflow_dispatch
+  # （設定方式見 scripts/cloud_scheduler_setup.md）
+  #
+  # 以下 schedule 只是「Cloud Scheduler 掛掉時的備援」，不要指望它準時：
+  # 實測 2026-09~11 共 40 次排程觸發，延遲中位數 6.65hr、最長 10.84hr，
+  # 沒有任何一次在 1 小時內觸發，而且延遲還在持續惡化。
+  # 排得早也沒用（台股 13:30 收盤，05:33 UTC 已是資料可用的最早時間）。
   schedule:
-    # 週一到週五 UTC 05:33 排程，GitHub Actions 平均延遲 ~2.5hr
-    # 預期實際觸發約 UTC 08:00 = 台北 16:00
     - cron: "33 5 * * 1-5"
   workflow_dispatch:
 
@@ -13,7 +18,45 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Cloud Scheduler 準時跑完之後，延遲好幾小時才送達的 schedule 事件會造成重複推播，
+  # 因此 schedule 觸發前先確認「今天（台北）是否已經成功執行過」
+  guard:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Skip delayed schedule if already ran today (Taipei)
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 手動 / Cloud Scheduler 的 workflow_dispatch 一律執行，只攔延遲的 schedule
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "✅ ${{ github.event_name }} 觸發，直接執行"
+            exit 0
+          fi
+
+          TODAY=$(TZ=Asia/Taipei date +%F)
+          DONE=$(gh api "repos/${{ github.repository }}/actions/workflows/daily.yml/runs?status=success&per_page=50" \
+            --jq "[.workflow_runs[]
+                   | select(.id != ${{ github.run_id }})
+                   | select(((((.run_started_at // .created_at) | fromdateiso8601) + 28800) | strftime(\"%Y-%m-%d\")) == \"$TODAY\")]
+                  | length") || DONE=0
+
+          if [ "${DONE:-0}" -gt 0 ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::今天（台北 $TODAY）已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "✅ 今天（台北 $TODAY）尚未成功執行，繼續"
+          fi
+
   run:
+    needs: guard
+    if: needs.guard.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: write  # 允許推送到 gh-pages 分支

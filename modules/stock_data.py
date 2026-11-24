@@ -230,12 +230,44 @@ def fetch_prices_yf(codes, lookback_days=120) -> pd.DataFrame:
     return result
 
 
+def majority_latest_date(prices: pd.DataFrame, min_coverage: float = 0.2):
+    """
+    取得「多數股票的最新交易日」，作為資料新鮮度的基準日
+
+    不直接用 prices["date"].max()，是因為當 yfinance 被限流時，
+    可能只有極少數股票拿到當日 K 棒（實際發生過：1976 支只有 3 支有當日資料），
+    這種情況下用 max() 當基準會把其餘 99% 的股票全部誤判為過舊。
+    改成從最新日期往回找，第一個「最新日期停在該天的股票比例 >= min_coverage」的日期。
+
+    Args:
+        prices: 股價數據 DataFrame（含 code, date 欄位）
+        min_coverage: 基準日至少要有多少比例的股票停在該日（預設 0.2）
+
+    Returns:
+        pd.Timestamp | None: 基準日；資料為空時回傳 None
+    """
+    if prices.empty or "code" not in prices.columns or "date" not in prices.columns:
+        return None
+
+    code_max = prices.groupby("code")["date"].max()
+    if code_max.empty:
+        return None
+
+    counts = code_max.value_counts().sort_index(ascending=False)
+    total = len(code_max)
+    for day, n in counts.items():
+        if n / total >= min_coverage:
+            return day
+    return code_max.max()
+
+
 def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple[pd.DataFrame, list]:
     """
     過濾掉資料過舊的股票，避免用非最新交易日的資料選股
 
-    以整體資料中的最新日期為基準（最近一個交易日），
+    以「多數股票的最新日期」為基準（見 majority_latest_date），
     排除自身最新日期落後超過 max_lag_days 天的股票。
+    比基準日還新的股票一律保留（落後天數為負）。
 
     Args:
         prices: 股價數據 DataFrame（含 code, date 欄位）
@@ -247,8 +279,12 @@ def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple[pd
     if prices.empty or "code" not in prices.columns or "date" not in prices.columns:
         return prices, []
 
-    latest_date = prices["date"].max()
+    latest_date = majority_latest_date(prices)
     code_max = prices.groupby("code")["date"].max()
+    if latest_date != code_max.max():
+        logger.warning(
+            f"   ⚠️  僅少數股票有 {code_max.max().date()} 資料，新鮮度基準日退回 {latest_date.date()}"
+        )
     stale_codes = sorted(code_max[(latest_date - code_max).dt.days > max_lag_days].index)
 
     if not stale_codes:
@@ -256,6 +292,29 @@ def filter_fresh_stocks(prices: pd.DataFrame, max_lag_days: int = 0) -> tuple[pd
 
     fresh = prices[~prices["code"].isin(stale_codes)]
     return fresh, stale_codes
+
+
+# 選股結果的欄位骨架：沒選到任何股票時，也要回傳有欄位的空 DataFrame，
+# 否則下游 picks["code"] 會因為 pandas 空 DataFrame 沒有欄位而拋 KeyError
+PICK_COLUMNS = {
+    "code": "object",
+    "close": "float64",
+    "ma20": "float64",
+    "distance": "float64",
+    "volatility": "float64",
+    "ma20_slope": "float64",
+    "max_distance": "float64",
+    "volume": "float64",
+    "avg_volume_10d": "float64",
+    "avg_volume_10d_lots": "float64",
+    "avg_ma20_distance": "float64",
+    "is_lowest_close": "bool",
+}
+
+
+def empty_picks() -> pd.DataFrame:
+    """回傳帶有完整欄位的空選股結果（0 列）"""
+    return pd.DataFrame({col: pd.Series(dtype=dtype) for col, dtype in PICK_COLUMNS.items()})
 
 
 def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
@@ -281,7 +340,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
     """
     if prices.empty or 'code' not in prices.columns:
         logger.warning("股價資料為空或缺少必要欄位，無法進行選股")
-        return pd.DataFrame()
+        return empty_picks()
     prices = prices.sort_values(["code", "date"])
 
     # 使用 transform 代替 apply 以確保保留所有欄位（包括 code）
@@ -372,7 +431,7 @@ def pick_stocks(prices: pd.DataFrame, top_k=30) -> pd.DataFrame:
         })
 
     if not results:
-        return pd.DataFrame()
+        return empty_picks()
 
     result_df = pd.DataFrame(results)
 

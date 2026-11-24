@@ -23,8 +23,8 @@ from modules.google_drive import (
 )
 from modules.line_messaging import broadcast_text, broadcast_button_message, get_active_subscribers
 from modules.stock_codes import get_stock_codes, get_stock_name, get_picks_top_k
-from modules.stock_data import fetch_prices_yf, pick_stocks, filter_fresh_stocks
-from modules.twse_daily import fetch_official_daily
+from modules.stock_data import fetch_prices_yf, pick_stocks, filter_fresh_stocks, majority_latest_date
+from modules.twse_daily import fetch_official_daily, latest_closed_trading_day
 from modules.visualization import plot_charts
 from modules.html_generator import generate_daily_html, generate_hot_stocks_html
 from modules.pool import ensure_pool_table, expire_pool, add_to_pool, get_active_pool, annotate_pool_heat
@@ -42,6 +42,18 @@ import pandas as pd
 # 初始化日誌
 setup_logger()
 logger = get_logger(__name__)
+
+
+def codes_of(df: pd.DataFrame) -> list:
+    """
+    安全取出 DataFrame 的 code 清單
+
+    沒選到任何股票時 DataFrame 可能完全沒有欄位，直接 df["code"] 會拋 KeyError
+    而中斷整個 pipeline（違反「永不中斷」原則），因此一律走這個取法。
+    """
+    if df.empty or "code" not in df.columns:
+        return []
+    return df["code"].tolist()
 
 
 def main():
@@ -104,7 +116,8 @@ def main():
         logger.info("\n📌 步驟 4: 檢查並下載需要的數據")
 
         # 取得今日日期和星期
-        today_tpe = datetime.now(timezone(timedelta(hours=8))).date()
+        now_tpe = datetime.now(timezone(timedelta(hours=8)))
+        today_tpe = now_tpe.date()
         today_weekday = today_tpe.weekday()  # 0=週一, 6=週日
 
         # 週末不更新股價數據（股市休市）
@@ -132,11 +145,16 @@ def main():
             logger.info("\n📌 步驟 4.5: 檢查當日資料缺漏（TWSE/TPEx 官方 API 備援）")
             try:
                 existing = get_existing_data_range()
-                today_iso = today_tpe.isoformat()
+                # 用「最近一個已收盤的交易日」而非台北今天：排程延遲跨過午夜時，
+                # today_tpe 會變成還沒開盤的隔天，導致整個備援補不到任何資料
+                data_date = latest_closed_trading_day(now_tpe)
+                today_iso = data_date.isoformat()
+                if data_date != today_tpe:
+                    logger.info(f"   補資料目標日: {today_iso}（台北現在 {now_tpe:%Y-%m-%d %H:%M}，非當日）")
                 missing_today = [c for c in codes if existing.get(c, {}).get("max", "") < today_iso]
                 if missing_today:
                     logger.info(f"   {len(missing_today)} 支缺 {today_iso} 資料，改用官方 API 補回")
-                    df_official = fetch_official_daily(today_tpe, codes=missing_today)
+                    df_official = fetch_official_daily(data_date, codes=missing_today)
                     if not df_official.empty:
                         upsert_prices(df_official)
                         data_updated = True
@@ -156,11 +174,12 @@ def main():
         if hist.empty:
             logger.warning("⚠️  資料庫中沒有可用的股價數據（首次執行/下載失敗/網路問題）")
         else:
-            latest_date = hist['date'].max()
+            # 用「多數股票的最新日期」判斷資料新鮮度，避免少數股票把基準日拉到前面
+            latest_date = majority_latest_date(hist)
             days_behind = (pd.Timestamp(today_tpe) - latest_date).days
-            logger.info(f"✅ 載入 {len(hist)} 筆, {hist['code'].nunique()} 支股票, {hist['date'].min()}~{latest_date}")
+            logger.info(f"✅ 載入 {len(hist)} 筆, {hist['code'].nunique()} 支股票, {hist['date'].min()}~{hist['date'].max()}")
             if days_behind > 2:
-                logger.warning(f"   ⚠️  數據可能過舊！最新交易日距今 {days_behind} 天")
+                logger.warning(f"   ⚠️  數據可能過舊！最新交易日 {latest_date.date()} 距今 {days_behind} 天")
 
             # 排除資料未更新到最新交易日的股票，避免用舊資料推薦
             hist, stale_codes = filter_fresh_stocks(hist)
@@ -251,7 +270,7 @@ def main():
         # ===== 步驟 6.1: 法人籌碼數據 =====
         logger.info("\n📌 步驟 6.1: 取得法人籌碼數據")
         all_picked_codes = list(set(
-            group2a["code"].tolist() + group2b["code"].tolist()
+            codes_of(group2a) + codes_of(group2b)
         ))
         institutional_df = pd.DataFrame()
         margin_df = pd.DataFrame()
@@ -281,7 +300,7 @@ def main():
         day_before_date_str = ""
 
         try:
-            today_codes_set = set(group2a["code"].tolist() + group2b["code"].tolist())
+            today_codes_set = set(codes_of(group2a) + codes_of(group2b))
             prev_days = get_previous_trading_days("data", today_tpe, n=2)
 
             if len(prev_days) >= 1:

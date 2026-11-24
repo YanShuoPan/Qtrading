@@ -1,5 +1,5 @@
 """Tests for modules/twse_daily.py — TWSE/TPEx 官方 API 當日行情備援"""
-from datetime import date
+from datetime import date, datetime
 
 import pandas as pd
 import pytest
@@ -8,6 +8,7 @@ from modules.twse_daily import (
     _parse_twse_mi_index,
     _parse_tpex_quotes,
     fetch_official_daily,
+    latest_closed_trading_day,
 )
 
 TRADE_DATE = date(2026, 7, 2)
@@ -179,3 +180,39 @@ class TestFetchOfficialDaily:
         df = fetch_official_daily(TRADE_DATE)
         assert isinstance(df, pd.DataFrame)
         assert df.empty
+
+
+# ===== latest_closed_trading_day（排程延遲跨午夜的補資料目標日）=====
+
+class TestLatestClosedTradingDay:
+    """決定「要補哪一天的資料」，不可因排程延遲跨午夜而抓到未開盤的日期"""
+
+    def test_after_close_uses_today(self):
+        """14:00 後執行 → 用當天（正常情況）"""
+        now = datetime(2026, 11, 20, 14, 30)  # 週五 14:30
+        assert latest_closed_trading_day(now) == date(2026, 11, 20)
+
+    def test_late_evening_uses_today(self):
+        """當天深夜執行 → 仍是當天（GitHub 排程延遲到 22:00 的情況）"""
+        now = datetime(2026, 11, 20, 22, 17)
+        assert latest_closed_trading_day(now) == date(2026, 11, 20)
+
+    def test_past_midnight_falls_back_to_previous_day(self):
+        """跨午夜執行 → 退回前一天（2026-11-23 實際失敗的情境）"""
+        now = datetime(2026, 11, 24, 0, 23)  # 週二凌晨，實際要補的是週一 11/23
+        assert latest_closed_trading_day(now) == date(2026, 11, 23)
+
+    def test_before_market_data_ready_falls_back(self):
+        """盤中（13:00）執行 → 官方資料未出，退回前一個交易日"""
+        now = datetime(2026, 11, 24, 13, 0)
+        assert latest_closed_trading_day(now) == date(2026, 11, 23)
+
+    def test_skips_weekend(self):
+        """週一凌晨跨午夜 → 應退回上週五，不是週日"""
+        now = datetime(2026, 11, 23, 1, 0)  # 週一凌晨
+        assert latest_closed_trading_day(now) == date(2026, 11, 20)  # 上週五
+
+    def test_saturday_morning_uses_friday(self):
+        """週六上午 → 週五"""
+        now = datetime(2026, 11, 21, 9, 0)
+        assert latest_closed_trading_day(now) == date(2026, 11, 20)

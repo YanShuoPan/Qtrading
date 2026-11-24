@@ -3,7 +3,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from modules.stock_data import filter_fresh_stocks
+from modules.stock_data import (
+    filter_fresh_stocks,
+    majority_latest_date,
+    empty_picks,
+    pick_stocks,
+)
 
 
 def _make_prices_with_end(code: str, end_date: str, n: int = 30) -> pd.DataFrame:
@@ -170,3 +175,79 @@ class TestFetchRetry:
         result = fetch_prices_yf(["2330", "8088"])
 
         assert set(result["code"].unique()) == {"2330"}
+
+
+# ===== majority_latest_date（少數股票不可綁架新鮮度基準日）=====
+
+class TestMajorityLatestDate:
+    """2026-11-23 實際事故：1976 支只有 3 支抓到當日資料，
+    以 max(date) 當基準導致其餘 1963 支全被誤判過舊、選股掛零。"""
+
+    def test_minority_newer_date_ignored(self):
+        """極少數股票有更新的日期時，基準日應退回多數股票停留的那天"""
+        majority = pd.concat(
+            [_make_prices_with_end(f"1{i:03d}", "2026-11-20") for i in range(20)],
+            ignore_index=True,
+        )
+        minority = _make_prices_with_end("9999", "2026-11-23")
+        prices = pd.concat([majority, minority], ignore_index=True)
+
+        assert majority_latest_date(prices) == pd.Timestamp("2026-11-20")
+
+    def test_minority_newer_date_does_not_exclude_majority(self):
+        """同一情境下 filter_fresh_stocks 不應把多數股票判定為過舊"""
+        majority = pd.concat(
+            [_make_prices_with_end(f"1{i:03d}", "2026-11-20") for i in range(20)],
+            ignore_index=True,
+        )
+        minority = _make_prices_with_end("9999", "2026-11-23")
+        prices = pd.concat([majority, minority], ignore_index=True)
+
+        result, stale_codes = filter_fresh_stocks(prices)
+
+        assert stale_codes == []
+        assert result["code"].nunique() == 21  # 比基準日新的股票也要保留
+
+    def test_normal_day_uses_latest_date(self):
+        """多數股票都有最新日期時，基準日就是最新日期（正常情況）"""
+        fresh = pd.concat(
+            [_make_prices_with_end(f"1{i:03d}", "2026-11-20") for i in range(20)],
+            ignore_index=True,
+        )
+        stale = _make_prices_with_end("9999", "2026-11-17")
+        prices = pd.concat([fresh, stale], ignore_index=True)
+
+        assert majority_latest_date(prices) == pd.Timestamp("2026-11-20")
+        _, stale_codes = filter_fresh_stocks(prices)
+        assert stale_codes == ["9999"]
+
+    def test_empty_returns_none(self):
+        assert majority_latest_date(pd.DataFrame()) is None
+
+
+# ===== pick_stocks 空結果的欄位骨架 =====
+
+class TestEmptyPicksSchema:
+    """選股掛零時仍要回傳有欄位的 DataFrame，否則下游 df["code"] 會 KeyError"""
+
+    def test_empty_picks_has_columns(self):
+        df = empty_picks()
+        assert df.empty
+        assert "code" in df.columns
+        assert df["code"].tolist() == []
+
+    def test_pick_stocks_empty_input(self):
+        """空輸入時回傳的空結果仍可安全取 code 欄位"""
+        df = pick_stocks(pd.DataFrame())
+        assert df.empty
+        assert df["code"].tolist() == []
+
+    def test_pick_stocks_no_qualifier(self):
+        """有資料但沒有任何股票符合條件時，一樣要帶欄位"""
+        thin = _make_prices_with_end("2330", "2026-11-20", n=30).copy()
+        thin["volume"] = 100  # 成交量遠低於門檻，必定選不出來
+        df = pick_stocks(thin)
+        assert df.empty
+        assert df["code"].tolist() == []
+        # 下游 main.py 的篩選寫法不可拋錯
+        assert df[df["ma20_slope"] < 0.7]["code"].tolist() == []

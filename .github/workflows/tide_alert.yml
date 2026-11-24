@@ -1,8 +1,11 @@
 name: tide-alert
 
 # 潮汐策略每日推播＋GitHub Pages（gh-pages/tide/）更新，只看台灣加權指數。
-# 台股 13:30 收盤，Yahoo/證交所約 14:00 前有收盤資料；排在 14:30（UTC 06:30）。
-# GitHub 排程常延遲（daily.yml 註記平均 ~2.5hr），推的是隔天的情境表，晚到也不影響使用。
+# 台股 13:30 收盤，Yahoo/證交所約 14:00 前有收盤資料。
+#
+# 主要觸發來源：Google Cloud Scheduler 每個交易日台北 15:00 打 workflow_dispatch
+# （設定方式見 scripts/cloud_scheduler_setup.md）
+# 以下 schedule 只是備援：實測延遲中位數 7.96hr、最長 12.09hr（2026-09~11，37 次）。
 on:
   schedule:
     - cron: "30 6 * * 1-5"
@@ -14,7 +17,43 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # 同 daily.yml：延遲數小時才送達的 schedule 事件會造成重複推播，先擋掉
+  guard:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Skip delayed schedule if already ran today (Taipei)
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "✅ ${{ github.event_name }} 觸發，直接執行"
+            exit 0
+          fi
+
+          TODAY=$(TZ=Asia/Taipei date +%F)
+          DONE=$(gh api "repos/${{ github.repository }}/actions/workflows/tide_alert.yml/runs?status=success&per_page=50" \
+            --jq "[.workflow_runs[]
+                   | select(.id != ${{ github.run_id }})
+                   | select(((((.run_started_at // .created_at) | fromdateiso8601) + 28800) | strftime(\"%Y-%m-%d\")) == \"$TODAY\")]
+                  | length") || DONE=0
+
+          if [ "${DONE:-0}" -gt 0 ]; then
+            echo "should_run=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::今天（台北 $TODAY）已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
+          else
+            echo "should_run=true" >> "$GITHUB_OUTPUT"
+            echo "✅ 今天（台北 $TODAY）尚未成功執行，繼續"
+          fi
+
   alert:
+    needs: guard
+    if: needs.guard.outputs.should_run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:

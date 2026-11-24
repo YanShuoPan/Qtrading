@@ -6,7 +6,7 @@ TWSE/TPEx 官方 API 當日行情備援模組
 - 上市：TWSE MI_INDEX（帶日期參數，自帶交易日驗證）
 - 上櫃：TPEx mainboard daily close quotes（以回應中的民國日期驗證）
 """
-from datetime import date
+from datetime import date, datetime, timedelta
 
 import pandas as pd
 import requests
@@ -22,6 +22,34 @@ REQUEST_TIMEOUT = 30  # 秒
 _HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
 
 _COLUMNS = ["code", "date", "open", "high", "low", "close", "volume"]
+
+# 台股 13:30 收盤，官方 API 約 14:00 後才有完整當日資料
+MARKET_DATA_READY_HOUR = 14
+
+
+def latest_closed_trading_day(now_tpe: datetime, ready_hour: int = MARKET_DATA_READY_HOUR) -> date:
+    """
+    回傳最近一個「已收盤且官方資料應已更新」的交易日（台北時間）
+
+    用途：決定要向官方 API 補哪一天的資料。不能直接用「台北今天」，
+    因為 GitHub Actions 排程延遲可能讓流程跨過午夜才執行
+    （實際發生過：排 13:33 卻在隔天 00:23 才觸發，結果去補還沒開盤的日期）。
+
+    只排除週末；國定假日交由 fetch_official_daily 回傳空資料處理。
+
+    Args:
+        now_tpe: 目前的台北時間
+        ready_hour: 當日資料視為可取得的時點（預設 14 點）
+
+    Returns:
+        date: 最近一個已收盤的工作日
+    """
+    day = now_tpe.date()
+    if now_tpe.hour < ready_hour:
+        day -= timedelta(days=1)
+    while day.weekday() >= 5:  # 5=週六, 6=週日
+        day -= timedelta(days=1)
+    return day
 _EMPTY = pd.DataFrame(columns=_COLUMNS)
 
 
