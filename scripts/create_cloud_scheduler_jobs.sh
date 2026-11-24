@@ -4,10 +4,11 @@
 # GitHub 的 schedule 事件實測延遲 4.5~12 小時（見 scripts/cloud_scheduler_setup.md），
 # 改由 Cloud Scheduler 觸發，workflow 內的 schedule 只當備援。
 #
-# 用法：
+# 用法（擇一）：
+#   bash scripts/create_cloud_scheduler_jobs.sh              # 從 .env 讀 GITHUB_PAT
 #   GITHUB_PAT=github_pat_xxx bash scripts/create_cloud_scheduler_jobs.sh
 #
-# 可覆寫的環境變數：
+# 可覆寫的環境變數（也可以寫在 .env）：
 #   GCP_PROJECT   GCP 專案（預設讀 gcloud config）
 #   GCP_LOCATION  Scheduler 地區（預設 asia-east1）
 #   GITHUB_REPO   owner/repo（預設 YanShuoPan/Qtrading）
@@ -15,11 +16,29 @@
 #
 set -euo pipefail
 
-: "${GITHUB_PAT:?請先設定 GITHUB_PAT（fine-grained token，權限 Actions: Read and write）}"
+ENV_FILE="${ENV_FILE:-.env}"
 
+# 只挑出需要的 key，不 source 整個 .env（避免執行到其他設定的副作用）
+read_env() {
+  local key="$1"
+  [ -f "${ENV_FILE}" ] || return 0
+  sed -n "s/^[[:space:]]*${key}=//p" "${ENV_FILE}" \
+    | tail -1 \
+    | sed -e 's/^["'\'']//' -e 's/["'\'']$//' -e 's/[[:space:]]*$//'
+}
+
+GITHUB_PAT="${GITHUB_PAT:-$(read_env GITHUB_PAT)}"
+if [ -z "${GITHUB_PAT}" ]; then
+  echo "❌ 找不到 GITHUB_PAT，請在 ${ENV_FILE} 填入 GITHUB_PAT=github_pat_..." >&2
+  echo "   （fine-grained token，權限 Repository permissions → Actions: Read and write）" >&2
+  exit 1
+fi
+
+GCP_LOCATION="${GCP_LOCATION:-$(read_env GCP_LOCATION)}"
 GCP_LOCATION="${GCP_LOCATION:-asia-east1}"
 GITHUB_REPO="${GITHUB_REPO:-YanShuoPan/Qtrading}"
 GITHUB_REF="${GITHUB_REF:-main}"
+GCP_PROJECT="${GCP_PROJECT:-$(read_env GCP_PROJECT)}"
 GCP_PROJECT="${GCP_PROJECT:-$(gcloud config get-value project 2>/dev/null || true)}"
 
 if [ -z "${GCP_PROJECT}" ] || [ "${GCP_PROJECT}" = "(unset)" ]; then

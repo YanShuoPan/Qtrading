@@ -33,19 +33,31 @@ GitHub → Settings → Developer settings → Personal access tokens → **Fine
 
 產生後複製 `github_pat_...`（只會顯示一次）。
 
-驗證這把 token 可用（會真的觸發一次）：
+### 把 token 放進 .env
 
-```bash
-curl -i -X POST \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer github_pat_xxx" \
-  -H "X-GitHub-Api-Version: 2022-11-28" \
-  -H "Content-Type: application/json" \
-  https://api.github.com/repos/YanShuoPan/Qtrading/actions/workflows/daily.yml/dispatches \
-  -d '{"ref":"main"}'
+專案根目錄的 `.env`（已被 `.gitignore` 忽略，不會進版控）：
+
+```ini
+GITHUB_PAT=github_pat_你的token
 ```
 
-回 `HTTP/2 204` 就是成功（沒有回應內容是正常的）。回 404 多半是權限沒給或 repo 名稱打錯，401 是 token 錯。
+本專案所有腳本都會自動從 `.env` 讀取，token 不必出現在指令列或 shell history 裡。
+
+### 驗證 token
+
+```bash
+bash scripts/github_dispatch.sh --check     # 只讀取，不會觸發任何 run
+```
+
+回 `✅ HTTP 200` 並列出兩個 workflow 就是通的。
+401 = token 無效／過期，403 = 權限不足，404 = repo 存取範圍沒包含本 repo 或 Actions 權限沒勾。
+
+寫入權限只能靠實際觸發驗證（**會真的跑一次完整流程、會推播 LINE**）：
+
+```bash
+bash scripts/github_dispatch.sh daily.yml      # 回 ✅ HTTP 204 即成功
+bash scripts/github_dispatch.sh tide_alert.yml
+```
 
 ---
 
@@ -66,10 +78,11 @@ curl -i -X POST \
 ### 方法 A：用本專案的腳本（建立或更新都可重複執行）
 
 ```bash
-GITHUB_PAT=github_pat_xxx bash scripts/create_cloud_scheduler_jobs.sh
+bash scripts/create_cloud_scheduler_jobs.sh      # 自動從 .env 讀 GITHUB_PAT / GCP_PROJECT
 ```
 
-可用環境變數覆寫：`GCP_PROJECT`、`GCP_LOCATION`（預設 `asia-east1`）、`GITHUB_REPO`、`GITHUB_REF`。
+`.env` 可設定的項目：`GITHUB_PAT`（必填）、`GCP_PROJECT`、`GCP_LOCATION`（預設 `asia-east1`）。
+也可以用環境變數覆寫：`GITHUB_PAT`、`GCP_PROJECT`、`GCP_LOCATION`、`GITHUB_REPO`、`GITHUB_REF`、`ENV_FILE`。
 
 ### 方法 B：手動下 gcloud 指令
 
