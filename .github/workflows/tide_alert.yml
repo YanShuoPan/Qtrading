@@ -36,19 +36,21 @@ jobs:
             exit 0
           fi
 
-          TODAY=$(TZ=Asia/Taipei date +%F)
+          # 同 daily.yml：用「交易日」而非日曆日比對，否則跨午夜的兩次觸發
+          # 會被當成不同天而重複推播（台北時間 -14 小時 = UTC -6 小時）
+          TRADE_DAY=$(date -u -d '6 hours ago' +%F)
           DONE=$(gh api "repos/${{ github.repository }}/actions/workflows/tide_alert.yml/runs?status=success&per_page=50" \
             --jq "[.workflow_runs[]
                    | select(.id != ${{ github.run_id }})
-                   | select(((((.run_started_at // .created_at) | fromdateiso8601) + 28800) | strftime(\"%Y-%m-%d\")) == \"$TODAY\")]
+                   | select(((((.run_started_at // .created_at) | fromdateiso8601) - 21600) | strftime(\"%Y-%m-%d\")) == \"$TRADE_DAY\")]
                   | length") || DONE=0
 
           if [ "${DONE:-0}" -gt 0 ]; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::今天（台北 $TODAY）已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
+            echo "::notice::交易日 $TRADE_DAY 已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
           else
             echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "✅ 今天（台北 $TODAY）尚未成功執行，繼續"
+            echo "✅ 交易日 $TRADE_DAY 尚未成功執行，繼續"
           fi
 
   alert:

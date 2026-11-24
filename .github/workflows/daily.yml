@@ -39,19 +39,24 @@ jobs:
             exit 0
           fi
 
-          TODAY=$(TZ=Asia/Taipei date +%F)
+          # 用「交易日」而非日曆日比對：排程延遲可能讓同一個交易日的兩次觸發
+          # 落在台北的不同日曆日（實際發生過：23:47 dispatch + 00:14 schedule，
+          # 日曆日一個是 11-24 一個是 11-25，結果重複推播了兩次）。
+          # 台股 13:30 收盤、官方資料 14:00 後才齊，因此「台北時間 -14 小時」
+          # 的日期就是這次執行對應的交易日（= UTC -6 小時）。
+          TRADE_DAY=$(date -u -d '6 hours ago' +%F)
           DONE=$(gh api "repos/${{ github.repository }}/actions/workflows/daily.yml/runs?status=success&per_page=50" \
             --jq "[.workflow_runs[]
                    | select(.id != ${{ github.run_id }})
-                   | select(((((.run_started_at // .created_at) | fromdateiso8601) + 28800) | strftime(\"%Y-%m-%d\")) == \"$TODAY\")]
+                   | select(((((.run_started_at // .created_at) | fromdateiso8601) - 21600) | strftime(\"%Y-%m-%d\")) == \"$TRADE_DAY\")]
                   | length") || DONE=0
 
           if [ "${DONE:-0}" -gt 0 ]; then
             echo "should_run=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::今天（台北 $TODAY）已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
+            echo "::notice::交易日 $TRADE_DAY 已有 $DONE 次成功執行，跳過這次延遲的 schedule 觸發"
           else
             echo "should_run=true" >> "$GITHUB_OUTPUT"
-            echo "✅ 今天（台北 $TODAY）尚未成功執行，繼續"
+            echo "✅ 交易日 $TRADE_DAY 尚未成功執行，繼續"
           fi
 
   run:
